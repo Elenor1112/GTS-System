@@ -1,0 +1,25 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "A · Prussian — BUILT", "x": 0, "y": 0, "w": 1440, "h": 940 },
+    { "file": "Signal.dc.html", "title": "B · Signal (clickable)", "x": 1540, "y": 0, "w": 1440, "h": 940 },
+    { "file": "Split.dc.html", "title": "C · Split domains", "x": 0, "y": 1060, "w": 1440, "h": 940 },
+    { "file": "Nocturne.dc.html", "title": "D · Nocturne", "x": 1540, "y": 1060, "w": 1440, "h": 940 }
+  ],
+  "annotations": [
+    {
+      "id": "brief",
+      "x": -520,
+      "y": 0,
+      "w": 440,
+      "text": "GTS dashboard — blue + red language.\n\nDECIDED: Direction A (Prussian). Built and shipped\ninto the app on 20 Aug 2026. B, C and D are kept\nhere as the record of what was considered.\n\nThe decision was how RED behaves. Red already means\ndanger here (overdue, negative, absent):\n\nA · Prussian — blue is the structure, red stays\npurely semantic. Red keeps full alarm value. ← BUILT\n\nB · Signal — red IS the brand chrome; danger drops\nto a darker oxblood. Clickable: light/dark toggle.\n\nC · Split domains — blue = money, red = operations.\n\nD · Nocturne — dark workspace, both as luminous data.\n\nWHAT SHIPPED, beyond the palette:\n• brass → Prussian blue (H255) as brand; primary\n  buttons now take it instead of flat ink.\n• Finance domain moved 268 → 262, inventory 205 → 200\n  so neither collides with the brand blue.\n• Chart series 4 is bronze, not red — no chart may\n  spend red on an ordinary category.\n• 40 colour pairs pass WCAG AA in both themes;\n  contrast.mjs now exits non-zero so it can gate CI."
+    },
+    {
+      "id": "note-shared",
+      "x": -520,
+      "y": 620,
+      "w": 440,
+      "text": "Shared across all four (never the variable):\n\n• The 1.6× lead-metric band — built in the system as\n  grid-metrics but never used by the old dashboard.\n• A real receipts chart with baseline, gridlines and\n  month labels, replacing the bare sparkline.\n• Ranked alert rail: tone as a 3px leading bar, not a\n  flooded background, so five alerts read as five.\n• Ink foundation (H 265 near-black) kept — it is what\n  keeps this from reading as a template.\n• Archivo / Roboto Flex figures, tabular numerals,\n  subordinate currency mark, de-emphasised decimals.\n\nBUGS THE MOCKUPS COULDN'T SHOW, found by driving\nthe real app and fixed:\n\n• .gts-progress-bar carried an infinite indeterminate\n  animation, so every determinate bar in the product\n  animated its own value away. Now determinate by\n  default; the sweep is opt-in.\n• The same bars computed to 0px wide inside\n  .gts-list-figure (align-items:flex-end shrink-wraps\n  a bare track). Now stretches.\n• A month with no receipts drew a minimum-height bar,\n  implying money arrived when none did. Now a baseline\n  tick in axis grey.\n• At ≤1023px the lead metric kept its 36px figure after\n  the band went 2-up, overrunning its neighbour."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

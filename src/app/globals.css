@@ -1,0 +1,9 @@
+/* GTS — global stylesheet.
+   The @import MUST come first (CSS spec), and postcss-import must
+   run before tailwindcss, or the tokens never inline and every
+   var() silently resolves to nothing. */
+@import '../../design-system/tokens/index.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

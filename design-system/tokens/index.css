@@ -1,0 +1,70 @@
+/* ============================================================
+   GTS DESIGN SYSTEM — entry point
+   Import order matters: type → color → space → motion → components
+   ============================================================ */
+@import './type.css';
+@import './color.css';
+@import './space.css';
+@import './motion.css';
+@import './components.css';
+
+/* ---------- Base reset (minimal, opinionated) ------------ */
+*, *::before, *::after { box-sizing: border-box }
+html { -webkit-text-size-adjust: 100% }
+body {
+  margin: 0;
+  background: var(--gts-bg-page);
+  color: var(--gts-fg-primary);
+  font: var(--gts-role-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+}
+/* Headings carry no default margin: spacing is compositional. */
+h1,h2,h3,h4,h5,h6,p,figure { margin: 0 }
+button, input, select, textarea { font: inherit; color: inherit }
+img, svg, video { max-inline-size: 100%; block-size: auto; display: block }
+table { border-collapse: separate; border-spacing: 0 }
+:where(a) { color: inherit; text-decoration-color: var(--gts-border-strong);
+            text-underline-offset: 0.18em }
+
+/* ---------- Utility type roles --------------------------- */
+.gts-display   { font: var(--gts-role-display); letter-spacing: var(--gts-role-display-tracking) }
+.gts-page-title{ font: var(--gts-role-page-title); letter-spacing: var(--gts-role-page-title-tracking) }
+.gts-section   { font: var(--gts-role-section); letter-spacing: var(--gts-role-section-tracking) }
+.gts-editorial { font: var(--gts-role-editorial); letter-spacing: var(--gts-role-editorial-tracking) }
+.gts-overline  { font: var(--gts-role-overline); letter-spacing: var(--gts-role-overline-tracking);
+                 text-transform: uppercase; color: var(--gts-fg-muted) }
+.gts-body      { font: var(--gts-role-body) }
+.gts-meta      { font: var(--gts-role-meta); color: var(--gts-fg-muted) }
+
+/* ---------- Layout frame --------------------------------- */
+.gts-shell { display: grid; min-block-size: 100dvh;
+             grid-template-columns: auto minmax(0, 1fr) }
+.gts-main  { display: flex; flex-direction: column; min-inline-size: 0 }
+.gts-page  { padding: var(--gts-gutter-page); max-inline-size: var(--gts-content-max);
+             inline-size: 100%; margin-inline: auto;
+             display: flex; flex-direction: column; gap: var(--gts-gutter-section) }
+
+@media (max-width: 767px) {
+  .gts-shell { grid-template-columns: minmax(0, 1fr) }
+  .gts-rail  { display: none }
+  .gts-page  { padding-block-end: calc(var(--gts-mobile-nav-h) + var(--gts-space-8)) }
+}
+@media (min-width: 768px) { .gts-mobile-nav { display: none } }
+
+/* Screen-reader only */
+.gts-sr { position: absolute; inline-size: 1px; block-size: 1px; padding: 0;
+  margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap }
+
+/* Print — bills and reports are real documents. */
+@media print {
+  :root { --gts-bg-page: #fff; --gts-bg-surface: #fff;
+          --gts-fg-primary: #000; --gts-fg-secondary: #333 }
+  .gts-rail, .gts-mobile-nav, .gts-btn, .gts-no-print { display: none !important }
+  .gts-page { padding: 0; max-inline-size: none }
+  .gts-table { font-size: 10pt }
+  .gts-table thead { display: table-header-group } /* repeat head per page */
+  .gts-table tr { break-inside: avoid }
+  .gts-panel, .gts-card { box-shadow: none; border: 1px solid #ccc }
+}

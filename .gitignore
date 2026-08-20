@@ -1,0 +1,24 @@
+node_modules/
+.next/
+out/
+build/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Screenshots captured during verification runs
+shots/
+
+# Environment — never commit credentials. The ETA e-seal certificate and
+# taxpayer client secret in particular must stay out of the repository.
+.env
+.env*.local
+
+.DS_Store
+*.tsbuildinfo
+
+# Playwright auth state — a live session cookie, never committed.
+.playwright/

@@ -1,0 +1,1220 @@
+/* ============================================================
+   GTS — COMPONENT PRIMITIVES
+   Every rule consumes semantic tokens only.
+   All directional values are LOGICAL (inline/block) for RTL.
+   ============================================================ */
+
+/* ---------- FOCUS (global, non-negotiable) --------------- */
+.gts-focusable:focus-visible,
+.gts-btn:focus-visible,
+.gts-input:focus-visible,
+.gts-nav-item:focus-visible {
+  outline: none;
+  box-shadow: var(--gts-shadow-focus);
+  border-radius: var(--gts-radius-sm);
+}
+
+/* ============================================================
+   BUTTONS
+   Five intents, four sizes. The hierarchy is carried by WEIGHT
+   and CONTRAST, not by color-flooding every button.
+   ============================================================ */
+.gts-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--gts-space-2);
+  height: var(--gts-control-md);
+  padding-inline: var(--gts-space-4);
+  border: 1px solid transparent;
+  border-radius: var(--gts-radius-sm);
+  font: var(--gts-weight-medium) var(--gts-text-sm)/1 var(--gts-font-display);
+  letter-spacing: var(--gts-tracking-normal);
+  white-space: nowrap; cursor: pointer;
+  transition: var(--gts-tr-control);
+  -webkit-tap-highlight-color: transparent;
+}
+.gts-btn:active:not(:disabled) { transform: translateY(0.5px); }
+.gts-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* PRIMARY — solid brand blue. Unlike the old ochre brand, a
+   structural blue is exactly what a commit action should be:
+   it reads as "the system's action" rather than as decoration,
+   and it leaves ink free to be text and red free to be danger. */
+.gts-btn-primary {
+  background: var(--gts-brand); color: oklch(100% 0 0);
+  border-color: var(--gts-brand);
+}
+.gts-btn-primary:hover:not(:disabled) {
+  background: var(--gts-blue-60); border-color: var(--gts-blue-60);
+}
+:root[data-theme='dark'] .gts-btn-primary,
+:root:not([data-theme='light']) .gts-btn-primary {
+  background: var(--gts-blue-40); color: var(--gts-ink-100); border-color: var(--gts-blue-40);
+}
+:root[data-theme='dark'] .gts-btn-primary:hover:not(:disabled),
+:root:not([data-theme='light']) .gts-btn-primary:hover:not(:disabled) {
+  background: var(--gts-blue-30); border-color: var(--gts-blue-30);
+}
+
+/* ACCENT — the domain-colored commit action. One per view. */
+.gts-btn-accent {
+  background: var(--gts-accent); color: var(--gts-fg-on-accent);
+  border-color: var(--gts-accent);
+}
+.gts-btn-accent:hover:not(:disabled) { background: var(--gts-accent-bright); border-color: var(--gts-accent-bright); }
+
+/* SECONDARY — bordered, the default for most actions. */
+.gts-btn-secondary {
+  background: var(--gts-bg-surface); color: var(--gts-fg-primary);
+  border-color: var(--gts-border-default);
+}
+.gts-btn-secondary:hover:not(:disabled) { background: var(--gts-bg-hover); border-color: var(--gts-border-strong); }
+
+/* GHOST — toolbar and table-row actions. */
+.gts-btn-ghost { background: transparent; color: var(--gts-fg-secondary); }
+.gts-btn-ghost:hover:not(:disabled) { background: var(--gts-bg-hover); color: var(--gts-fg-primary); }
+
+/* DANGER — destructive. Bordered by default; solid only in the
+   confirmation dialog where it is the committed action. */
+.gts-btn-danger {
+  background: transparent; color: var(--gts-danger-fg);
+  border-color: var(--gts-danger-br);
+}
+.gts-btn-danger:hover:not(:disabled) { background: var(--gts-danger-bg); }
+.gts-btn-danger-solid {
+  background: var(--gts-danger-50); color: oklch(100% 0 0); border-color: var(--gts-danger-50);
+}
+
+.gts-btn-xs { height: var(--gts-control-xs); padding-inline: var(--gts-space-2); font-size: var(--gts-text-2xs); }
+.gts-btn-sm { height: var(--gts-control-sm); padding-inline: var(--gts-space-3); font-size: var(--gts-text-xs); }
+.gts-btn-lg { height: var(--gts-control-lg); padding-inline: var(--gts-space-5); font-size: var(--gts-text-base); }
+.gts-btn-xl { height: var(--gts-control-xl); padding-inline: var(--gts-space-6);
+              font-size: var(--gts-text-md); font-weight: var(--gts-weight-semibold); }
+.gts-btn-icon { padding-inline: 0; aspect-ratio: 1; }
+.gts-btn-block { width: 100%; }
+
+/* ============================================================
+   INPUTS
+   Underline-forward, not boxed-everything. Boxes are used only
+   where a field must be found quickly (search, filters).
+   ============================================================ */
+.gts-field { display: flex; flex-direction: column; gap: var(--gts-space-2); }
+.gts-label {
+  font: var(--gts-role-overline); letter-spacing: var(--gts-role-overline-tracking);
+  text-transform: uppercase; color: var(--gts-fg-muted);
+}
+.gts-input {
+  height: var(--gts-control-md); width: 100%;
+  padding-inline: var(--gts-space-3);
+  background: var(--gts-bg-surface);
+  border: 1px solid var(--gts-border-default);
+  border-radius: var(--gts-radius-sm);
+  color: var(--gts-fg-primary);
+  font: var(--gts-role-body);
+  transition: var(--gts-tr-control);
+}
+.gts-input::placeholder { color: var(--gts-fg-disabled); }
+.gts-input:hover:not(:disabled) { border-color: var(--gts-border-strong); }
+.gts-input:disabled { background: var(--gts-bg-inset); color: var(--gts-fg-disabled); cursor: not-allowed; }
+.gts-input[aria-invalid='true'] { border-color: var(--gts-danger-br); background: var(--gts-danger-bg); }
+
+/* Numeric input inherits the financial voice and aligns to the
+   END of the field so decimal points stack down a column. */
+.gts-input-num {
+  font-family: var(--gts-font-numeric);
+  font-variant-numeric: tabular-nums slashed-zero;
+  text-align: end; direction: ltr;
+}
+/* Input size variants — match the control rhythm exactly. */
+.gts-input-sm { height: var(--gts-control-sm); font-size: var(--gts-text-sm);
+                padding-inline: var(--gts-space-2); }
+.gts-input-lg { height: var(--gts-control-lg); font-size: var(--gts-text-md); }
+.gts-select { appearance: none; padding-inline-end: var(--gts-space-8);
+              background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+                                linear-gradient(135deg, currentColor 50%, transparent 50%);
+              background-position: right var(--gts-space-3) center, right calc(var(--gts-space-3) - 4px) center;
+              background-size: 4px 4px, 4px 4px; background-repeat: no-repeat; }
+[dir='rtl'] .gts-select { background-position: left calc(var(--gts-space-3) - 4px) center,
+                                              left var(--gts-space-3) center; }
+.gts-textarea { height: auto; min-height: 5rem; padding-block: var(--gts-space-2);
+                line-height: var(--gts-leading-normal); resize: vertical; }
+.gts-help  { font: var(--gts-role-meta); color: var(--gts-fg-muted); }
+.gts-error { font: var(--gts-role-meta); color: var(--gts-danger-fg);
+             display: flex; align-items: center; gap: var(--gts-space-1); }
+
+/* ============================================================
+   TABLES — the core instrument of this product
+   ------------------------------------------------------------
+   Rules: no vertical gridlines (they fight the eye), hairline
+   horizontal rules only, sticky head, numeric columns tabular
+   and END-aligned, row height driven by a density token.
+   ============================================================ */
+.gts-table { width: 100%; border-collapse: separate; border-spacing: 0;
+             font: var(--gts-role-table); }
+/* Scoped to THEAD deliberately. A row's identity cell is correctly
+   marked up as <th scope="row">, and uppercasing it would shout every
+   client's name at the reader — proper nouns are not labels. */
+.gts-table thead th {
+  position: sticky; top: 0; z-index: var(--gts-z-sticky);
+  background: var(--gts-bg-page);
+  padding: var(--gts-pad-cell-y) var(--gts-pad-cell-x);
+  text-align: start; white-space: nowrap;
+  font: var(--gts-role-table-head);
+  letter-spacing: var(--gts-role-table-head-tracking);
+  text-transform: uppercase; color: var(--gts-fg-muted);
+  border-block-end: 1px solid var(--gts-border-default);
+}
+
+/* The row header: same cell metrics as a data cell, but it carries the
+   record's identity, so it takes the body's own voice. */
+.gts-table tbody th, .gts-table tfoot th {
+  padding: var(--gts-pad-cell-y) var(--gts-pad-cell-x);
+  text-align: start; vertical-align: middle;
+  font: var(--gts-role-table);
+  color: var(--gts-fg-primary);
+  border-block-end: 1px solid var(--gts-border-hairline);
+}
+.gts-table td {
+  padding: var(--gts-pad-cell-y) var(--gts-pad-cell-x);
+  border-block-end: 1px solid var(--gts-border-hairline);
+  color: var(--gts-fg-primary); vertical-align: middle;
+}
+.gts-table tbody tr { transition: var(--gts-tr-surface); }
+.gts-table tbody tr:hover { background: var(--gts-bg-hover); }
+.gts-table tbody tr[aria-selected='true'] {
+  background: var(--gts-accent-wash);
+  box-shadow: inset 2px 0 0 0 var(--gts-accent);
+}
+[dir='rtl'] .gts-table tbody tr[aria-selected='true'] { box-shadow: inset -2px 0 0 0 var(--gts-accent); }
+
+/* Numeric cells: tabular, end-aligned, LTR-isolated. */
+.gts-table .gts-cell-num {
+  text-align: end; font-family: var(--gts-font-numeric);
+  font-variant-numeric: tabular-nums slashed-zero;
+  direction: ltr; unicode-bidi: isolate; white-space: nowrap;
+}
+/* In RTL the numeric COLUMN still aligns to the inline end of
+   the cell, but the number itself stays LTR — correct behavior. */
+[dir='rtl'] .gts-table .gts-cell-num { text-align: left; }
+
+/* Density modes. Comfortable is the default for daily use;
+   compact is for power users reconciling hundreds of rows. */
+.gts-table-compact     { --gts-pad-cell-y: var(--gts-space-1); font-size: var(--gts-text-2xs); }
+.gts-table-comfortable { --gts-pad-cell-y: var(--gts-space-3); }
+.gts-table-relaxed     { --gts-pad-cell-y: var(--gts-space-4); }
+
+/* The total row is a document conclusion, not another row. */
+.gts-table tfoot td, .gts-table .gts-row-total td {
+  border-block-start: 2px solid var(--gts-fg-primary);
+  border-block-end: none;
+  font-weight: var(--gts-weight-semibold);
+  padding-block: var(--gts-space-4);
+  background: transparent;
+}
+/* Group header row — the ledger's section break. */
+.gts-table .gts-row-group td {
+  background: var(--gts-bg-sunken);
+  font: var(--gts-role-overline); letter-spacing: var(--gts-role-overline-tracking);
+  text-transform: uppercase; color: var(--gts-fg-secondary);
+  padding-block: var(--gts-space-2);
+  border-block-end: 1px solid var(--gts-border-default);
+}
+/* Row entrance stagger, capped. */
+.gts-table-animate tbody tr { animation: gts-rise var(--gts-dur-base) var(--gts-ease-enter) both;
+  animation-delay: calc(var(--gts-stagger) * min(var(--row, 0), var(--gts-stagger-max))); }
+
+/* Horizontal overflow container — tables NEVER break the page. */
+.gts-table-scroll { overflow-x: auto; overscroll-behavior-x: contain; }
+
+/* ============================================================
+   STATUS INDICATORS
+   A dot + label, never a colored pill for everything. Color is
+   reinforced by SHAPE and TEXT so it survives colorblindness
+   and grayscale printing.
+   ============================================================ */
+.gts-status { display: inline-flex; align-items: center; gap: var(--gts-space-2);
+  font: var(--gts-weight-medium) var(--gts-text-xs)/1 var(--gts-font-display);
+  color: var(--gts-fg-secondary); white-space: nowrap; }
+.gts-status::before {
+  content: ''; inline-size: 6px; block-size: 6px; border-radius: var(--gts-radius-full);
+  background: currentColor; flex: none;
+}
+.gts-status-success { color: var(--gts-success-fg) }
+.gts-status-warning { color: var(--gts-warning-fg) }
+.gts-status-danger  { color: var(--gts-danger-fg) }
+.gts-status-info    { color: var(--gts-info-fg) }
+.gts-status-neutral { color: var(--gts-fg-muted) }
+/* Pending = hollow dot. Live = pulsing. Shape carries meaning. */
+.gts-status-pending::before { background: transparent; box-shadow: inset 0 0 0 1.5px currentColor; }
+.gts-status-live::before { animation: gts-pulse-ring var(--gts-dur-ambient) var(--gts-ease-move) infinite; }
+
+/* Badge — for counts and short enum values only. */
+.gts-badge {
+  display: inline-flex; align-items: center; gap: var(--gts-space-1);
+  padding: 2px var(--gts-space-2); border-radius: var(--gts-radius-xs);
+  font: var(--gts-weight-semibold) var(--gts-text-2xs)/1.4 var(--gts-font-display);
+  letter-spacing: var(--gts-tracking-caps); text-transform: uppercase;
+  background: var(--gts-neutral-bg); color: var(--gts-neutral-fg);
+  border: 1px solid transparent;
+}
+.gts-badge-neutral { background: var(--gts-neutral-bg); color: var(--gts-neutral-fg); border-color: var(--gts-neutral-br) }
+.gts-badge-success { background: var(--gts-success-bg); color: var(--gts-success-fg); border-color: var(--gts-success-br) }
+.gts-badge-warning { background: var(--gts-warning-bg); color: var(--gts-warning-fg); border-color: var(--gts-warning-br) }
+.gts-badge-danger  { background: var(--gts-danger-bg);  color: var(--gts-danger-fg);  border-color: var(--gts-danger-br) }
+.gts-badge-info    { background: var(--gts-info-bg);    color: var(--gts-info-fg);    border-color: var(--gts-info-br) }
+
+/* ============================================================
+   SURFACES — deliberately NOT "everything is a rounded card"
+   ------------------------------------------------------------
+   Four distinct container types with different jobs. Most
+   content sits in PANELs or bare REGIONs; the floating card is
+   the rarest, not the default.
+   ============================================================ */
+
+/* REGION — no chrome at all. Structure comes from a rule + head.
+   This is the DEFAULT container. Most sections use it. */
+.gts-region { display: flex; flex-direction: column; gap: var(--gts-space-4); }
+.gts-region-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: var(--gts-space-4); padding-block-end: var(--gts-space-3);
+  border-block-end: 1px solid var(--gts-fg-primary);
+}
+.gts-region-title { font: var(--gts-role-section); letter-spacing: var(--gts-role-section-tracking);
+  color: var(--gts-fg-primary); }
+
+/* PANEL — hairline-bordered container. For grouped data. */
+.gts-panel {
+  background: var(--gts-bg-surface);
+  border: 1px solid var(--gts-border-hairline);
+  border-radius: var(--gts-radius-md);
+}
+.gts-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--gts-space-3); padding: var(--gts-space-3) var(--gts-pad-card);
+  border-block-end: 1px solid var(--gts-border-hairline);
+}
+.gts-panel-body { padding: var(--gts-pad-card); }
+
+/* CARD — raised, floating. Used ONLY for discrete objects that
+   can be acted on or reordered (a project tile, a saved view). */
+.gts-card {
+  background: var(--gts-bg-raised); border-radius: var(--gts-radius-md);
+  box-shadow: var(--gts-shadow-raised); padding: var(--gts-pad-card);
+  transition: var(--gts-tr-control);
+}
+.gts-card-interactive:hover { box-shadow: var(--gts-shadow-overlay); }
+
+/* SLAB — full-bleed tinted band. The editorial device: used for
+   module openers and summary bands. No border, no radius. */
+.gts-slab {
+  background: var(--gts-bg-sunken);
+  padding-block: var(--gts-space-10); padding-inline: var(--gts-gutter-page);
+  margin-inline: calc(var(--gts-gutter-page) * -1);
+}
+/* A slab that OPENS a page pulls up through the page's own top
+   gutter so it sits flush against the chrome — the full-bleed
+   band only reads as full-bleed if it touches three edges. */
+.gts-page > .gts-slab:first-child {
+  margin-block-start: calc(var(--gts-gutter-page) * -1);
+}
+.gts-slab-accent { background: var(--gts-accent-wash);
+  box-shadow: inset 0 2px 0 0 var(--gts-accent); }
+.gts-slab-inverse { background: var(--gts-bg-inverse); color: var(--gts-fg-inverse); }
+
+/* Section rule — accent-marked divider. A signature detail. */
+.gts-rule { block-size: 1px; background: var(--gts-border-hairline); position: relative; }
+.gts-rule::before { content: ''; position: absolute; inset-block-start: 0;
+  inset-inline-start: 0; inline-size: 2.5rem; block-size: 1px; background: var(--gts-accent); }
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+.gts-rail {
+  inline-size: var(--gts-rail-expanded);
+  background: var(--gts-bg-inverse); color: var(--gts-fg-inverse);
+  display: flex; flex-direction: column;
+  border-inline-end: 1px solid var(--gts-border-inverse);
+  transition: inline-size var(--gts-dur-slow) var(--gts-ease-snap);
+}
+.gts-rail-compact { inline-size: var(--gts-rail-compact); }
+.gts-nav-group { padding-block: var(--gts-space-4); }
+.gts-nav-group-label {
+  padding-inline: var(--gts-space-4); padding-block-end: var(--gts-space-2);
+  font: var(--gts-role-overline); letter-spacing: var(--gts-role-overline-tracking);
+  text-transform: uppercase; color: var(--gts-fg-inverse-muted);
+}
+.gts-nav-item {
+  display: flex; align-items: center; gap: var(--gts-space-3);
+  block-size: var(--gts-control-lg); padding-inline: var(--gts-space-4);
+  color: var(--gts-fg-inverse-muted); text-decoration: none;
+  font: var(--gts-weight-medium) var(--gts-text-sm)/1 var(--gts-font-display);
+  position: relative; transition: var(--gts-tr-control);
+}
+.gts-nav-item:hover { color: var(--gts-fg-inverse); background: oklch(100% 0 0 / 0.05); }
+/* ACTIVE state: an inline-start accent marker in the DOMAIN color,
+   so the rail itself tells you which world you are in. */
+.gts-nav-item[aria-current='page'] {
+  color: var(--gts-fg-inverse); background: oklch(100% 0 0 / 0.08);
+}
+.gts-nav-item[aria-current='page']::before {
+  content: ''; position: absolute; inset-block: 0; inset-inline-start: 0;
+  inline-size: 3px; background: var(--gts-accent);
+}
+
+/* MOBILE NAVIGATION — a different architecture, not a shrunk rail.
+   5 primary destinations + overflow sheet. Attendance is given
+   a raised center position because it is the daily action. */
+.gts-mobile-nav {
+  position: fixed; inset-inline: 0; inset-block-end: 0;
+  block-size: calc(var(--gts-mobile-nav-h) + env(safe-area-inset-bottom));
+  padding-block-end: env(safe-area-inset-bottom);
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  background: var(--gts-bg-surface);
+  border-block-start: 1px solid var(--gts-border-hairline);
+  z-index: var(--gts-z-rail);
+}
+.gts-mobile-nav-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; color: var(--gts-fg-muted); text-decoration: none;
+  font: var(--gts-weight-medium) var(--gts-text-2xs)/1 var(--gts-font-display);
+  min-block-size: var(--gts-touch-min);
+}
+.gts-mobile-nav-item[aria-current='page'] { color: var(--gts-accent); }
+
+/* ============================================================
+   LOADING STATES
+   Skeletons mirror the SHAPE of incoming content. Never a
+   centered spinner on a full page — that hides the layout and
+   makes the app feel slower than it is.
+   ============================================================ */
+.gts-skeleton {
+  background: linear-gradient(90deg,
+    var(--gts-bg-inset) 25%, var(--gts-bg-hover) 37%, var(--gts-bg-inset) 63%);
+  background-size: 200% 100%;
+  animation: gts-sweep var(--gts-dur-ambient) var(--gts-ease-move) infinite;
+  border-radius: var(--gts-radius-xs);
+}
+.gts-skeleton-text { block-size: 0.75em; margin-block: 0.25em }
+.gts-skeleton-num  { block-size: 1.5em; inline-size: 6ch }
+/* Progressive: numbers arrive before charts; layout never shifts. */
+.gts-loading-shell { min-block-size: var(--min-h, auto) }
+/* Inline progress for background work (posting, syncing). */
+.gts-progress { block-size: 3px; background: var(--gts-bg-inset); overflow: hidden }
+/* DETERMINATE by default: the bar's inline-size IS the value. The
+   indeterminate sweep is opt-in, because animating a bar that was
+   given a real width scrubs the value off the screen. */
+.gts-progress-bar { block-size: 100%; background: var(--gts-accent); }
+.gts-progress-indeterminate .gts-progress-bar {
+  inline-size: 40%;
+  animation: gts-indeterminate 1.4s var(--gts-ease-move) infinite;
+}
+.gts-spinner { inline-size: 1em; block-size: 1em; border-radius: 50%;
+  border: 1.5px solid var(--gts-border-strong); border-block-start-color: var(--gts-accent);
+  animation: gts-spin 700ms linear infinite }
+
+/* ============================================================
+   EMPTY STATES
+   Typographic, not illustrated. An enterprise user meets these
+   dozens of times a day; a cute drawing wears out fast. Every
+   empty state names the OBJECT and offers the NEXT ACTION.
+   ============================================================ */
+.gts-empty {
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: var(--gts-space-3); padding: var(--gts-space-12) var(--gts-space-6);
+  max-inline-size: var(--gts-prose-max);
+}
+.gts-empty-mark { /* a thin accent rule, the system's quiet signature */
+  inline-size: 2rem; block-size: 2px; background: var(--gts-accent); margin-block-end: var(--gts-space-2);
+}
+.gts-empty-title { font: var(--gts-role-section); letter-spacing: var(--gts-role-section-tracking);
+  color: var(--gts-fg-primary) }
+.gts-empty-body  { font: var(--gts-role-body); color: var(--gts-fg-secondary) }
+/* Distinct from empty: a FILTERED-to-zero result keeps the
+   filters visible and offers to clear them. */
+.gts-empty-filtered .gts-empty-mark { background: var(--gts-fg-muted) }
+
+/* ============================================================
+   ERROR STATES — three tiers
+   ============================================================ */
+/* 1. FIELD — inline, adjacent to the input. (see .gts-error) */
+/* 2. SECTION — the region failed, the rest of the page works. */
+.gts-error-section {
+  border: 1px solid var(--gts-danger-br); border-radius: var(--gts-radius-md);
+  background: var(--gts-danger-bg); padding: var(--gts-space-5);
+  display: flex; flex-direction: column; gap: var(--gts-space-3);
+  align-items: flex-start;
+}
+.gts-error-title { font: var(--gts-weight-semibold) var(--gts-text-base)/1.3 var(--gts-font-display);
+  color: var(--gts-danger-fg) }
+/* 3. PAGE — total failure. Editorial, calm, with a code the
+      support team can act on. Never a stack trace. */
+.gts-error-page { display: flex; flex-direction: column; gap: var(--gts-space-4);
+  padding: var(--gts-space-24) var(--gts-gutter-page); max-inline-size: var(--gts-prose-max) }
+.gts-error-code { font-family: var(--gts-font-numeric); font-size: var(--gts-text-xs);
+  letter-spacing: var(--gts-tracking-caps); color: var(--gts-fg-muted); text-transform: uppercase }
+
+/* Toast — transient, non-blocking, inline-end anchored. */
+.gts-toast {
+  display: flex; gap: var(--gts-space-3); align-items: flex-start;
+  padding: var(--gts-space-3) var(--gts-space-4);
+  background: var(--gts-bg-inverse); color: var(--gts-fg-inverse);
+  border-radius: var(--gts-radius-md); box-shadow: var(--gts-shadow-overlay);
+  animation: gts-slide-in var(--gts-dur-base) var(--gts-ease-enter) both;
+}
+
+/* ============================================================
+   ATTENDANCE PRIMITIVES
+   A deliberately different visual register: larger, softer,
+   more immediate than the accounting surfaces.
+   ============================================================ */
+.gts-geo { --geo-color: var(--gts-fg-muted); }
+.gts-geo-outside    { --geo-color: var(--gts-fg-muted) }
+.gts-geo-approaching{ --geo-color: var(--gts-warning-fg) }
+.gts-geo-inside     { --geo-color: var(--gts-domain-attendance) }
+.gts-geo-attended   { --geo-color: var(--gts-success-fg) }
+
+/* The check-in CTA: the largest control in the entire system.
+   Deliberately breaks the control scale — it must be unmissable. */
+.gts-checkin {
+  inline-size: 100%; min-block-size: 5.5rem;
+  border-radius: var(--gts-radius-lg); border: 2px solid var(--geo-color);
+  background: var(--gts-bg-surface); color: var(--geo-color);
+  font: var(--gts-weight-bold) var(--gts-text-xl)/1.2 var(--gts-font-display);
+  letter-spacing: var(--gts-tracking-snug);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--gts-space-1); position: relative; overflow: hidden;
+  transition: var(--gts-tr-control); cursor: pointer;
+}
+.gts-checkin:disabled { cursor: not-allowed; border-style: dashed; opacity: 1 }
+.gts-geo-inside .gts-checkin { background: var(--gts-domain-attendance); color: oklch(100% 0 0) }
+.gts-pulse-ring { position: absolute; inset: 0; border-radius: inherit;
+  border: 2px solid var(--geo-color); animation: gts-pulse-ring 2s var(--gts-ease-move) infinite; pointer-events: none }
+.gts-confirm-mark { animation: gts-confirm var(--gts-dur-slower) var(--gts-ease-confirm) both }
+
+/* ============================================================
+   CHART PRIMITIVES
+   ============================================================ */
+.gts-chart { --chart-1: var(--gts-viz-1); --chart-2: var(--gts-viz-2); --chart-3: var(--gts-viz-3) }
+.gts-chart-grid line, .gts-chart-grid path { stroke: var(--gts-viz-grid); stroke-width: 1 }
+.gts-chart-axis text { font-family: var(--gts-font-numeric); font-size: var(--gts-text-2xs);
+  fill: var(--gts-viz-axis); font-variant-numeric: tabular-nums }
+/* Charts do NOT mirror in RTL — a time axis runs left→right in
+   both scripts because the numerals do. Only the LABELS flip. */
+[dir='rtl'] .gts-chart svg { direction: ltr }
+[dir='rtl'] .gts-chart-legend { direction: rtl }
+/* Sparkline: no axes, no grid, pure shape. */
+.gts-sparkline { block-size: 1.5rem; inline-size: 100%; overflow: visible }
+
+/* ============================================================
+   FORM FEEDBACK
+   Inline validation lives directly under its field, in danger
+   ink. The message replaces the hint rather than joining it —
+   two lines of small text under one input is noise.
+   ============================================================ */
+.gts-help-error { color: var(--gts-danger-fg) }
+.gts-input[aria-invalid='true'],
+.gts-select[aria-invalid='true'],
+.gts-textarea[aria-invalid='true'] { border-color: var(--gts-danger-border) }
+.gts-input[aria-invalid='true']:focus-visible { box-shadow: var(--gts-shadow-focus) }
+
+/* ============================================================
+   AUTHENTICATION
+   ------------------------------------------------------------
+   The only route outside the shell. A single centred panel on
+   the recessed ground: nothing to navigate to, nothing to
+   read but the form.
+   ============================================================ */
+.gts-auth {
+  min-block-size: 100dvh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: var(--gts-space-6);
+  padding: var(--gts-space-6);
+  background: var(--gts-bg-recessed);
+}
+.gts-auth-panel {
+  inline-size: 100%; max-inline-size: 24rem;
+  padding: var(--gts-space-8);
+  background: var(--gts-bg-surface);
+  border: 1px solid var(--gts-border-subtle);
+  border-radius: var(--gts-radius-lg);
+  box-shadow: var(--gts-shadow-raised);
+}
+.gts-auth-brand { margin-block-end: var(--gts-space-7) }
+.gts-auth-mark {
+  font: var(--gts-weight-extrabold) var(--gts-text-2xl)/1 var(--gts-font-display);
+  letter-spacing: var(--gts-tracking-tight);
+  color: var(--gts-fg-primary);
+}
+.gts-auth-title {
+  font: var(--gts-role-section);
+  color: var(--gts-fg-primary);
+  margin-block-end: var(--gts-space-6);
+}
+.gts-auth-form { display: flex; flex-direction: column; gap: var(--gts-space-5) }
+.gts-auth-form .gts-btn { margin-block-start: var(--gts-space-2) }
+
+/* Form-level failure — wrong credentials, rate limit, disabled
+   account. Distinct from a field error: it is about the attempt,
+   not about one input. */
+.gts-auth-error {
+  padding: var(--gts-space-3) var(--gts-space-4);
+  border-radius: var(--gts-radius-sm);
+  background: var(--gts-danger-bg);
+  border: 1px solid var(--gts-danger-border);
+  color: var(--gts-danger-fg);
+  font: var(--gts-role-body-sm);
+}
+.gts-auth-notice {
+  padding: var(--gts-space-3) var(--gts-space-4);
+  margin-block-end: var(--gts-space-5);
+  border-radius: var(--gts-radius-sm);
+  background: var(--gts-info-bg);
+  border: 1px solid var(--gts-info-border);
+  color: var(--gts-info-fg);
+  font: var(--gts-role-body-sm);
+}
+.gts-auth-hint { font: var(--gts-role-meta); color: var(--gts-fg-muted); text-align: center }
+.gts-auth-hint code {
+  font-family: var(--gts-font-numeric);
+  background: var(--gts-bg-sunken);
+  padding: 0.1em 0.4em; border-radius: var(--gts-radius-xs);
+}
+
+/* ============================================================
+   RAIL — head, identity foot, notification count
+   ------------------------------------------------------------
+   The rail scrolls its navigation but pins the brand and the
+   identity block, so "who am I signed in as" is always answerable
+   without scrolling.
+   ============================================================ */
+.gts-rail-head {
+  padding: var(--gts-space-4);
+  border-block-end: 1px solid var(--gts-border-inverse);
+  margin-block-end: var(--gts-space-2);
+  flex: none;
+}
+.gts-rail-mark {
+  font: var(--gts-weight-extrabold) var(--gts-text-lg)/1 var(--gts-font-display);
+  letter-spacing: var(--gts-tracking-tight);
+}
+/* The navigation scrolls; the brand and the identity block do not.
+   Wrapping the links in their own scroll container is what stops a long
+   nav from pushing the identity block off the bottom — and what stops
+   two competing `auto` margins from overlapping it. */
+.gts-rail-nav {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Unread count. Reads as a quantity, not a decoration — the
+   number is the information, so it is set in the numeric face. */
+.gts-nav-count {
+  margin-inline-start: auto;
+  min-inline-size: 1.25rem; padding-inline: 0.35em;
+  display: inline-flex; align-items: center; justify-content: center;
+  block-size: 1.25rem; border-radius: 999px;
+  background: var(--gts-accent); color: var(--gts-fg-on-accent);
+  font-family: var(--gts-font-numeric); font-size: var(--gts-text-2xs);
+  font-variant-numeric: tabular-nums; font-weight: var(--gts-weight-semibold);
+}
+
+.gts-rail-foot {
+  /* No auto margin: .gts-rail-nav above takes the slack. */
+  flex: none; position: relative;
+
+  padding: var(--gts-space-3);
+  border-block-start: 1px solid var(--gts-border-inverse);
+}
+.gts-user-button {
+  inline-size: 100%;
+  display: flex; align-items: center; gap: var(--gts-space-3);
+  padding: var(--gts-space-2);
+  background: transparent; border: 1px solid transparent;
+  border-radius: var(--gts-radius-sm);
+  color: var(--gts-fg-inverse); cursor: pointer; text-align: start;
+  transition: var(--gts-tr-control);
+}
+.gts-user-button:hover { background: var(--gts-bg-inverse-raised) }
+.gts-user-avatar {
+  flex: none; inline-size: 2rem; block-size: 2rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--gts-radius-sm);
+  background: var(--gts-bg-inverse-raised); color: var(--gts-fg-inverse);
+  font: var(--gts-weight-semibold) var(--gts-text-2xs)/1 var(--gts-font-display);
+  letter-spacing: var(--gts-tracking-wide);
+}
+.gts-user-identity { display: flex; flex-direction: column; gap: 2px; min-inline-size: 0 }
+.gts-user-name {
+  font: var(--gts-weight-medium) var(--gts-text-sm)/1.2 var(--gts-font-display);
+  color: var(--gts-fg-inverse);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.gts-user-role {
+  font: var(--gts-text-2xs)/1.2 var(--gts-font-display);
+  color: var(--gts-fg-inverse-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* The sheet opens UPWARD — the trigger is at the bottom of the
+   viewport, so a downward menu would be clipped. */
+.gts-user-sheet {
+  position: absolute; inset-inline: var(--gts-space-3);
+  bottom: calc(100% - var(--gts-space-2));
+  background: var(--gts-bg-surface);
+  border: 1px solid var(--gts-border-default);
+  border-radius: var(--gts-radius-sm);
+  box-shadow: var(--gts-shadow-overlay);
+  overflow: hidden; z-index: 20;
+}
+.gts-user-sheet-item {
+  display: block; inline-size: 100%;
+  padding: var(--gts-space-3) var(--gts-space-4);
+  background: transparent; border: none;
+  color: var(--gts-fg-primary); text-decoration: none; text-align: start;
+  font: var(--gts-role-body-sm); cursor: pointer;
+}
+.gts-user-sheet-item:hover { background: var(--gts-bg-hover) }
+
+/* Mobile: a dot rather than a count — there is no room for a
+   number, and "something is waiting" is the whole message. */
+.gts-mobile-nav-dot {
+  position: absolute; inset-block-start: 0.4rem; inset-inline-end: 1.1rem;
+  inline-size: 0.4rem; block-size: 0.4rem; border-radius: 999px;
+  background: var(--gts-accent);
+}
+.gts-mobile-nav-item { position: relative }
+
+/* ============================================================
+   LISTS — the compact record row
+   ------------------------------------------------------------
+   Used where a table would be too heavy: a panel showing six
+   projects, three warehouses, a run of notifications. Identity
+   on the inline-start, figure on the inline-end, hairline
+   between. No gridlines, same discipline as the tables.
+   ============================================================ */
+.gts-list { list-style: none; margin: 0; padding: 0 }
+.gts-list-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--gts-space-4);
+  padding-block: var(--gts-space-3);
+  border-block-end: 1px solid var(--gts-border-hairline);
+}
+.gts-list-row:last-child { border-block-end: none }
+.gts-list-title {
+  display: block;
+  font: var(--gts-weight-medium) var(--gts-text-sm)/1.3 var(--gts-font-display);
+  color: var(--gts-fg-primary); text-decoration: none;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+a.gts-list-title:hover { color: var(--gts-accent); text-decoration: underline;
+  text-underline-offset: 2px }
+.gts-list-figure {
+  flex: none; display: flex; flex-direction: column;
+  align-items: flex-end; gap: var(--gts-space-2); inline-size: 8rem;
+}
+/* A meter inside the figure column must span the column: the column
+   is align-items:flex-end, which would otherwise shrink-wrap a bare
+   <div> track to zero width and hide the value entirely. */
+.gts-list-figure > .gts-progress { align-self: stretch; }
+
+/* ============================================================
+   STAT — a labelled figure in a row of siblings
+   ============================================================ */
+.gts-stat-row {
+  display: flex; flex-wrap: wrap; gap: var(--gts-space-6);
+}
+.gts-stat { min-inline-size: 0 }
+.gts-stat-value { margin-block-start: var(--gts-space-2) }
+.gts-stat-danger .gts-num { color: var(--gts-danger-fg) }
+.gts-stat-warning .gts-num { color: var(--gts-warning-fg) }
+
+/* ============================================================
+   METRIC BAND CELL — a cell of .gts-grid-metrics
+   ------------------------------------------------------------
+   The band is deliberately NOT four equal cards: the first cell
+   is 1.6x its siblings and carries the lead figure at a larger
+   size. Padding lives here rather than on the grid so the
+   hairline rules between cells run edge to edge.
+   ============================================================ */
+.gts-metric { padding: var(--gts-space-5) var(--gts-space-6); min-inline-size: 0; }
+.gts-metric:first-child { padding-inline-start: var(--gts-gutter-page); }
+.gts-metric:last-child  { padding-inline-end: var(--gts-gutter-page); }
+.gts-metric-value { margin-block-start: var(--gts-space-2); }
+.gts-metric-danger .gts-num { color: var(--gts-danger-fg); }
+
+/* ============================================================
+   CHART — the receipts trend
+   ------------------------------------------------------------
+   A real plot, not a bare sparkline: a baseline, two dashed
+   gridlines and month labels, so a figure can be READ off it
+   rather than merely gestured at. The axis and grid recede
+   behind the data at all times.
+   ============================================================ */
+.gts-chart { inline-size: 100%; block-size: auto; display: block; }
+.gts-chart-grid { stroke: var(--gts-viz-grid); stroke-width: 1; }
+.gts-chart-axis { stroke: var(--gts-viz-axis); stroke-width: 1; }
+.gts-chart-bar  { fill: var(--gts-accent); opacity: 0.32; }
+.gts-chart-bar-last { fill: var(--gts-accent); opacity: 1; }
+/* A month that received nothing: a tick on the baseline, never a
+   short bar — a bar would imply money arrived when none did. */
+.gts-chart-bar-zero { fill: var(--gts-viz-axis); opacity: 0.5; }
+.gts-chart-label {
+  font-family: var(--gts-font-numeric); font-size: 10px;
+  fill: var(--gts-fg-muted);
+}
+.gts-chart-label-current { fill: var(--gts-fg-primary); font-weight: var(--gts-weight-medium); }
+
+/* ============================================================
+   SPLIT BAR — a proportion shown as one continuous run
+   ------------------------------------------------------------
+   Present / late / absent as adjacent segments rather than
+   three separate meters: the eye reads the RATIO, which is the
+   fact that matters, instead of three unrelated numbers.
+   ============================================================ */
+.gts-splitbar { display: flex; block-size: 4px; gap: 2px; }
+.gts-splitbar > * { block-size: 100%; }
+
+/* ============================================================
+   ALERTS — the attention rail
+   ------------------------------------------------------------
+   Tone is carried by a leading bar rather than a flooded
+   background: five stacked danger-red panels read as one red
+   block and stop being legible as five separate problems.
+   ============================================================ */
+.gts-alert-list { list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: var(--gts-space-1) }
+.gts-alert {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--gts-space-4);
+  padding: var(--gts-space-3) var(--gts-space-4);
+  border-inline-start: 3px solid var(--gts-border-default);
+  border-radius: var(--gts-radius-xs);
+  background: var(--gts-bg-sunken);
+}
+.gts-alert[data-tone='danger']  { border-inline-start-color: var(--gts-danger-fg) }
+.gts-alert[data-tone='warning'] { border-inline-start-color: var(--gts-warning-fg) }
+.gts-alert[data-tone='info']    { border-inline-start-color: var(--gts-info-fg) }
+.gts-alert-title {
+  font: var(--gts-weight-medium) var(--gts-text-sm)/1.35 var(--gts-font-display);
+  color: var(--gts-fg-primary);
+}
+.gts-alert-detail { font: var(--gts-role-meta); color: var(--gts-fg-secondary);
+  margin-block-start: 2px }
+.gts-alert .gts-btn { flex: none }
+
+@media (max-width: 640px) {
+  .gts-alert { flex-direction: column; align-items: stretch }
+  .gts-alert .gts-btn { inline-size: 100% }
+}
+
+/* ============================================================
+   FILTER BAR — search and scope, above a table
+   ------------------------------------------------------------
+   A GET form, so a filtered view is a real URL: bookmarkable,
+   shareable, and back-button correct. Wraps to a column on
+   mobile rather than shrinking the search field to nothing.
+   ============================================================ */
+.gts-filter-bar {
+  display: flex; align-items: flex-end; flex-wrap: wrap;
+  gap: var(--gts-space-3);
+  padding-block: var(--gts-space-2);
+}
+@media (max-width: 640px) {
+  .gts-filter-bar { align-items: stretch }
+  .gts-filter-bar .gts-btn { inline-size: 100% }
+}
+
+/* ============================================================
+   TABLE CELL CONTENT
+   ------------------------------------------------------------
+   The identity cell carries a link and a subordinate line: the
+   name is what you click, the code is what you check.
+   ============================================================ */
+.gts-cell-link {
+  color: var(--gts-fg-primary); text-decoration: none;
+  font-weight: var(--gts-weight-medium);
+}
+.gts-cell-link:hover { color: var(--gts-accent); text-decoration: underline;
+  text-underline-offset: 2px }
+.gts-cell-sub { display: block; margin-block-start: 2px }
+
+/* The total row reads as a conclusion, not another record. */
+.gts-table tfoot th, .gts-table tfoot td {
+  border-block-start: 1px solid var(--gts-border-default);
+  border-block-end: none;
+  font-weight: var(--gts-weight-semibold);
+  color: var(--gts-fg-primary);
+}
+
+/* ============================================================
+   AGEING LADDER
+   ------------------------------------------------------------
+   Five buckets read left to right as time passes. Tone
+   intensifies with age rather than colouring every bucket, so
+   the eye lands on the oldest money first.
+   ============================================================ */
+.gts-ageing {
+  display: grid; gap: var(--gts-space-1);
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  margin-block-start: var(--gts-space-3);
+}
+.gts-ageing-bucket {
+  display: flex; flex-direction: column; gap: var(--gts-space-2);
+  padding: var(--gts-space-3);
+  background: var(--gts-bg-sunken);
+  border-block-start: 2px solid var(--gts-border-default);
+}
+.gts-ageing-bucket[data-tone='success'] { border-block-start-color: var(--gts-success-fg) }
+.gts-ageing-bucket[data-tone='info']    { border-block-start-color: var(--gts-info-fg) }
+.gts-ageing-bucket[data-tone='warning'] { border-block-start-color: var(--gts-warning-fg) }
+.gts-ageing-bucket[data-tone='danger']  { border-block-start-color: var(--gts-danger-fg) }
+
+/* ============================================================
+   TIMELINE — real events, in time order
+   ------------------------------------------------------------
+   A rule runs behind the dots so the sequence reads as one
+   thread. The dot's colour is derived from the event kind, so
+   scanning for "when did they pay" is a colour search, not a
+   reading task.
+   ============================================================ */
+.gts-timeline { list-style: none; margin: 0; padding: 0; position: relative }
+.gts-timeline::before {
+  content: ''; position: absolute;
+  inset-block: 0.9rem 0.9rem; inset-inline-start: 0.3rem;
+  inline-size: 1px; background: var(--gts-border-hairline);
+}
+.gts-timeline-row {
+  display: flex; align-items: flex-start; gap: var(--gts-space-4);
+  padding-block: var(--gts-space-3);
+  position: relative;
+}
+.gts-timeline-dot {
+  flex: none; inline-size: 0.65rem; block-size: 0.65rem;
+  margin-block-start: 0.35rem; border-radius: 999px;
+  background: var(--gts-fg-muted);
+  box-shadow: 0 0 0 3px var(--gts-bg-page);
+  position: relative; z-index: 1;
+}
+.gts-timeline-row[data-kind='BILL_ISSUED'] .gts-timeline-dot      { background: var(--gts-info-fg) }
+.gts-timeline-row[data-kind='PAYMENT_RECEIVED'] .gts-timeline-dot { background: var(--gts-success-fg) }
+.gts-timeline-row[data-kind='PROJECT_STARTED'] .gts-timeline-dot  { background: var(--gts-accent) }
+.gts-timeline-row[data-kind='GOODS_RETURNED'] .gts-timeline-dot   { background: var(--gts-warning-fg) }
+.gts-timeline-row[data-kind='GOODS_DAMAGED'] .gts-timeline-dot    { background: var(--gts-danger-fg) }
+.gts-timeline-body { flex: 1 1 auto; min-inline-size: 0 }
+.gts-timeline-title {
+  font: var(--gts-weight-medium) var(--gts-text-sm)/1.35 var(--gts-font-display);
+  color: var(--gts-fg-primary);
+}
+.gts-timeline-aside {
+  flex: none; display: flex; flex-direction: column;
+  align-items: flex-end; gap: var(--gts-space-1);
+}
+@media (max-width: 640px) {
+  .gts-timeline-row { flex-wrap: wrap }
+  .gts-timeline-aside { inline-size: 100%; align-items: flex-start;
+    flex-direction: row; gap: var(--gts-space-3);
+    padding-inline-start: calc(0.65rem + var(--gts-space-4)) }
+}
+
+/* ============================================================
+   CHECKBOX / RADIO — label and control as one target
+   ============================================================ */
+.gts-check {
+  display: inline-flex; align-items: center; gap: var(--gts-space-2);
+  font: var(--gts-role-body-sm); color: var(--gts-fg-secondary);
+  cursor: pointer; user-select: none;
+  min-block-size: var(--gts-control-md);
+}
+.gts-check input[type='checkbox'],
+.gts-check input[type='radio'] {
+  inline-size: 1rem; block-size: 1rem; flex: none;
+  accent-color: var(--gts-accent); cursor: pointer;
+}
+
+/* ============================================================
+   FORMS — layout and feedback
+   ------------------------------------------------------------
+   Two columns on a comfortable screen, one below 640px. Fields
+   that carry a long value (address, notes) span both.
+   ============================================================ */
+.gts-form { display: flex; flex-direction: column; gap: var(--gts-space-6) }
+.gts-field-grid {
+  display: grid; gap: var(--gts-space-5);
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+.gts-field-wide { grid-column: 1 / -1 }
+.gts-required { color: var(--gts-danger-fg) }
+
+.gts-form-actions {
+  display: flex; gap: var(--gts-space-3); flex-wrap: wrap;
+  padding-block-start: var(--gts-space-5);
+  border-block-start: 1px solid var(--gts-border-hairline);
+}
+@media (max-width: 640px) {
+  .gts-form-actions { flex-direction: column-reverse }
+  .gts-form-actions .gts-btn { inline-size: 100% }
+}
+
+/* A failure that belongs to the whole attempt, not to one field. */
+.gts-form-error {
+  padding: var(--gts-space-3) var(--gts-space-4);
+  border-radius: var(--gts-radius-sm);
+  background: var(--gts-danger-bg);
+  border: 1px solid var(--gts-danger-br);
+  color: var(--gts-danger-fg);
+  font: var(--gts-role-body-sm);
+}
+.gts-form-success {
+  padding: var(--gts-space-3) var(--gts-space-4);
+  border-radius: var(--gts-radius-sm);
+  background: var(--gts-success-bg);
+  border: 1px solid var(--gts-success-br);
+  color: var(--gts-success-fg);
+  font: var(--gts-role-body-sm);
+}
+
+/* One card per assigned site, stacked. */
+.gts-checkin-stack { display: flex; flex-direction: column; gap: var(--gts-space-5) }
+
+/* Assignment: a single inline row of controls, wrapping on mobile. */
+.gts-assign-form {
+  display: flex; align-items: flex-end; flex-wrap: wrap;
+  gap: var(--gts-space-3);
+  padding-block-end: var(--gts-space-5);
+  margin-block-end: var(--gts-space-4);
+  border-block-end: 1px solid var(--gts-border-hairline);
+}
+.gts-assign-form > [role='alert'], .gts-assign-form > [role='status'] { flex: 1 1 100% }
+
+/* Location helpers sit below the coordinate fields. */
+.gts-location-tools { display: flex; gap: var(--gts-space-3); flex-wrap: wrap }
+@media (max-width: 640px) {
+  .gts-assign-form, .gts-location-tools { align-items: stretch }
+  .gts-assign-form .gts-btn, .gts-location-tools .gts-btn { inline-size: 100% }
+}
+
+/* ============================================================
+   BILL WORKFLOW & TOTALS
+   ------------------------------------------------------------
+   The totals block sits to the inline-end of the lines table,
+   the way it does on a printed invoice, and the figure that
+   matters — the total, then the outstanding — is the only one
+   set at full weight.
+   ============================================================ */
+.gts-workflow {
+  padding: var(--gts-space-4);
+  background: var(--gts-bg-sunken);
+  border-radius: var(--gts-radius-sm);
+}
+.gts-workflow-actions, .gts-workflow-reason {
+  display: flex; gap: var(--gts-space-3);
+  align-items: flex-end; flex-wrap: wrap;
+}
+
+.gts-totals {
+  margin-inline-start: auto; margin-block-start: var(--gts-space-5);
+  inline-size: min(24rem, 100%);
+  display: flex; flex-direction: column; gap: var(--gts-space-2);
+}
+.gts-totals-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: var(--gts-space-4);
+}
+.gts-totals-row-strong {
+  padding-block-start: var(--gts-space-3);
+  border-block-start: 1px solid var(--gts-border-default);
+}
+.gts-totals-label { font: var(--gts-role-meta); color: var(--gts-fg-secondary) }
+.gts-totals-label-strong {
+  font: var(--gts-weight-semibold) var(--gts-text-sm)/1 var(--gts-font-display);
+  color: var(--gts-fg-primary);
+}
+/* Withholding needs a sentence, not a label — it is the figure people
+   most often misread as a discount. */
+.gts-totals-note {
+  font: var(--gts-role-meta); color: var(--gts-fg-muted);
+  padding-block-start: var(--gts-space-3);
+  margin-block-start: var(--gts-space-2);
+  border-block-start: 1px solid var(--gts-border-hairline);
+}
+
+.gts-payment-trigger {
+  display: flex; align-items: center; gap: var(--gts-space-4);
+  flex-wrap: wrap; padding-block-end: var(--gts-space-5);
+}
+.gts-payment-form {
+  display: flex; gap: var(--gts-space-4); flex-wrap: wrap; align-items: flex-end;
+  padding: var(--gts-space-4);
+  margin-block-end: var(--gts-space-5);
+  background: var(--gts-bg-sunken);
+  border-radius: var(--gts-radius-sm);
+}
+.gts-payment-form > [role='alert'], .gts-payment-form > [role='status'] { flex: 1 1 100% }
+.gts-payment-form-actions { display: flex; gap: var(--gts-space-3) }
+
+@media (max-width: 640px) {
+  .gts-totals { inline-size: 100% }
+  .gts-workflow-actions .gts-btn, .gts-payment-form-actions .gts-btn { inline-size: 100% }
+  .gts-payment-form-actions { flex: 1 1 100%; flex-direction: column-reverse }
+}
+
+/* ============================================================
+   LINE EDITOR — a multi-line invoice
+   ------------------------------------------------------------
+   Each row is a flex line rather than a table row: on a phone
+   the fields stack instead of forcing a horizontal scroll
+   through nine columns.
+   ============================================================ */
+.gts-fieldset {
+  border: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: var(--gts-space-4);
+}
+.gts-fieldset legend {
+  padding: 0; margin-block-end: var(--gts-space-2);
+  color: var(--gts-fg-muted);
+}
+.gts-line-editor { display: flex; flex-direction: column; gap: var(--gts-space-4) }
+.gts-line-row {
+  display: flex; gap: var(--gts-space-3); align-items: flex-end; flex-wrap: wrap;
+  padding: var(--gts-space-3);
+  background: var(--gts-bg-sunken);
+  border-radius: var(--gts-radius-sm);
+}
+@media (max-width: 640px) {
+  .gts-line-row > .gts-field { flex: 1 1 100% !important }
+  .gts-line-row .gts-btn { inline-size: 100% }
+}
+
+/* ============================================================
+   LEAVE — balances and decisions
+   ============================================================ */
+.gts-balance-grid {
+  display: grid; gap: var(--gts-space-4);
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+}
+.gts-balance {
+  display: flex; flex-direction: column; gap: var(--gts-space-2);
+  padding: var(--gts-space-4);
+  background: var(--gts-bg-sunken);
+  border-radius: var(--gts-radius-sm);
+}
+.gts-balance-figure { display: flex; align-items: baseline; gap: var(--gts-space-2) }
+
+.gts-request-form {
+  display: flex; gap: var(--gts-space-4); flex-wrap: wrap; align-items: flex-end;
+}
+.gts-request-form > [role='alert'], .gts-request-form > [role='status'] { flex: 1 1 100% }
+.gts-request-form .gts-form-actions {
+  flex: 1 1 100%; display: flex; gap: var(--gts-space-4); align-items: center;
+}
+
+.gts-decision-actions, .gts-decision-reason {
+  display: flex; gap: var(--gts-space-2); align-items: center; flex-wrap: wrap;
+}
+.gts-decision-reason .gts-input { inline-size: min(16rem, 100%) }
+
+@media (max-width: 640px) {
+  .gts-request-form > .gts-field { flex: 1 1 100% !important }
+  .gts-decision-actions .gts-btn { flex: 1 1 auto }
+}
+
+/* ============================================================
+   PERMISSION MATRIX
+   ------------------------------------------------------------
+   A dot rather than a tick: at this density a checkmark glyph
+   is noise, and the presence or absence of ink is the fastest
+   thing the eye can scan down a column.
+   ============================================================ */
+.gts-matrix-head { text-align: center !important; min-inline-size: 6rem }
+.gts-matrix-cell { text-align: center; font-family: var(--gts-font-numeric) }
+.gts-matrix-yes { color: var(--gts-success-fg); font-size: var(--gts-text-sm) }
+.gts-matrix-no  { color: var(--gts-fg-disabled) }
+.gts-matrix-module th {
+  background: var(--gts-bg-sunken);
+  font: var(--gts-role-overline); letter-spacing: var(--gts-role-overline-tracking);
+  text-transform: uppercase; color: var(--gts-fg-muted);
+}
+
+.gts-permission-grid {
+  display: grid; gap: var(--gts-space-4);
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+.gts-permission-module {
+  border: 1px solid var(--gts-border-hairline);
+  border-radius: var(--gts-radius-sm);
+  padding: var(--gts-space-4);
+  display: flex; flex-direction: column; gap: var(--gts-space-2);
+}
+.gts-permission-module legend { padding-inline: var(--gts-space-2) }
+.gts-permission-module .gts-check { align-items: flex-start }
+
+/* User row: role selector plus its actions. */
+.gts-user-row { display: flex; flex-direction: column; gap: var(--gts-space-2) }
+.gts-user-row-actions { display: flex; gap: var(--gts-space-2); flex-wrap: wrap }
+
+/* Pagination for long registers — the audit log especially. */
+.gts-pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: var(--gts-space-4); padding-block: var(--gts-space-5);
+}
+
+/* ============================================================
+   TABS — switching between views of the same subject
+   ------------------------------------------------------------
+   Real links, so each view is a URL. The active one is marked
+   by weight and a rule, not by a filled pill: this sits above
+   dense tables and should not compete with them.
+   ============================================================ */
+.gts-tabs {
+  display: flex; gap: var(--gts-space-1); flex-wrap: wrap;
+  border-block-end: 1px solid var(--gts-border-hairline);
+}
+.gts-tab {
+  padding: var(--gts-space-3) var(--gts-space-4);
+  color: var(--gts-fg-secondary); text-decoration: none;
+  font: var(--gts-weight-medium) var(--gts-text-sm)/1 var(--gts-font-display);
+  text-transform: capitalize;
+  border-block-end: 2px solid transparent;
+  margin-block-end: -1px;
+  transition: var(--gts-tr-control);
+}
+.gts-tab:hover { color: var(--gts-fg-primary) }
+.gts-tab[aria-current='page'] {
+  color: var(--gts-fg-primary);
+  border-block-end-color: var(--gts-accent);
+  font-weight: var(--gts-weight-semibold);
+}
+
+/* ============================================================
+   NOTIFICATIONS
+   An unread one carries a leading accent bar; a read one is
+   plain. The difference has to survive greyscale, so it is a
+   bar rather than a background tint.
+   ============================================================ */
+.gts-notification-list { list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: var(--gts-space-1) }
+.gts-notification {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--gts-space-4);
+  padding: var(--gts-space-3) var(--gts-space-4);
+  border-inline-start: 3px solid transparent;
+  border-radius: var(--gts-radius-xs);
+}
+.gts-notification[data-unread='true'] {
+  background: var(--gts-bg-sunken);
+  border-inline-start-color: var(--gts-accent);
+}
+.gts-notification-title {
+  font: var(--gts-weight-medium) var(--gts-text-sm)/1.35 var(--gts-font-display);
+  color: var(--gts-fg-primary);
+}
+.gts-notification-aside {
+  flex: none; display: flex; flex-direction: column;
+  align-items: flex-end; gap: var(--gts-space-2);
+}
+@media (max-width: 640px) {
+  .gts-notification { flex-direction: column }
+  .gts-notification-aside { align-items: flex-start; flex-direction: row; gap: var(--gts-space-3) }
+}

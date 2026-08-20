@@ -1,0 +1,245 @@
+/* ============================================================
+   GTS — SPACE, GRID, RADIUS, ELEVATION
+   ------------------------------------------------------------
+   4px base unit. Enterprise density: the small end of the scale
+   is where most of the work happens. Generous space is spent
+   deliberately on editorial moments, not sprayed everywhere.
+   ============================================================ */
+
+:root {
+  --gts-space-0:   0;
+  --gts-space-px:  1px;
+  --gts-space-1:   0.25rem;  /*  4 */
+  --gts-space-2:   0.5rem;   /*  8 */
+  --gts-space-3:   0.75rem;  /* 12 */
+  --gts-space-4:   1rem;     /* 16 */
+  --gts-space-5:   1.25rem;  /* 20 */
+  --gts-space-6:   1.5rem;   /* 24 */
+  --gts-space-8:   2rem;     /* 32 */
+  --gts-space-10:  2.5rem;   /* 40 */
+  --gts-space-12:  3rem;     /* 48 */
+  --gts-space-16:  4rem;     /* 64 */
+  --gts-space-20:  5rem;     /* 80 */
+  --gts-space-24:  6rem;     /* 96 */
+  --gts-space-32:  8rem;     /* 128 */
+
+  /* --- Semantic spacing ---------------------------------- */
+  --gts-gutter-page:    var(--gts-space-8);   /* desktop page inset  */
+  --gts-gutter-page-sm: var(--gts-space-4);   /* mobile page inset   */
+  --gts-gutter-section: var(--gts-space-12);  /* between sections    */
+  --gts-gutter-block:   var(--gts-space-6);   /* between blocks      */
+  --gts-gutter-grid:    var(--gts-space-6);   /* column gap          */
+  --gts-pad-card:       var(--gts-space-5);
+  --gts-pad-cell-x:     var(--gts-space-4);
+  --gts-pad-cell-y:     var(--gts-space-3);
+  --gts-pad-cell-y-compact: var(--gts-space-2);
+
+  /* --- Control heights (one rhythm for all interactives) -- */
+  --gts-control-xs: 1.5rem;    /* 24 — inline table actions */
+  --gts-control-sm: 1.75rem;   /* 28 — dense toolbars       */
+  --gts-control-md: 2.125rem;  /* 34 — DEFAULT              */
+  --gts-control-lg: 2.5rem;    /* 40 — primary forms        */
+  --gts-control-xl: 3rem;      /* 48 — mobile / hero CTA    */
+  --gts-touch-min:  2.75rem;   /* 44 — iOS touch minimum    */
+
+  /* --- Layout frame ------------------------------------- */
+  --gts-rail-expanded: 15.5rem; /* 248 */
+  --gts-rail-compact:  3.5rem;  /* 56  */
+  --gts-topbar-h:      3.25rem; /* 52  */
+  --gts-subbar-h:      2.75rem; /* 44  */
+  --gts-drawer-w:      28rem;   /* 448 */
+  --gts-drawer-w-wide: 40rem;   /* 640 */
+  --gts-content-max:   102rem;  /* 1632 — cap for ultrawide  */
+  --gts-prose-max:     42rem;   /* readable measure ~72ch    */
+  --gts-mobile-nav-h:  3.75rem; /* 60  */
+
+  /* --- Radius -------------------------------------------
+     Restrained. Large radii read consumer; this product reads
+     as an instrument. Radius signals INTERACTIVITY, not decor:
+     containers are nearly square, controls are softer. */
+  --gts-radius-none: 0;
+  --gts-radius-xs:   2px;   /* chips, tags, swatches      */
+  --gts-radius-sm:   3px;   /* inputs, buttons, cells     */
+  --gts-radius-md:   4px;   /* cards, panels              */
+  --gts-radius-lg:   6px;   /* drawers, modals, popovers  */
+  --gts-radius-xl:   10px;  /* mobile sheets only         */
+  --gts-radius-full: 999px; /* avatars, pills, status dot */
+
+  /* --- Elevation -----------------------------------------
+     Shadows are a LAST resort. Hierarchy is built with border,
+     surface-lightness and space. Only genuinely floating
+     objects get a shadow, and they are tinted with the ink hue
+     rather than pure black.                                */
+  --gts-shadow-none: none;
+  --gts-shadow-hairline: 0 0 0 1px var(--gts-border-hairline);
+  --gts-shadow-raised:
+    0 1px 2px oklch(9.5% 0.032 265 / 0.05),
+    0 0 0 1px var(--gts-border-hairline);
+  --gts-shadow-overlay:
+    0 4px 12px -2px oklch(9.5% 0.032 265 / 0.10),
+    0 2px 4px -1px oklch(9.5% 0.032 265 / 0.06),
+    0 0 0 1px var(--gts-border-hairline);
+  --gts-shadow-modal:
+    0 24px 48px -12px oklch(9.5% 0.032 265 / 0.20),
+    0 8px 16px -8px oklch(9.5% 0.032 265 / 0.12),
+    0 0 0 1px var(--gts-border-hairline);
+  --gts-shadow-sheet:
+    0 -8px 32px -8px oklch(9.5% 0.032 265 / 0.16);
+  /* Focus is a 2-layer ring so it reads on ANY background. */
+  --gts-shadow-focus:
+    0 0 0 2px var(--gts-bg-surface),
+    0 0 0 4px var(--gts-focus-ring);
+
+  /* --- Z-index scale ------------------------------------- */
+  --gts-z-base: 0;
+  --gts-z-sticky: 10;
+  --gts-z-rail: 20;
+  --gts-z-dropdown: 30;
+  --gts-z-drawer: 40;
+  --gts-z-modal: 50;
+  --gts-z-toast: 60;
+  --gts-z-tooltip: 70;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    /* Dark surfaces get lighter, not shadowed. Shadow depth is
+       increased only for true overlays. */
+    --gts-shadow-raised: 0 0 0 1px var(--gts-border-hairline);
+    --gts-shadow-overlay:
+      0 8px 24px -4px oklch(0% 0 0 / 0.50), 0 0 0 1px var(--gts-border-hairline);
+    --gts-shadow-modal:
+      0 32px 64px -16px oklch(0% 0 0 / 0.70), 0 0 0 1px var(--gts-border-hairline);
+  }
+}
+:root[data-theme='dark'] {
+  --gts-shadow-raised: 0 0 0 1px var(--gts-border-hairline);
+  --gts-shadow-overlay:
+    0 8px 24px -4px oklch(0% 0 0 / 0.50), 0 0 0 1px var(--gts-border-hairline);
+  --gts-shadow-modal:
+    0 32px 64px -16px oklch(0% 0 0 / 0.70), 0 0 0 1px var(--gts-border-hairline);
+}
+
+/* ============================================================
+   GRID SYSTEM
+   ------------------------------------------------------------
+   12 columns on desktop, but the system's real unit is the
+   ASYMMETRIC SPLIT. Enterprise screens are rarely 4 equal cards;
+   they are a dominant region plus a supporting rail. These named
+   templates encode the compositions the product actually uses.
+   ============================================================ */
+
+.gts-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--gts-gutter-grid);
+}
+
+/* Editorial split — dominant left, contextual right (7:5).
+   The workhorse for detail screens: entity + its ledger. */
+.gts-grid-editorial { display: grid; gap: var(--gts-gutter-grid);
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: start; }
+
+/* Command split — data ocean + narrow signal rail (8:4).
+   Columns align to the TOP rather than stretching: a short list
+   beside a long one should end where it ends, not grow a column
+   of dead space to match its neighbour. */
+.gts-grid-command { display: grid; gap: var(--gts-gutter-grid);
+  grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+  align-items: start; }
+
+/* Ledger split — a wide table with a fixed analysis panel. */
+.gts-grid-ledger { display: grid; gap: var(--gts-gutter-grid);
+  grid-template-columns: minmax(0, 1fr) 20rem; }
+
+/* Triptych — three unequal panels (5:4:3). Deliberately NOT
+   three equal cards: unequal widths create editorial rhythm. */
+.gts-grid-triptych { display: grid; gap: var(--gts-gutter-grid);
+  grid-template-columns: minmax(0,5fr) minmax(0,4fr) minmax(0,3fr); }
+
+/* Metric band — auto-fitting stat row that never becomes a
+   4-card grid: the FIRST cell is double-width (the lead metric).
+   Full-bleed with a rule top and bottom: the band is a STRATUM
+   of the page, not a row of cards floating on it. */
+.gts-grid-metrics { display: grid; gap: 0;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  background: var(--gts-bg-surface);
+  margin-inline: calc(var(--gts-gutter-page) * -1);
+  border-block-end: 1px solid var(--gts-border-hairline); }
+/* Directly under an opening slab the band is the slab's second
+   storey: no gap, no top rule — the slab's own edge serves. */
+.gts-slab + .gts-grid-metrics {
+  margin-block-start: calc(var(--gts-gutter-section) * -1);
+}
+.gts-grid-metrics > * + * { border-inline-start: 1px solid var(--gts-border-hairline); }
+
+@media (max-width: 1279px) {
+  .gts-grid-triptych { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+  .gts-grid-triptych > :last-child { grid-column: 1 / -1; }
+  .gts-grid-ledger   { grid-template-columns: minmax(0,1fr) 17rem; }
+}
+@media (max-width: 1023px) {
+  .gts-grid-editorial,
+  .gts-grid-command,
+  .gts-grid-ledger    { grid-template-columns: minmax(0, 1fr); }
+  .gts-grid-metrics   { grid-template-columns: 1fr 1fr; }
+  .gts-grid-metrics > * { border-inline-start: 0; border-block-start: 1px solid var(--gts-border-hairline); }
+  .gts-grid-metrics > :nth-child(odd) { border-inline-start: 0; }
+  .gts-grid-metrics > :nth-child(even) { border-inline-start: 1px solid var(--gts-border-hairline); }
+  /* Once the cells are equal the lead figure has no extra width to
+     occupy: kept at its wide size it overruns into its neighbour.
+     The hierarchy moves from SIZE to position at this width. */
+  .gts-grid-metrics .gts-metric:first-child .gts-num-lg {
+    font-size: var(--gts-text-xl);
+    font-weight: var(--gts-weight-medium);
+    line-height: var(--gts-leading-normal);
+    letter-spacing: var(--gts-tracking-tight);
+  }
+  /* The full-bleed gutters shrink with the page gutter too. */
+  .gts-metric:first-child, .gts-metric:last-child {
+    padding-inline: var(--gts-space-5);
+  }
+}
+@media (max-width: 767px) {
+  .gts-grid-triptych { grid-template-columns: minmax(0, 1fr); }
+  .gts-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gts-space-4); }
+}
+
+/* ============================================================
+   BREAKPOINTS — the six designed widths
+   ------------------------------------------------------------
+     1440  Command      full density, rail expanded, 12 col
+     1280  Standard     rail expanded, 12 col, tighter gutters
+     1024  Condensed    rail COMPACT, splits collapse to stack
+      768  Tablet       no rail, top nav + drawer, 8 col
+      430  Mobile-L     bottom nav, sheets, 4 col
+      390  Mobile       bottom nav, single column, sticky action
+   ============================================================ */
+
+:root {
+  --gts-bp-mobile:    390px;
+  --gts-bp-mobile-l:  430px;
+  --gts-bp-tablet:    768px;
+  --gts-bp-condensed: 1024px;
+  --gts-bp-standard:  1280px;
+  --gts-bp-command:   1440px;
+}
+
+/* Page gutters step down with viewport. */
+@media (max-width: 1279px) { :root { --gts-gutter-page: var(--gts-space-6);
+                                     --gts-gutter-section: var(--gts-space-10); } }
+@media (max-width: 1023px) { :root { --gts-gutter-page: var(--gts-space-5);
+                                     --gts-gutter-grid: var(--gts-space-4); } }
+@media (max-width: 767px)  { :root { --gts-gutter-page: var(--gts-space-4);
+                                     --gts-gutter-section: var(--gts-space-8);
+                                     --gts-pad-card: var(--gts-space-4); } }
+@media (max-width: 430px)  { :root { --gts-gutter-page: var(--gts-space-4);
+                                     --gts-gutter-block: var(--gts-space-4); } }
+
+/* Touch targets grow on coarse pointers regardless of width. */
+@media (pointer: coarse) {
+  :root { --gts-control-md: var(--gts-touch-min);
+          --gts-control-sm: 2.5rem;
+          --gts-pad-cell-y: var(--gts-space-4); }
+}

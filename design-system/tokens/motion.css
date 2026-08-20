@@ -1,0 +1,114 @@
+/* ============================================================
+   GTS — MOTION LANGUAGE
+   ------------------------------------------------------------
+   PRINCIPLE: motion reports state. It never decorates.
+   Every value below is short — this is a tool people use for
+   eight hours a day, and animation they must WAIT for becomes
+   friction by 3pm. Nothing that blocks input exceeds 220ms.
+   ============================================================ */
+
+:root {
+  /* --- Duration ------------------------------------------ */
+  --gts-dur-instant: 80ms;   /* hover, pressed, checkbox      */
+  --gts-dur-fast:    130ms;  /* tooltips, dropdown, tab swap  */
+  --gts-dur-base:    180ms;  /* DEFAULT: panels, popovers     */
+  --gts-dur-slow:    260ms;  /* drawers, sheets, route change */
+  --gts-dur-slower:  400ms;  /* orchestrated multi-part       */
+  --gts-dur-ambient: 1200ms; /* skeleton, pulse, live ticker  */
+
+  /* --- Easing --------------------------------------------
+     Named by intent so usage is unambiguous at the call site. */
+  --gts-ease-exit:  cubic-bezier(0.4, 0.0, 1, 1);      /* leaving    */
+  --gts-ease-enter: cubic-bezier(0.0, 0.0, 0.2, 1);    /* arriving   */
+  --gts-ease-move:  cubic-bezier(0.4, 0.0, 0.2, 1);    /* on-screen  */
+  --gts-ease-snap:  cubic-bezier(0.3, 0.0, 0.15, 1);   /* decisive   */
+  /* The single expressive curve. Reserved for CONFIRMATION —
+     attendance check-in, payment posted, stock received. It is
+     the only overshoot in the system, so it means something. */
+  --gts-ease-confirm: cubic-bezier(0.2, 1.5, 0.35, 1);
+
+  /* --- Composed transitions ------------------------------ */
+  --gts-tr-control: color var(--gts-dur-instant) var(--gts-ease-move),
+                    background-color var(--gts-dur-instant) var(--gts-ease-move),
+                    border-color var(--gts-dur-instant) var(--gts-ease-move),
+                    box-shadow var(--gts-dur-fast) var(--gts-ease-move);
+  --gts-tr-surface: background-color var(--gts-dur-fast) var(--gts-ease-move),
+                    border-color var(--gts-dur-fast) var(--gts-ease-move);
+  --gts-tr-panel:   transform var(--gts-dur-slow) var(--gts-ease-snap),
+                    opacity var(--gts-dur-base) var(--gts-ease-move);
+
+  /* Stagger step for list/row entrances. Capped at 8 items —
+     beyond that everything lands at once, or long tables crawl. */
+  --gts-stagger: 22ms;
+  --gts-stagger-max: 8;
+}
+
+/* ============================================================
+   KEYFRAMES
+   ============================================================ */
+
+/* Entrances are SHORT and travel a SMALL distance (4–8px).
+   Long slides read as sluggish in dense operational UI. */
+@keyframes gts-fade-in   { from { opacity: 0 } to { opacity: 1 } }
+@keyframes gts-rise      { from { opacity: 0; transform: translateY(6px) }
+                           to   { opacity: 1; transform: none } }
+/* Logical-direction entrance: uses translateX with a sign token
+   so RTL mirrors without a separate keyframe. */
+@keyframes gts-slide-in  { from { opacity: 0;
+                             transform: translateX(calc(8px * var(--gts-dir, 1))) }
+                           to   { opacity: 1; transform: none } }
+@keyframes gts-drawer-in { from { transform: translateX(calc(100% * var(--gts-dir, 1))) }
+                           to   { transform: none } }
+@keyframes gts-sheet-in  { from { transform: translateY(100%) }
+                           to   { transform: none } }
+@keyframes gts-scale-in  { from { opacity: 0; transform: scale(0.97) }
+                           to   { opacity: 1; transform: none } }
+
+/* CONFIRMATION — the attendance check-in / payment-posted mark. */
+@keyframes gts-confirm   { 0%   { transform: scale(0.6); opacity: 0 }
+                           60%  { transform: scale(1.06); opacity: 1 }
+                           100% { transform: scale(1); opacity: 1 } }
+/* The geofence pulse: presence, proximity, "we are listening". */
+@keyframes gts-pulse-ring{ 0%   { transform: scale(0.85); opacity: 0.55 }
+                           70%  { transform: scale(1.6);  opacity: 0 }
+                           100% { transform: scale(1.6);  opacity: 0 } }
+/* Value change flash — a ledger figure updated in place. */
+@keyframes gts-flash-up  { 0% { background-color: var(--gts-success-bg) }
+                           100% { background-color: transparent } }
+@keyframes gts-flash-down{ 0% { background-color: var(--gts-danger-bg) }
+                           100% { background-color: transparent } }
+/* Stock movement — directional travel for inventory transfers. */
+@keyframes gts-travel    { 0%   { transform: translateX(calc(-6px * var(--gts-dir,1))); opacity: 0 }
+                           25%  { opacity: 1 }
+                           100% { transform: translateX(calc(6px * var(--gts-dir,1))); opacity: 0 } }
+/* Loading: a sweep, not a spinner, for skeleton surfaces. */
+@keyframes gts-sweep     { from { background-position: -200% 0 }
+                           to   { background-position: 200% 0 } }
+@keyframes gts-spin      { to { transform: rotate(360deg) } }
+@keyframes gts-indeterminate { 0%   { transform: translateX(-100%) scaleX(0.3) }
+                               50%  { transform: translateX(0%)    scaleX(0.5) }
+                               100% { transform: translateX(100%)  scaleX(0.3) } }
+
+/* Direction sign: flips every directional animation for RTL.
+   Set once, consumed by all keyframes above. */
+:root,[dir='ltr'] { --gts-dir: 1 }
+[dir='rtl']       { --gts-dir: -1 }
+
+/* ============================================================
+   REDUCED MOTION
+   Not "disable animation" — REPLACE movement with instant state.
+   Feedback must survive; only travel and looping are removed.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Opacity-only feedback is retained so confirmations still read. */
+  .gts-confirm-mark { animation: gts-fade-in 1ms both !important; }
+  .gts-pulse-ring   { display: none !important; }
+  .gts-skeleton     { animation: none !important;
+                      background: var(--gts-bg-inset) !important; }
+}
