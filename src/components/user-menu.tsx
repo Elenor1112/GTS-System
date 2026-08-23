@@ -15,6 +15,11 @@ import type { Dictionary } from '@/lib/i18n';
  * rather than in Administration because they are personal to the person
  * looking at the screen, not a setting for the organisation.
  */
+type UserMenuDict = {
+  preferences: Dictionary['preferences'];
+  nav: Pick<Dictionary['nav'], 'account' | 'signOut'>;
+};
+
 export function UserMenu({
   nameEn,
   email,
@@ -28,7 +33,7 @@ export function UserMenu({
   roleName: string;
   theme: Theme;
   locale: Locale;
-  dict: Dictionary;
+  dict: UserMenuDict;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);

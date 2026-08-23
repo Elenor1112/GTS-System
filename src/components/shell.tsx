@@ -161,7 +161,10 @@ export async function Shell({
           roleName={actor.roleNameEn}
           theme={theme}
           locale={locale}
-          dict={dict}
+          dict={{
+            preferences: dict.preferences,
+            nav: { account: dict.nav.account, signOut: dict.nav.signOut },
+          }}
         />
       </nav>
 

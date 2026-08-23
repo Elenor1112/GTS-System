@@ -113,7 +113,7 @@ export interface FinanceDict {
         unitPriceLabel: string;
         discountLabel: string;
         vatLabel: string;
-        removeLine: (n: number) => string;
+        removeLine: string;
         removeLabel: string;
         addLine: string;
         previewNote: string;
@@ -407,7 +407,7 @@ export const en: FinanceDict = {
         unitPriceLabel: 'Unit price',
         discountLabel: 'Discount',
         vatLabel: 'VAT',
-        removeLine: (n) => `Remove line ${n}`,
+        removeLine: 'Remove line {n}',
         removeLabel: 'Remove',
         addLine: 'Add a line',
         previewNote: 'A preview. The server recomputes every figure from the lines above and stores its own — nothing here is submitted.',
@@ -701,7 +701,7 @@ export const ar: FinanceDict = {
         unitPriceLabel: 'سعر الوحدة',
         discountLabel: 'الخصم',
         vatLabel: 'ض.ق.م',
-        removeLine: (n) => `حذف البند ${n}`,
+        removeLine: 'حذف البند {n}',
         removeLabel: 'حذف',
         addLine: 'إضافة بند',
         previewNote: 'هذه معاينة فقط. يعيد الخادم احتساب كل رقم من البنود أعلاه ويخزّن نسخته الخاصة — لا شيء هنا يُرسل فعليًا.',

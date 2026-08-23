@@ -501,7 +501,7 @@ export function BillForm({
                   type="button"
                   className="gts-btn gts-btn-ghost gts-btn-sm"
                   onClick={() => setLines((c) => c.filter((l) => l.key !== line.key))}
-                  aria-label={dict.removeLine(index + 1)}
+                  aria-label={dict.removeLine.replace('{n}', String(index + 1))}
                 >
                   {dict.removeLabel}
                 </button>
