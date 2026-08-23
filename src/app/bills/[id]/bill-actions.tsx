@@ -9,7 +9,7 @@ import { PAYMENT_METHODS } from './payment-methods';
 import { submitBillWorkflow, submitPayment } from '../actions';
 
 type WorkflowDict = Dictionary['finance']['bills']['workflow'];
-type PaymentsDict = Dictionary['finance']['bills']['detail']['payments'];
+type PaymentsDict = Omit<Dictionary['finance']['bills']['detail']['payments'], 'title'>;
 type PaymentMethodsDict = Dictionary['finance']['bills']['paymentMethods'];
 type StatusDict = Dictionary['finance']['bills']['status'];
 

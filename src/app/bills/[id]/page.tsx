@@ -349,7 +349,7 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
                 billId={bill.id}
                 outstanding={outstanding.toString()}
                 suggestedWht={bill.whtAmount.toString()}
-                dict={dict.finance.bills.detail.payments}
+                dict={(({ title: _title, ...rest }) => rest)(dict.finance.bills.detail.payments)}
                 paymentMethods={dict.finance.bills.paymentMethods}
                 statuses={dict.finance.bills.status}
               />
