@@ -6,6 +6,7 @@ import { requirePermission } from '@/lib/auth';
 import { can } from '@/lib/permissions';
 import { listWarehouses } from '@/lib/services/catalogue';
 import { GOVERNORATES } from '@/lib/egypt';
+import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = { title: 'Storage — GTS' };
 export const dynamic = 'force-dynamic';
@@ -20,7 +21,8 @@ export const dynamic = 'force-dynamic';
  */
 export default async function StoragePage() {
   const actor = await requirePermission('warehouses.view');
-  const warehouses = await listWarehouses();
+  const [warehouses, dict] = await Promise.all([listWarehouses(), t()]);
+  const d = dict.catalogue.warehouses.list;
 
   const governorate = (code: number | null) =>
     code ? GOVERNORATES.find((g) => g.code === code)?.en ?? null : null;
@@ -31,15 +33,15 @@ export default async function StoragePage() {
     <Shell active="/storage" domain="inventory">
       <main className="gts-page">
         <PageHead
-          overline="Operations"
-          title="Storage"
-          lede={`${warehouses.length} warehouse${warehouses.length === 1 ? '' : 's'}${
-            totalUnits > 0 ? ` · ${totalUnits.toLocaleString('en-US')} units on hand` : ''
+          overline={d.overline}
+          title={d.title}
+          lede={`${warehouses.length} ${warehouses.length === 1 ? d.countOne : d.countOther}${
+            totalUnits > 0 ? ` · ${totalUnits.toLocaleString('en-US')} ${d.unitsSuffix}` : ''
           }`}
           actions={
             can(actor, 'warehouses.manage') ? (
               <a href="/storage/new" className="gts-btn gts-btn-accent">
-                New warehouse
+                {d.newWarehouse}
               </a>
             ) : undefined
           }
@@ -47,12 +49,12 @@ export default async function StoragePage() {
 
         {warehouses.length === 0 ? (
           <Empty
-            title="No warehouses"
-            body="A warehouse is where stock physically sits. Create one before receiving anything."
+            title={d.emptyTitle}
+            body={d.emptyBody}
             action={
               can(actor, 'warehouses.manage') ? (
                 <a href="/storage/new" className="gts-btn gts-btn-accent">
-                  New warehouse
+                  {d.newWarehouse}
                 </a>
               ) : undefined
             }
@@ -63,7 +65,7 @@ export default async function StoragePage() {
               <article key={warehouse.id} className="gts-panel">
                 <div className="gts-panel-head">
                   <span className="gts-overline">{warehouse.code}</span>
-                  {!warehouse.isActive && <Status tone="neutral">inactive</Status>}
+                  {!warehouse.isActive && <Status tone="neutral">{dict.common.inactive}</Status>}
                 </div>
                 <div className="gts-panel-body">
                   <a href={`/storage/${warehouse.id}`} className="gts-list-title">
@@ -72,18 +74,18 @@ export default async function StoragePage() {
                   <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-2)' }}>
                     {[governorate(warehouse.governorateCode), warehouse.addressLine]
                       .filter(Boolean)
-                      .join(' · ') || 'No address recorded'}
+                      .join(' · ') || d.noAddress}
                   </p>
 
                   <div className="gts-stat-row" style={{ marginBlockStart: 'var(--gts-space-5)' }}>
                     <div className="gts-stat">
-                      <p className="gts-overline">Products</p>
+                      <p className="gts-overline">{d.colProducts}</p>
                       <p className="gts-stat-value">
                         <span className="gts-num gts-num-md">{warehouse.distinctProducts}</span>
                       </p>
                     </div>
                     <div className="gts-stat">
-                      <p className="gts-overline">Units</p>
+                      <p className="gts-overline">{d.colUnits}</p>
                       <p className="gts-stat-value">
                         <span className="gts-num gts-num-md">
                           {warehouse.totalUnits.toString()}
@@ -94,7 +96,7 @@ export default async function StoragePage() {
 
                   {warehouse.reservedUnits.greaterThan(0) && (
                     <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-3)' }}>
-                      {warehouse.reservedUnits.toString()} reserved for project allocations
+                      {warehouse.reservedUnits.toString()} {d.reservedForProjects}
                     </p>
                   )}
 
@@ -106,7 +108,7 @@ export default async function StoragePage() {
                       className="gts-btn gts-btn-ghost gts-btn-sm"
                       style={{ marginBlockStart: 'var(--gts-space-4)' }}
                     >
-                      Open in Google Maps
+                      {d.openInMaps}
                     </a>
                   )}
                 </div>

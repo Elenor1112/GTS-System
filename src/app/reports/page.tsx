@@ -2,11 +2,14 @@ import type { Metadata } from 'next';
 
 import { Amount, Region, Status, Sparkline } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
+import { PrintPageButton } from '@/components/print-page-button';
 import { requirePermission } from '@/lib/auth';
 import {
   financialReport, inventoryReport, attendanceReport, projectReport, defaultRange,
 } from '@/lib/services/reports';
 import { CURRENCY, VAT_STANDARD } from '@/lib/egypt';
+import { getLocale } from '@/lib/preferences';
+import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = { title: 'Reports — GTS' };
 export const dynamic = 'force-dynamic';
@@ -32,6 +35,8 @@ export default async function ReportsPage({
 }) {
   await requirePermission('reports.view');
   const params = await searchParams;
+  const dict = await t();
+  const locale = await getLocale();
 
   const tab: Tab = TABS.includes(params.tab as Tab) ? (params.tab as Tab) : 'financial';
 
@@ -58,9 +63,10 @@ export default async function ReportsPage({
     <Shell active="/reports" domain="admin">
       <main className="gts-page">
         <PageHead
-          overline="System"
-          title="Reports"
-          lede="Computed from the transaction tables at the moment you open them. Nothing here is cached, so nothing here can disagree with the ledger."
+          overline={dict.overview.reports.system}
+          title={dict.overview.reports.title}
+          lede={dict.overview.reports.lede}
+          actions={<PrintPageButton />}
         />
 
         <nav className="gts-tabs" aria-label="Report">
@@ -71,7 +77,7 @@ export default async function ReportsPage({
               className="gts-tab"
               aria-current={tab === name ? 'page' : undefined}
             >
-              {name}
+              {dict.overview.reports.tabs[name]}
             </a>
           ))}
         </nav>
@@ -83,18 +89,18 @@ export default async function ReportsPage({
             <input type="hidden" name="tab" value={tab} />
             <div className="gts-field">
               <label className="gts-label" htmlFor="from">
-                From
+                {dict.overview.reports.from}
               </label>
               <input id="from" name="from" type="date" defaultValue={iso(range.from)} className="gts-input" />
             </div>
             <div className="gts-field">
               <label className="gts-label" htmlFor="to">
-                To
+                {dict.overview.reports.to}
               </label>
               <input id="to" name="to" type="date" defaultValue={iso(range.to)} className="gts-input" />
             </div>
             <button type="submit" className="gts-btn gts-btn-secondary">
-              Apply
+              {dict.overview.reports.apply}
             </button>
           </form>
         )}
@@ -111,59 +117,57 @@ export default async function ReportsPage({
               invites the reader to subtract figures that do not describe
               the same transactions.
             */}
-            <Region title="Invoiced in the period">
+            <Region title={dict.overview.reports.invoicedInPeriod}>
               <div className="gts-stat-row">
-                <Figure label="Billed out" value={financial.billed.toNumber()} />
-                <Figure label="Purchased" value={financial.purchased.toNumber()} />
+                <Figure label={dict.overview.reports.billedOut} value={financial.billed.toNumber()} />
+                <Figure label={dict.overview.reports.purchased} value={financial.purchased.toNumber()} />
                 <Figure
-                  label="Gross margin"
+                  label={dict.overview.reports.grossMargin}
                   value={financial.grossMargin.toNumber()}
                   tone={financial.grossMargin.isNegative() ? 'danger' : undefined}
                 />
               </div>
               <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
-                By issue date. Gross margin is billed minus purchased — it is{' '}
-                <strong>not</strong> profit, carrying no labour, rent or overhead.
+                {dict.overview.reports.invoicedNote}{' '}
+                <strong>{dict.overview.reports.invoicedNoteStrong}</strong> profit, carrying no labour, rent or overhead.
               </p>
             </Region>
 
-            <Region title="Cash moved in the period">
+            <Region title={dict.overview.reports.cashMovedInPeriod}>
               <div className="gts-stat-row">
-                <Figure label="Collected" value={financial.collected.toNumber()} />
-                <Figure label="Paid out" value={financial.paid.toNumber()} />
+                <Figure label={dict.overview.reports.collected} value={financial.collected.toNumber()} />
+                <Figure label={dict.overview.reports.paidOut} value={financial.paid.toNumber()} />
                 <Figure
-                  label="Net cash"
+                  label={dict.overview.reports.netCash}
                   value={financial.collected.minus(financial.paid).toNumber()}
                   tone={financial.collected.minus(financial.paid).isNegative() ? 'warning' : undefined}
                 />
               </div>
               <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
-                By receipt date, so these settle invoices from this period{' '}
-                <em>and earlier ones</em>. They are not comparable with the invoiced figures
+                {dict.overview.reports.cashNote}{' '}
+                <em>{dict.overview.reports.cashNoteEm}</em>. They are not comparable with the invoiced figures
                 above and should not be subtracted from them.
               </p>
             </Region>
 
-            <Region title={`VAT · standard rate ${VAT_STANDARD}%`}>
+            <Region title={`${dict.overview.reports.vatStandardRate} ${VAT_STANDARD}%`}>
               <div className="gts-stat-row">
-                <Figure label="VAT charged" value={financial.vatCharged.toNumber()} />
-                <Figure label="VAT paid on purchases" value={financial.vatPaid.toNumber()} />
+                <Figure label={dict.overview.reports.vatCharged} value={financial.vatCharged.toNumber()} />
+                <Figure label={dict.overview.reports.vatPaidOnPurchases} value={financial.vatPaid.toNumber()} />
                 <Figure
-                  label="Net VAT position"
+                  label={dict.overview.reports.netVatPosition}
                   value={financial.vatPosition.toNumber()}
                   tone={financial.vatPosition.greaterThan(0) ? 'warning' : undefined}
                 />
-                <Figure label="Withheld at source" value={financial.withheld.toNumber()} />
+                <Figure label={dict.overview.reports.withheldAtSource} value={financial.withheld.toNumber()} />
               </div>
               <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
-                A positive net position is owed to the Egyptian Tax Authority for the period.
-                Withholding is separate: buyers deduct it from payments and remit it on our
-                behalf, so it reduces cash received rather than what was invoiced.
+                {dict.overview.reports.vatNote}
               </p>
             </Region>
 
             {financial.byMonth.length > 1 && (
-              <Region title="By month">
+              <Region title={dict.overview.reports.byMonth}>
                 <div style={{ color: 'var(--gts-domain-finance)' }}>
                   <Sparkline data={financial.byMonth.map((m) => m.billed)} width={640} height={72} />
                 </div>
@@ -171,9 +175,9 @@ export default async function ReportsPage({
                   <table className="gts-table gts-table-compact">
                     <thead>
                       <tr>
-                        <th scope="col">Month</th>
-                        <th scope="col" className="gts-cell-num">Billed</th>
-                        <th scope="col" className="gts-cell-num">Collected</th>
+                        <th scope="col">{dict.overview.reports.month}</th>
+                        <th scope="col" className="gts-cell-num">{dict.overview.reports.billed}</th>
+                        <th scope="col" className="gts-cell-num">{dict.overview.reports.collected}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -181,10 +185,10 @@ export default async function ReportsPage({
                         <tr key={month.month}>
                           <th scope="row">{month.month}</th>
                           <td className="gts-cell-num">
-                            <Amount value={month.billed} size="sm" currency={null} />
+                            <Amount value={month.billed} size="sm" currency={null} locale={locale} />
                           </td>
                           <td className="gts-cell-num">
-                            <Amount value={month.collected} size="sm" currency={null} />
+                            <Amount value={month.collected} size="sm" currency={null} locale={locale} />
                           </td>
                         </tr>
                       ))}
@@ -198,24 +202,24 @@ export default async function ReportsPage({
 
         {/* ---------- Inventory ---------- */}
         {inventory && (
-          <Region title="Product movement">
+          <Region title={dict.overview.reports.productMovement}>
             {inventory.length === 0 ? (
-              <Empty title="No products" body="Nothing to report on." />
+              <Empty title={dict.overview.reports.noProducts} body={dict.overview.reports.nothingToReport} />
             ) : (
               <div className="gts-table-scroll">
                 <table className="gts-table gts-table-comfortable">
                   <caption className="gts-sr">
-                    Stock movement in the period, and the level now
+                    {dict.overview.reports.stockMovementCaption}
                   </caption>
                   <thead>
                     <tr>
-                      <th scope="col">Product</th>
-                      <th scope="col" className="gts-cell-num">Received</th>
-                      <th scope="col" className="gts-cell-num">Issued</th>
-                      <th scope="col" className="gts-cell-num">Returned</th>
-                      <th scope="col" className="gts-cell-num">Damaged</th>
-                      <th scope="col" className="gts-cell-num">Adjusted</th>
-                      <th scope="col" className="gts-cell-num">On hand now</th>
+                      <th scope="col">{dict.overview.reports.product}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.received}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.issued}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.returned}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.damaged}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.adjusted}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.onHandNow}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -264,22 +268,22 @@ export default async function ReportsPage({
 
         {/* ---------- Projects ---------- */}
         {projects && (
-          <Region title="Project position">
+          <Region title={dict.overview.reports.projectPosition}>
             {projects.length === 0 ? (
-              <Empty title="No projects" body="Nothing to report on." />
+              <Empty title={dict.overview.reports.noProjects} body={dict.overview.reports.nothingToReport} />
             ) : (
               <div className="gts-table-scroll">
                 <table className="gts-table gts-table-comfortable">
                   <thead>
                     <tr>
-                      <th scope="col">Project</th>
-                      <th scope="col">Status</th>
-                      <th scope="col" className="gts-cell-num">Budget</th>
-                      <th scope="col" className="gts-cell-num">Billed</th>
-                      <th scope="col" className="gts-cell-num">Collected</th>
-                      <th scope="col" className="gts-cell-num">Materials</th>
-                      <th scope="col" className="gts-cell-num">Damaged</th>
-                      <th scope="col" className="gts-cell-num">Days</th>
+                      <th scope="col">{dict.overview.reports.project}</th>
+                      <th scope="col">{dict.overview.reports.status}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.budget}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.billed}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.collected}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.materials}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.damaged}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.days}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -301,10 +305,10 @@ export default async function ReportsPage({
                         <td className="gts-cell-num">
                           {project.budget ? (
                             <>
-                              <Amount value={project.budget.toNumber()} size="sm" currency={null} />
+                              <Amount value={project.budget.toNumber()} size="sm" currency={null} locale={locale} />
                               {project.consumedPct !== null && (
                                 <span className="gts-meta gts-cell-sub">
-                                  {project.consumedPct}% billed
+                                  {project.consumedPct}% {dict.overview.reports.percentBilled}
                                 </span>
                               )}
                             </>
@@ -313,18 +317,18 @@ export default async function ReportsPage({
                           )}
                         </td>
                         <td className="gts-cell-num">
-                          <Amount value={project.billed.toNumber()} size="sm" currency={null} />
+                          <Amount value={project.billed.toNumber()} size="sm" currency={null} locale={locale} />
                         </td>
                         <td className="gts-cell-num">
-                          <Amount value={project.collected.toNumber()} size="sm" currency={null} />
+                          <Amount value={project.collected.toNumber()} size="sm" currency={null} locale={locale} />
                         </td>
                         <td className="gts-cell-num">
-                          <Amount value={project.materials.toNumber()} size="sm" currency={null} />
+                          <Amount value={project.materials.toNumber()} size="sm" currency={null} locale={locale} />
                         </td>
                         <td className="gts-cell-num">
                           {project.damaged.greaterThan(0) ? (
                             <Status tone="warning">
-                              <Amount value={project.damaged.toNumber()} size="sm" currency={null} />
+                              <Amount value={project.damaged.toNumber()} size="sm" currency={null} locale={locale} />
                             </Status>
                           ) : (
                             <span className="gts-meta">—</span>
@@ -344,22 +348,22 @@ export default async function ReportsPage({
 
         {/* ---------- Attendance ---------- */}
         {attendance && (
-          <Region title="Attendance">
+          <Region title={dict.overview.reports.attendance}>
             {attendance.length === 0 ? (
-              <Empty title="No employees" body="Nothing to report on." />
+              <Empty title={dict.overview.reports.noEmployees} body={dict.overview.reports.nothingToReport} />
             ) : (
               <div className="gts-table-scroll">
                 <table className="gts-table gts-table-comfortable">
                   <caption className="gts-sr">
-                    Days attended in the period, and lateness
+                    {dict.overview.reports.attendanceCaption}
                   </caption>
                   <thead>
                     <tr>
-                      <th scope="col">Employee</th>
-                      <th scope="col" className="gts-cell-num">Days on site</th>
-                      <th scope="col" className="gts-cell-num">Late</th>
-                      <th scope="col" className="gts-cell-num">Minutes late</th>
-                      <th scope="col" className="gts-cell-num">Hours worked</th>
+                      <th scope="col">{dict.overview.reports.employee}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.daysOnSite}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.late}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.minutesLate}</th>
+                      <th scope="col" className="gts-cell-num">{dict.overview.reports.hoursWorked}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -390,7 +394,7 @@ export default async function ReportsPage({
                           ) : (
                             // Hours need a check-out; a day with only a
                             // check-in is present but not measured.
-                            <span className="gts-meta">not checked out</span>
+                            <span className="gts-meta">{dict.overview.reports.notCheckedOut}</span>
                           )}
                         </td>
                       </tr>

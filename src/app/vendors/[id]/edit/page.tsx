@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Shell, PageHead } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { t } from '@/lib/i18n';
 import { VendorForm } from '../../vendor-form';
 
 export const dynamic = 'force-dynamic';
@@ -22,15 +23,20 @@ export default async function EditVendorPage({ params }: { params: Promise<{ id:
   await requirePermission('vendors.edit');
   const { id } = await params;
 
-  const vendor = await db.vendor.findFirst({ where: { id, deletedAt: null } });
+  const [vendor, dict] = await Promise.all([
+    db.vendor.findFirst({ where: { id, deletedAt: null } }),
+    t(),
+  ]);
   if (!vendor) notFound();
+  const d = dict.catalogue.vendors;
 
   return (
     <Shell active="/vendors" domain="vendors">
       <main className="gts-page">
-        <PageHead overline={`Vendor · ${vendor.code}`} title={`Edit ${vendor.nameEn}`} />
+        <PageHead overline={`Vendor · ${vendor.code}`} title={`${d.edit.editPrefix} ${vendor.nameEn}`} />
         <VendorForm
           mode="edit"
+          dict={d.form}
           values={{
             id: vendor.id,
             code: vendor.code,

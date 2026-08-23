@@ -9,6 +9,8 @@ import { clientDetail } from '@/lib/services/clients';
 import { clientSummary, clientActivity, daysOverdue } from '@/lib/services/accounts';
 import { GOVERNORATES, TRN } from '@/lib/egypt';
 import { formatDate } from '@/lib/format';
+import { t } from '@/lib/i18n';
+import { getLocale } from '@/lib/preferences';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +37,9 @@ export async function generateMetadata({
 export default async function ClientPage({ params }: { params: Promise<{ id: string }> }) {
   const actor = await requirePermission('clients.view');
   const { id } = await params;
+  const dict = await t();
+  const locale = await getLocale();
+  const d = dict.operations.clients.detail;
 
   const client = await clientDetail(id);
   if (!client) notFound();
@@ -66,17 +71,22 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
             <>
               {can(actor, 'projects.create') && (
                 <a href={`/projects/new?clientId=${client.id}`} className="gts-btn gts-btn-secondary">
-                  New project
+                  {d.newProject}
                 </a>
               )}
               {can(actor, 'bills.create') && (
                 <a href={`/bills/new?clientId=${client.id}`} className="gts-btn gts-btn-secondary">
-                  New bill
+                  {d.newBill}
                 </a>
               )}
               {can(actor, 'clients.edit') && (
                 <a href={`/clients/${client.id}/edit`} className="gts-btn gts-btn-primary">
-                  Edit
+                  {d.edit}
+                </a>
+              )}
+              {seesMoney && (
+                <a href={`/clients/${client.id}/print`} className="gts-btn gts-btn-secondary">
+                  {d.printStatement}
                 </a>
               )}
             </>
@@ -85,36 +95,38 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
 
         {/* ---------- The account position ---------- */}
         {seesMoney && (
-          <Region title="Account">
+          <Region title={d.accountTitle}>
             <div className="gts-stat-row">
-              <Figure label="Billed to date" value={summary.billed.toNumber()} />
-              <Figure label="Collected" value={summary.paid.toNumber()} />
-              <Figure label="Withheld at source" value={summary.withheld.toNumber()} />
+              <Figure label={d.figureBilledToDate} value={summary.billed.toNumber()} locale={locale} />
+              <Figure label={d.figureCollected} value={summary.paid.toNumber()} locale={locale} />
+              <Figure label={d.figureWithheld} value={summary.withheld.toNumber()} locale={locale} />
               <Figure
-                label="Outstanding"
+                label={d.figureOutstanding}
                 value={summary.outstanding.toNumber()}
                 tone={summary.outstanding.greaterThan(0) ? 'warning' : undefined}
+                locale={locale}
               />
               <Figure
-                label="Overdue"
+                label={d.figureOverdue}
                 value={summary.overdue.toNumber()}
                 tone={summary.overdue.greaterThan(0) ? 'danger' : undefined}
+                locale={locale}
               />
             </div>
 
             {summary.ageing.total.greaterThan(0) && (
               <>
                 <p className="gts-overline" style={{ marginBlockStart: 'var(--gts-space-6)' }}>
-                  Ageing
+                  {d.ageingTitle}
                 </p>
                 <div className="gts-ageing">
                   {(
                     [
-                      ['Current', summary.ageing.current, 'success'],
-                      ['1–30 days', summary.ageing.days1to30, 'info'],
-                      ['31–60 days', summary.ageing.days31to60, 'warning'],
-                      ['61–90 days', summary.ageing.days61to90, 'warning'],
-                      ['Over 90 days', summary.ageing.over90, 'danger'],
+                      [d.ageingCurrent, summary.ageing.current, 'success'],
+                      [d.ageing1to30, summary.ageing.days1to30, 'info'],
+                      [d.ageing31to60, summary.ageing.days31to60, 'warning'],
+                      [d.ageing61to90, summary.ageing.days61to90, 'warning'],
+                      [d.ageingOver90, summary.ageing.over90, 'danger'],
                     ] as const
                   ).map(([label, amount, tone]) => (
                     <div key={label} className="gts-ageing-bucket" data-tone={tone}>
@@ -122,7 +134,7 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
                       {amount.isZero() ? (
                         <span className="gts-meta">—</span>
                       ) : (
-                        <Amount value={amount.toNumber()} size="sm" currency={null} />
+                        <Amount value={amount.toNumber()} size="sm" currency={null} locale={locale} />
                       )}
                     </div>
                   ))}
@@ -132,29 +144,29 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
 
             {client.creditLimit.greaterThan(0) && (
               <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
-                Credit limit <Amount value={client.creditLimit.toNumber()} size="sm" currency={null} />
+                {d.creditLimit} <Amount value={client.creditLimit.toNumber()} size="sm" currency={null} locale={locale} />
                 {summary.outstanding.greaterThan(client.creditLimit) && (
                   <>
                     {' · '}
-                    <Status tone="danger">Over limit</Status>
+                    <Status tone="danger">{d.overLimit}</Status>
                   </>
                 )}
-                {' · '}payment terms {client.paymentTermsDays} days
+                {' · '}{d.paymentTerms} {client.paymentTermsDays} days
               </p>
             )}
           </Region>
         )}
 
         {/* ---------- Projects ---------- */}
-        <Region title={`Projects (${client.projects.length})`}>
+        <Region title={`${d.projectsTitle} (${client.projects.length})`}>
           {client.projects.length === 0 ? (
             <Empty
-              title="No projects"
-              body="A project is where work, people, materials and bills come together for this client."
+              title={d.emptyProjectsTitle}
+              body={d.emptyProjectsBody}
               action={
                 can(actor, 'projects.create') ? (
                   <a href={`/projects/new?clientId=${client.id}`} className="gts-btn gts-btn-accent">
-                    New project
+                    {d.newProject}
                   </a>
                 ) : undefined
               }
@@ -164,11 +176,11 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
               <table className="gts-table gts-table-comfortable">
                 <thead>
                   <tr>
-                    <th scope="col">Project</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Site</th>
-                    <th scope="col" className="gts-cell-num">Team</th>
-                    <th scope="col" className="gts-cell-num">Budget</th>
+                    <th scope="col">{d.colProject}</th>
+                    <th scope="col">{d.colStatus}</th>
+                    <th scope="col">{d.colSite}</th>
+                    <th scope="col" className="gts-cell-num">{d.colTeam}</th>
+                    <th scope="col" className="gts-cell-num">{d.colBudget}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -182,7 +194,7 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
                       </th>
                       <td>
                         <Status tone={projectTone(project.status)}>
-                          {project.status.toLowerCase().replace('_', ' ')}
+                          {projectStatusLabel(dict, project.status)}
                         </Status>
                       </td>
                       <td>
@@ -196,7 +208,7 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
                             {project.location.addressLine}
                           </a>
                         ) : (
-                          <span className="gts-meta">Not pinned</span>
+                          <span className="gts-meta">{d.notPinned}</span>
                         )}
                       </td>
                       <td className="gts-cell-num">
@@ -204,7 +216,7 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
                       </td>
                       <td className="gts-cell-num">
                         {project.budget ? (
-                          <Amount value={project.budget.toNumber()} size="sm" currency={null} />
+                          <Amount value={project.budget.toNumber()} size="sm" currency={null} locale={locale} />
                         ) : (
                           <span className="gts-meta">—</span>
                         )}
@@ -219,19 +231,19 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
 
         {/* ---------- Goods ---------- */}
         {can(actor, 'inventory.view') && client.productPositions.length > 0 && (
-          <Region title="Goods">
+          <Region title={d.goodsTitle}>
             <div className="gts-table-scroll">
               <table className="gts-table gts-table-comfortable">
                 <caption className="gts-sr">
-                  Products delivered to this client, and what came back
+                  {d.goodsCaption}
                 </caption>
                 <thead>
                   <tr>
-                    <th scope="col">Product</th>
-                    <th scope="col" className="gts-cell-num">Delivered</th>
-                    <th scope="col" className="gts-cell-num">Returned</th>
-                    <th scope="col" className="gts-cell-num">Damaged</th>
-                    <th scope="col" className="gts-cell-num">Retained</th>
+                    <th scope="col">{d.colProduct}</th>
+                    <th scope="col" className="gts-cell-num">{d.colDelivered}</th>
+                    <th scope="col" className="gts-cell-num">{d.colReturned}</th>
+                    <th scope="col" className="gts-cell-num">{d.colDamaged}</th>
+                    <th scope="col" className="gts-cell-num">{d.colRetained}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -269,21 +281,21 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
 
         {/* ---------- Bills ---------- */}
         {can(actor, 'bills.view') && (
-          <Region title={`Bills (${client.bills.length})`}>
+          <Region title={`${d.billsTitle} (${client.bills.length})`}>
             {client.bills.length === 0 ? (
-              <Empty title="No bills" body="Nothing has been billed to this client yet." />
+              <Empty title={d.emptyBillsTitle} body={d.emptyBillsBody} />
             ) : (
               <div className="gts-table-scroll">
                 <table className="gts-table gts-table-comfortable">
                   <thead>
                     <tr>
-                      <th scope="col">Number</th>
-                      <th scope="col">Project</th>
-                      <th scope="col">Issued</th>
-                      <th scope="col">Due</th>
-                      <th scope="col">Status</th>
-                      <th scope="col" className="gts-cell-num">Total</th>
-                      <th scope="col" className="gts-cell-num">Outstanding</th>
+                      <th scope="col">{d.colNumber}</th>
+                      <th scope="col">{d.colProject}</th>
+                      <th scope="col">{d.colIssued}</th>
+                      <th scope="col">{d.colDue}</th>
+                      <th scope="col">{d.colStatus}</th>
+                      <th scope="col" className="gts-cell-num">{d.colTotal}</th>
+                      <th scope="col" className="gts-cell-num">{d.colOutstanding}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -301,11 +313,11 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
                             </a>
                           </th>
                           <td>{bill.project?.code ?? <span className="gts-meta">—</span>}</td>
-                          <td>{formatDate(bill.issuedOn.toISOString())}</td>
+                          <td>{formatDate(bill.issuedOn.toISOString(), locale)}</td>
                           <td>
-                            {formatDate(bill.dueOn.toISOString())}
+                            {formatDate(bill.dueOn.toISOString(), locale)}
                             {late > 0 && (
-                              <span className="gts-meta gts-cell-sub">{late} days late</span>
+                              <span className="gts-meta gts-cell-sub">{late} {d.daysLate}</span>
                             )}
                           </td>
                           <td>
@@ -314,13 +326,13 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
                             </Status>
                           </td>
                           <td className="gts-cell-num">
-                            <Amount value={bill.total.toNumber()} size="sm" currency={null} />
+                            <Amount value={bill.total.toNumber()} size="sm" currency={null} locale={locale} />
                           </td>
                           <td className="gts-cell-num">
                             {outstanding.lessThanOrEqualTo(0) ? (
-                              <span className="gts-meta">settled</span>
+                              <span className="gts-meta">{d.settled}</span>
                             ) : (
-                              <Amount value={outstanding.toNumber()} size="sm" currency={null} />
+                              <Amount value={outstanding.toNumber()} size="sm" currency={null} locale={locale} />
                             )}
                           </td>
                         </tr>
@@ -334,11 +346,11 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
         )}
 
         {/* ---------- Activity ---------- */}
-        <Region title="Activity">
+        <Region title={d.activityTitle}>
           {activity.length === 0 ? (
             <Empty
-              title="Nothing has happened yet"
-              body="Projects, bills, payments and goods movements appear here as they occur."
+              title={d.emptyActivityTitle}
+              body={d.emptyActivityBody}
             />
           ) : (
             <ol className="gts-timeline">
@@ -358,9 +370,9 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
                     <p className="gts-meta">{event.detail}</p>
                   </div>
                   <div className="gts-timeline-aside">
-                    <span className="gts-meta">{formatDate(event.at.toISOString())}</span>
+                    <span className="gts-meta">{formatDate(event.at.toISOString(), locale)}</span>
                     {event.amount && seesMoney && (
-                      <Amount value={event.amount.toNumber()} size="sm" currency={null} />
+                      <Amount value={event.amount.toNumber()} size="sm" currency={null} locale={locale} />
                     )}
                   </div>
                 </li>
@@ -377,19 +389,33 @@ function Figure({
   label,
   value,
   tone,
+  locale,
 }: {
   label: string;
   value: number;
   tone?: 'danger' | 'warning';
+  locale: 'en' | 'ar';
 }) {
   return (
     <div className="gts-stat">
       <p className="gts-overline">{label}</p>
       <p className={tone ? `gts-stat-value gts-stat-${tone}` : 'gts-stat-value'}>
-        <Amount value={value} size="md" />
+        <Amount value={value} size="md" locale={locale} />
       </p>
     </div>
   );
+}
+
+function projectStatusLabel(dict: Awaited<ReturnType<typeof t>>, status: string) {
+  const f = dict.operations.projects.form;
+  switch (status) {
+    case 'PLANNING': return f.statusPlanning;
+    case 'ACTIVE': return f.statusActive;
+    case 'ON_HOLD': return f.statusOnHold;
+    case 'COMPLETED': return f.statusCompleted;
+    case 'CANCELLED': return f.statusCancelled;
+    default: return status.toLowerCase().replace('_', ' ');
+  }
 }
 
 function projectTone(status: string) {

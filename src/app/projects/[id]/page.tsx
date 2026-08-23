@@ -12,6 +12,8 @@ import { siteRoster } from '@/lib/services/attendance';
 import { navigationUrl } from '@/lib/geofence';
 import { GOVERNORATES } from '@/lib/egypt';
 import { formatDate } from '@/lib/format';
+import { t } from '@/lib/i18n';
+import { getLocale } from '@/lib/preferences';
 
 import { LocationForm } from './location-form';
 import { AssignForm, ReleaseButton } from './assign-form';
@@ -40,6 +42,9 @@ export async function generateMetadata({
 export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const actor = await requirePermission('projects.view');
   const { id } = await params;
+  const dict = await t();
+  const locale = await getLocale();
+  const d = dict.operations.projects.detail;
 
   const project = await projectDetail(id);
   if (!project) notFound();
@@ -143,34 +148,36 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
           actions={
             <>
               <Status tone={statusTone(project.status)}>
-                {project.status.toLowerCase().replace('_', ' ')}
+                {statusLabel(dict, project.status)}
               </Status>
               {can(actor, 'projects.edit') && (
                 <a href={`/projects/${project.id}/edit`} className="gts-btn gts-btn-primary">
-                  Edit
+                  {d.edit}
                 </a>
               )}
+              <a href={`/projects/${project.id}/print`} className="gts-btn gts-btn-secondary">
+                {d.print}
+              </a>
             </>
           }
         />
 
         {/* ---------- The site ---------- */}
-        <Region title="Site location">
+        <Region title={d.siteLocationTitle}>
           {!project.location && (
             <p className="gts-form-error" role="status">
-              This project has no site location. Nobody assigned to it can check in until one
-              is pinned — attendance is judged against these coordinates.
+              {d.noLocationWarning}
             </p>
           )}
 
           {project.location && (
             <div className="gts-stat-row" style={{ marginBlockEnd: 'var(--gts-space-5)' }}>
               <div className="gts-stat">
-                <p className="gts-overline">Address</p>
+                <p className="gts-overline">{d.address}</p>
                 <p className="gts-stat-value">{project.location.addressLine}</p>
               </div>
               <div className="gts-stat">
-                <p className="gts-overline">Coordinates</p>
+                <p className="gts-overline">{d.coordinates}</p>
                 <p className="gts-stat-value">
                   <span className="gts-num gts-num-sm">
                     {project.location.latitude.toString()}, {project.location.longitude.toString()}
@@ -178,14 +185,14 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                 </p>
               </div>
               <div className="gts-stat">
-                <p className="gts-overline">Check-in radius</p>
+                <p className="gts-overline">{d.checkInRadius}</p>
                 <p className="gts-stat-value">
                   <span className="gts-num gts-num-md">{project.location.radiusMetres}</span>
                   <span className="gts-num-currency">m</span>
                 </p>
               </div>
               <div className="gts-stat">
-                <p className="gts-overline">Navigate</p>
+                <p className="gts-overline">{d.navigate}</p>
                 <p className="gts-stat-value">
                   <a
                     href={navigationUrl(
@@ -199,7 +206,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                     rel="noreferrer"
                     className="gts-btn gts-btn-secondary gts-btn-sm"
                   >
-                    Open in Google Maps
+                    {d.openInMaps}
                   </a>
                 </p>
               </div>
@@ -209,6 +216,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
           {can(actor, 'projects.location') ? (
             <LocationForm
               projectId={project.id}
+              dict={dict.operations.projects.location}
               existing={
                 project.location
                   ? {
@@ -227,36 +235,37 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
           ) : (
             !project.location && (
               <p className="gts-meta">
-                Ask an administrator to pin this site.
+                {d.pinPermissionHint}
               </p>
             )
           )}
         </Region>
 
         {/* ---------- The team ---------- */}
-        <Region title={`Team (${live.length})`}>
+        <Region title={`${d.teamTitle} (${live.length})`}>
           {can(actor, 'projects.assign') && (
             <AssignForm
               projectId={project.id}
               candidates={candidates}
               hasLocation={Boolean(project.location)}
+              dict={dict.operations.projects.assign}
             />
           )}
 
           {project.employees.length === 0 ? (
             <Empty
-              title="Nobody assigned"
-              body="Assign the people working on this site so they can record attendance here."
+              title={d.emptyTeamTitle}
+              body={d.emptyTeamBody}
             />
           ) : (
             <div className="gts-table-scroll">
               <table className="gts-table gts-table-comfortable">
                 <thead>
                   <tr>
-                    <th scope="col">Employee</th>
-                    <th scope="col">Role on site</th>
-                    <th scope="col">Assigned</th>
-                    <th scope="col">Today</th>
+                    <th scope="col">{d.colEmployee}</th>
+                    <th scope="col">{d.colRoleOnSite}</th>
+                    <th scope="col">{d.colAssigned}</th>
+                    <th scope="col">{d.colToday}</th>
                     {can(actor, 'projects.assign') && <th scope="col" />}
                   </tr>
                 </thead>
@@ -275,10 +284,10 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                         </th>
                         <td>{assignment.roleOnSite ?? <span className="gts-meta">—</span>}</td>
                         <td>
-                          {formatDate(assignment.assignedOn.toISOString())}
+                          {formatDate(assignment.assignedOn.toISOString(), locale)}
                           {assignment.releasedOn && (
                             <span className="gts-meta gts-cell-sub">
-                              released {formatDate(assignment.releasedOn.toISOString())}
+                              {d.released} {formatDate(assignment.releasedOn.toISOString(), locale)}
                             </span>
                           )}
                         </td>
@@ -290,7 +299,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                               {attendance.attendance.status.toLowerCase()}
                             </Status>
                           ) : (
-                            <span className="gts-meta">not in</span>
+                            <span className="gts-meta">{d.notIn}</span>
                           )}
                         </td>
                         {can(actor, 'projects.assign') && (
@@ -300,6 +309,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                                 assignmentId={assignment.id}
                                 projectId={project.id}
                                 name={assignment.employee.nameEn}
+                                dict={dict.operations.projects.assign}
                               />
                             )}
                           </td>
@@ -315,28 +325,33 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
         {/* ---------- Materials ---------- */}
         {can(actor, 'inventory.view') && (
-          <Region title="Materials">
+          <Region title={d.materialsTitle}>
             {canMoveStock && (
-              <AllocateForm projectId={project.id} products={stockOptions} closed={closed} />
+              <AllocateForm
+                projectId={project.id}
+                products={stockOptions}
+                closed={closed}
+                dict={dict.operations.projects.materials}
+              />
             )}
 
             {project.products.length === 0 ? (
               <Empty
-                title="Nothing allocated"
-                body="Stock allocated to this project from a warehouse appears here, with what has been delivered, returned and written off."
+                title={d.emptyMaterialsTitle}
+                body={d.emptyMaterialsBody}
               />
             ) : (
               <div className="gts-table-scroll">
                 <table className="gts-table gts-table-comfortable">
                   <thead>
                     <tr>
-                      <th scope="col">Product</th>
-                      <th scope="col" className="gts-cell-num">Allocated</th>
-                      <th scope="col" className="gts-cell-num">Delivered</th>
-                      <th scope="col" className="gts-cell-num">Returned</th>
-                      <th scope="col" className="gts-cell-num">Damaged</th>
-                      <th scope="col" className="gts-cell-num">In transit</th>
-                      <th scope="col" className="gts-cell-num">On site</th>
+                      <th scope="col">{d.colProduct}</th>
+                      <th scope="col" className="gts-cell-num">{d.colAllocated}</th>
+                      <th scope="col" className="gts-cell-num">{d.colDelivered}</th>
+                      <th scope="col" className="gts-cell-num">{d.colReturned}</th>
+                      <th scope="col" className="gts-cell-num">{d.colDamaged}</th>
+                      <th scope="col" className="gts-cell-num">{d.colInTransit}</th>
+                      <th scope="col" className="gts-cell-num">{d.colOnSite}</th>
                       {canMoveStock && <th scope="col" />}
                     </tr>
                   </thead>
@@ -387,6 +402,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                               inTransit={row.position.inTransit.toString()}
                               onSite={row.position.remaining.toString()}
                               warehouses={warehouses}
+                              dict={dict.operations.projects.materials}
                             />
                           </td>
                         )}
@@ -401,28 +417,29 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
         {/* ---------- Financials ---------- */}
         {financials && (
-          <Region title="Financial position">
+          <Region title={d.financialTitle}>
             <div className="gts-stat-row">
-              <Figure label="Budget" value={financials.budget?.toNumber() ?? null} />
-              <Figure label="Billed" value={financials.billed.toNumber()} />
-              <Figure label="Collected" value={financials.collected.toNumber()} />
+              <Figure label={d.figureBudget} value={financials.budget?.toNumber() ?? null} notSet={d.notSet} locale={locale} />
+              <Figure label={d.figureBilled} value={financials.billed.toNumber()} notSet={d.notSet} locale={locale} />
+              <Figure label={d.figureCollected} value={financials.collected.toNumber()} notSet={d.notSet} locale={locale} />
               <Figure
-                label="Outstanding"
+                label={d.figureOutstanding}
                 value={financials.outstanding.toNumber()}
                 tone={financials.outstanding.greaterThan(0) ? 'warning' : undefined}
+                notSet={d.notSet}
+                locale={locale}
               />
-              <Figure label="Materials on site" value={
+              <Figure label={d.figureMaterialsOnSite} value={
                 financials.materialsAllocated.minus(financials.materialsReturned).toNumber()
-              } />
-              <Figure label="Labour to date" value={financials.labourCost.toNumber()} />
+              } notSet={d.notSet} locale={locale} />
+              <Figure label={d.figureLabourToDate} value={financials.labourCost.toNumber()} notSet={d.notSet} locale={locale} />
             </div>
             {financials.remainingBudget && (
               <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
-                {financials.remainingBudget.isNegative() ? 'Over budget by ' : 'Budget remaining '}
-                <Amount value={Math.abs(financials.remainingBudget.toNumber())} size="sm" currency={null} />
+                {financials.remainingBudget.isNegative() ? d.overBudgetBy : d.budgetRemaining}
+                <Amount value={Math.abs(financials.remainingBudget.toNumber())} size="sm" currency={null} locale={locale} />
                 {' · '}
-                {financials.attendanceDays} attendance day
-                {financials.attendanceDays === 1 ? '' : 's'} recorded
+                {financials.attendanceDays} {financials.attendanceDays === 1 ? d.attendanceDay_one : d.attendanceDay_other}
               </p>
             )}
           </Region>
@@ -436,19 +453,23 @@ function Figure({
   label,
   value,
   tone,
+  notSet,
+  locale,
 }: {
   label: string;
   value: number | null;
   tone?: 'danger' | 'warning';
+  notSet: string;
+  locale: 'en' | 'ar';
 }) {
   return (
     <div className="gts-stat">
       <p className="gts-overline">{label}</p>
       <p className={tone ? `gts-stat-value gts-stat-${tone}` : 'gts-stat-value'}>
         {value === null ? (
-          <span className="gts-meta">not set</span>
+          <span className="gts-meta">{notSet}</span>
         ) : (
-          <Amount value={value} size="md" />
+          <Amount value={value} size="md" locale={locale} />
         )}
       </p>
     </div>
@@ -461,4 +482,16 @@ function statusTone(status: string) {
   if (status === 'CANCELLED') return 'danger' as const;
   if (status === 'ON_HOLD') return 'warning' as const;
   return 'neutral' as const;
+}
+
+function statusLabel(dict: Awaited<ReturnType<typeof t>>, status: string) {
+  const f = dict.operations.projects.form;
+  switch (status) {
+    case 'PLANNING': return f.statusPlanning;
+    case 'ACTIVE': return f.statusActive;
+    case 'ON_HOLD': return f.statusOnHold;
+    case 'COMPLETED': return f.statusCompleted;
+    case 'CANCELLED': return f.statusCancelled;
+    default: return status.toLowerCase().replace('_', ' ');
+  }
 }

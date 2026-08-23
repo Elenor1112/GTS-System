@@ -8,6 +8,8 @@ import { can } from '@/lib/permissions';
 import { warehouseDetail } from '@/lib/services/catalogue';
 import { GOVERNORATES } from '@/lib/egypt';
 import { formatDate } from '@/lib/format';
+import { t } from '@/lib/i18n';
+import { getLocale } from '@/lib/preferences';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,17 +22,6 @@ export async function generateMetadata({
   const warehouse = await warehouseDetail(id);
   return { title: warehouse ? `${warehouse.nameEn} — GTS` : 'Warehouse — GTS' };
 }
-
-/** How each ledger row reads on screen. */
-const TX_LABEL: Record<string, string> = {
-  RECEIVE: 'Received',
-  ISSUE: 'Issued',
-  TRANSFER: 'Transfer',
-  RETURN: 'Returned',
-  DAMAGE: 'Damaged',
-  ADJUSTMENT: 'Adjustment',
-  PROJECT_ALLOCATION: 'Allocated',
-};
 
 /**
  * WAREHOUSE — what is in this building, and how it got there.
@@ -47,8 +38,10 @@ export default async function WarehousePage({ params }: { params: Promise<{ id: 
   const actor = await requirePermission('warehouses.view');
   const { id } = await params;
 
-  const warehouse = await warehouseDetail(id);
+  const [warehouse, dict, locale] = await Promise.all([warehouseDetail(id), t(), getLocale()]);
   if (!warehouse) notFound();
+  const d = dict.catalogue.warehouses.detail;
+  const txLabel = dict.catalogue.txLabel as Record<string, string>;
 
   const governorate = warehouse.governorateCode
     ? GOVERNORATES.find((g) => g.code === warehouse.governorateCode)?.en
@@ -69,7 +62,7 @@ export default async function WarehousePage({ params }: { params: Promise<{ id: 
           title={warehouse.nameEn}
           lede={
             [governorate, warehouse.addressLine].filter(Boolean).join(' · ') ||
-            'No address recorded'
+            d.noAddress
           }
           actions={
             <>
@@ -80,40 +73,43 @@ export default async function WarehousePage({ params }: { params: Promise<{ id: 
                   rel="noreferrer"
                   className="gts-btn gts-btn-secondary"
                 >
-                  Open in Google Maps
+                  {d.openInMaps}
                 </a>
               )}
               {can(actor, 'warehouses.manage') && (
                 <a href={`/storage/${warehouse.id}/edit`} className="gts-btn gts-btn-primary">
-                  Edit
+                  {d.edit}
                 </a>
               )}
+              <a href={`/storage/${warehouse.id}/print`} className="gts-btn gts-btn-secondary">
+                {d.print}
+              </a>
             </>
           }
         />
 
         {!warehouse.isActive && (
           <p className="gts-meta" style={{ marginBlockEnd: 'var(--gts-space-5)' }}>
-            <Status tone="neutral">inactive</Status> This warehouse is no longer in use.
+            <Status tone="neutral">{dict.common.inactive}</Status> {d.inactiveNotice}
           </p>
         )}
 
         <div className="gts-stat-row">
           <div className="gts-stat">
-            <p className="gts-overline">Products</p>
+            <p className="gts-overline">{d.products}</p>
             <p className="gts-stat-value">
               <span className="gts-num gts-num-md">{warehouse.stock.length}</span>
             </p>
           </div>
           <div className="gts-stat">
-            <p className="gts-overline">Units on hand</p>
+            <p className="gts-overline">{d.unitsOnHand}</p>
             <p className="gts-stat-value">
               <span className="gts-num gts-num-md">{totalUnits.toLocaleString('en-US')}</span>
             </p>
           </div>
           {reservedUnits > 0 && (
             <div className="gts-stat">
-              <p className="gts-overline">Reserved</p>
+              <p className="gts-overline">{d.reserved}</p>
               <p className="gts-stat-value">
                 <span className="gts-num gts-num-md">{reservedUnits.toLocaleString('en-US')}</span>
               </p>
@@ -121,15 +117,15 @@ export default async function WarehousePage({ params }: { params: Promise<{ id: 
           )}
           {seesMoney && (
             <div className="gts-stat">
-              <p className="gts-overline">Value at cost</p>
+              <p className="gts-overline">{d.valueAtCost}</p>
               <p className="gts-stat-value">
-                <Amount value={warehouse.valueAtCost.toNumber()} size="md" />
+                <Amount value={warehouse.valueAtCost.toNumber()} size="md" locale={locale} />
               </p>
             </div>
           )}
           {warehouse.capacityM3 && (
             <div className="gts-stat">
-              <p className="gts-overline">Capacity</p>
+              <p className="gts-overline">{d.capacity}</p>
               <p className="gts-stat-value">
                 <span className="gts-num gts-num-md">
                   {warehouse.capacityM3.toString()}
@@ -142,24 +138,24 @@ export default async function WarehousePage({ params }: { params: Promise<{ id: 
 
         {/* ---------- STOCK ON HAND ---------- */}
         <section style={{ marginBlockStart: 'var(--gts-space-7)' }}>
-          <h2 className="gts-overline">Stock on hand</h2>
+          <h2 className="gts-overline">{d.stockOnHand}</h2>
 
           {warehouse.stock.length === 0 ? (
             <Empty
-              title="Nothing in stock"
-              body="No product has been received into this warehouse yet, or everything received has since been issued."
+              title={d.emptyStockTitle}
+              body={d.emptyStockBody}
             />
           ) : (
             <table className="gts-table">
               <thead>
                 <tr>
-                  <th scope="col">SKU</th>
-                  <th scope="col">Product</th>
-                  <th scope="col">Bin</th>
-                  <th scope="col" className="gts-cell-num">Quantity</th>
-                  <th scope="col" className="gts-cell-num">Reserved</th>
-                  <th scope="col" className="gts-cell-num">Available</th>
-                  {seesMoney && <th scope="col" className="gts-cell-num">Value at cost</th>}
+                  <th scope="col">{d.colSku}</th>
+                  <th scope="col">{d.colProduct}</th>
+                  <th scope="col">{d.colBin}</th>
+                  <th scope="col" className="gts-cell-num">{d.colQuantity}</th>
+                  <th scope="col" className="gts-cell-num">{d.colReserved}</th>
+                  <th scope="col" className="gts-cell-num">{d.colAvailable}</th>
+                  {seesMoney && <th scope="col" className="gts-cell-num">{d.colValueAtCost}</th>}
                 </tr>
               </thead>
               <tbody>
@@ -186,7 +182,7 @@ export default async function WarehousePage({ params }: { params: Promise<{ id: 
                         {low && (
                           <>
                             {' '}
-                            <Status tone="warning">low</Status>
+                            <Status tone="warning">{d.low}</Status>
                           </>
                         )}
                       </td>
@@ -203,7 +199,7 @@ export default async function WarehousePage({ params }: { params: Promise<{ id: 
                       </td>
                       {seesMoney && (
                         <td className="gts-cell-num">
-                          <Amount value={quantity * line.product.costPrice.toNumber()} />
+                          <Amount value={quantity * line.product.costPrice.toNumber()} locale={locale} />
                         </td>
                       )}
                     </tr>
@@ -216,24 +212,24 @@ export default async function WarehousePage({ params }: { params: Promise<{ id: 
 
         {/* ---------- THE LEDGER ---------- */}
         <section style={{ marginBlockStart: 'var(--gts-space-7)' }}>
-          <h2 className="gts-overline">Recent movements</h2>
+          <h2 className="gts-overline">{d.recentMovements}</h2>
 
           {warehouse.movements.length === 0 ? (
             <Empty
-              title="No movements"
-              body="Nothing has moved through this warehouse yet."
+              title={d.emptyMovementsTitle}
+              body={d.emptyMovementsBody}
             />
           ) : (
             <table className="gts-table">
               <thead>
                 <tr>
-                  <th scope="col">Date</th>
-                  <th scope="col">Reference</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Product</th>
-                  <th scope="col" className="gts-cell-num">Quantity</th>
-                  <th scope="col" className="gts-cell-num">Balance after</th>
-                  <th scope="col">By</th>
+                  <th scope="col">{d.colDate}</th>
+                  <th scope="col">{d.colReference}</th>
+                  <th scope="col">{d.colType}</th>
+                  <th scope="col">{d.colProduct2}</th>
+                  <th scope="col" className="gts-cell-num">{d.colQuantity}</th>
+                  <th scope="col" className="gts-cell-num">{d.colBalanceAfter}</th>
+                  <th scope="col">{d.colBy}</th>
                 </tr>
               </thead>
               <tbody>
@@ -241,10 +237,10 @@ export default async function WarehousePage({ params }: { params: Promise<{ id: 
                   const quantity = tx.quantity.toNumber();
                   return (
                     <tr key={tx.id}>
-                      <td>{formatDate(tx.occurredAt.toISOString())}</td>
+                      <td>{formatDate(tx.occurredAt.toISOString(), locale)}</td>
                       <td>{tx.ref}</td>
                       <td>
-                        {TX_LABEL[tx.type] ?? tx.type}
+                        {txLabel[tx.type] ?? tx.type}
                         {/* A transfer is two rows; naming the other end
                             is what makes this one readable in isolation. */}
                         {tx.destinationWarehouse && ` → ${tx.destinationWarehouse.code}`}

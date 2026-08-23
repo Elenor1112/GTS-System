@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Shell, PageHead } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { t } from '@/lib/i18n';
 import { ClientForm } from '../../client-form';
 
 export const dynamic = 'force-dynamic';
@@ -25,12 +26,16 @@ export default async function EditClientPage({ params }: { params: Promise<{ id:
   const client = await db.client.findFirst({ where: { id, deletedAt: null } });
   if (!client) notFound();
 
+  const dict = await t();
+  const d = dict.operations.clients.editPage;
+
   return (
     <Shell active="/clients" domain="clients">
       <main className="gts-page">
-        <PageHead overline={`Client · ${client.code}`} title={`Edit ${client.nameEn}`} />
+        <PageHead overline={`Client · ${client.code}`} title={`${d.editTitle} ${client.nameEn}`} />
         <ClientForm
           mode="edit"
+          dict={dict.operations.clients.form}
           values={{
             id: client.id,
             code: client.code,

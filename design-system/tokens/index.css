@@ -46,6 +46,28 @@ table { border-collapse: separate; border-spacing: 0 }
              inline-size: 100%; margin-inline: auto;
              display: flex; flex-direction: column; gap: var(--gts-gutter-section) }
 
+/* The header every module opens with: overline, title, an optional
+   lede, and page-level actions. Its own class rather than inline
+   styles, so a narrow viewport can adjust it without a JS breakpoint
+   hook. */
+.gts-page-head {
+  display: flex; justify-content: space-between;
+  align-items: flex-end; gap: var(--gts-space-6); flex-wrap: wrap;
+}
+.gts-page-head-main { min-inline-size: 0 }
+.gts-page-head-title { margin-block-start: var(--gts-space-2) }
+.gts-page-head-lede {
+  font: var(--gts-role-body); color: var(--gts-fg-secondary);
+  max-inline-size: var(--gts-prose-max); margin-block-start: var(--gts-space-3);
+}
+.gts-page-head-actions { display: flex; gap: var(--gts-space-2); flex-wrap: wrap }
+
+@media (max-width: 430px) {
+  .gts-page-head { align-items: stretch }
+  .gts-page-head-actions { inline-size: 100% }
+  .gts-page-head-actions .gts-btn { flex: 1 1 auto }
+}
+
 @media (max-width: 767px) {
   .gts-shell { grid-template-columns: minmax(0, 1fr) }
   .gts-rail  { display: none }
@@ -57,11 +79,20 @@ table { border-collapse: separate; border-spacing: 0 }
 .gts-sr { position: absolute; inline-size: 1px; block-size: 1px; padding: 0;
   margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap }
 
-/* Print — bills and reports are real documents. */
+/* Print — bills and reports are real documents.
+   `.gts-btn` is NOT hidden wholesale: a dedicated print route already
+   renders no chrome to hide, and an in-place print (Reports) needs its
+   filter bar and page actions gone but has no button worth keeping
+   either — so `.gts-no-print` is the one deliberate marker, not an
+   implicit blanket rule that would also swallow a future legitimate
+   on-page action. */
 @media print {
   :root { --gts-bg-page: #fff; --gts-bg-surface: #fff;
           --gts-fg-primary: #000; --gts-fg-secondary: #333 }
-  .gts-rail, .gts-mobile-nav, .gts-btn, .gts-no-print { display: none !important }
+  .gts-rail, .gts-mobile-nav, .gts-mobile-sheet, .gts-mobile-sheet-backdrop,
+  .gts-user-sheet, .gts-filter-bar, .gts-page-head-actions, .gts-no-print {
+    display: none !important;
+  }
   .gts-page { padding: 0; max-inline-size: none }
   .gts-table { font-size: 10pt }
   .gts-table thead { display: table-header-group } /* repeat head per page */

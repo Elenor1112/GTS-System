@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Shell, PageHead } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { t } from '@/lib/i18n';
 import { BillForm } from '../bill-form';
 
 export const metadata: Metadata = { title: 'New bill — GTS' };
@@ -25,7 +26,7 @@ export default async function NewBillPage({
   await requirePermission('bills.create');
   const params = await searchParams;
 
-  const [clients, vendors, projects, products] = await Promise.all([
+  const [clients, vendors, projects, products, dict] = await Promise.all([
     db.client.findMany({
       where: { deletedAt: null, isActive: true },
       select: { id: true, code: true, nameEn: true },
@@ -49,15 +50,16 @@ export default async function NewBillPage({
       },
       orderBy: { nameEn: 'asc' },
     }),
+    t(),
   ]);
 
   return (
     <Shell active="/bills" domain="finance">
       <main className="gts-page">
         <PageHead
-          overline="Tax documents"
-          title="New bill"
-          lede="Add the lines. Every total — net, VAT per line, the invoice total and any withholding — is computed on the server from what you enter here."
+          overline={dict.finance.bills.nav.overline}
+          title={dict.finance.bills.form.newTitle}
+          lede={dict.finance.bills.form.newLede}
         />
 
         <BillForm
@@ -81,6 +83,7 @@ export default async function NewBillPage({
           defaultDirection={params.vendorId ? 'PAYABLE' : 'RECEIVABLE'}
           defaultClientId={params.clientId}
           defaultVendorId={params.vendorId}
+          dict={dict.finance.bills.form}
         />
       </main>
     </Shell>

@@ -3,6 +3,8 @@ import type { Metadata } from 'next';
 import { Amount, Region, Status } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
+import { t, type Dictionary } from '@/lib/i18n';
+import { getLocale, type Locale } from '@/lib/preferences';
 import {
   ledgerTotals, receivablesByClient, payablesByVendor,
   type CounterpartySummary, type AgeingBuckets,
@@ -27,75 +29,82 @@ export const dynamic = 'force-dynamic';
 export default async function AccountsPage() {
   await requirePermission('accounts.view');
 
-  const [ledger, clients, vendors] = await Promise.all([
+  const [ledger, clients, vendors, dict, locale] = await Promise.all([
     ledgerTotals(),
     receivablesByClient(),
     payablesByVendor(),
+    t(),
+    getLocale(),
   ]);
+  const d = dict.finance.accounts;
 
   return (
     <Shell active="/accounts" domain="finance">
       <main className="gts-page">
         <PageHead
-          overline="Financial"
-          title="Accounts"
-          lede="Receivables and payables, aged from their due dates. Computed from the transactions, never stored."
+          overline={d.overline}
+          title={d.title}
+          lede={d.lede}
         />
 
         {/* ---------- The net position ---------- */}
         <header className="gts-grid-editorial" style={{ alignItems: 'end' }}>
           <div>
-            <p className="gts-overline">Net position</p>
+            <p className="gts-overline">{d.netPosition}</p>
             <div style={{ marginBlockStart: 'var(--gts-space-4)' }}>
-              <Amount value={ledger.netPosition.toNumber()} size="hero" />
+              <Amount value={ledger.netPosition.toNumber()} size="hero" locale={locale} />
             </div>
             <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-3)' }}>
               {ledger.netPosition.isNegative()
-                ? 'More is owed to suppliers than is owed to us.'
-                : 'More is owed to us than we owe to suppliers.'}
+                ? d.netPositionNegative
+                : d.netPositionPositive}
             </p>
           </div>
 
           <div className="gts-stat-row">
             <Figure
-              label="Receivable"
+              label={d.receivable}
               value={ledger.receivable.outstanding.toNumber()}
-              detail={`${ledger.receivable.openBillCount} open`}
+              detail={`${ledger.receivable.openBillCount} ${d.openSuffix}`}
+              locale={locale}
             />
             <Figure
-              label="Payable"
+              label={d.payable}
               value={ledger.payable.outstanding.toNumber()}
-              detail={`${ledger.payable.openBillCount} open`}
+              detail={`${ledger.payable.openBillCount} ${d.openSuffix}`}
+              locale={locale}
             />
             <Figure
-              label="Overdue in"
+              label={d.overdueIn}
               value={ledger.receivable.overdue.toNumber()}
               detail={
                 ledger.receivable.oldestOverdueDays > 0
-                  ? `oldest ${ledger.receivable.oldestOverdueDays} days`
-                  : 'nothing late'
+                  ? d.oldestDays.replace('{days}', String(ledger.receivable.oldestOverdueDays))
+                  : d.nothingLate
               }
               tone={ledger.receivable.overdue.greaterThan(0) ? 'danger' : undefined}
+              locale={locale}
             />
             <Figure
-              label="Overdue out"
+              label={d.overdueOut}
               value={ledger.payable.overdue.toNumber()}
               detail={
                 ledger.payable.oldestOverdueDays > 0
-                  ? `oldest ${ledger.payable.oldestOverdueDays} days`
-                  : 'nothing late'
+                  ? d.oldestDays.replace('{days}', String(ledger.payable.oldestOverdueDays))
+                  : d.nothingLate
               }
               tone={ledger.payable.overdue.greaterThan(0) ? 'warning' : undefined}
+              locale={locale}
             />
           </div>
         </header>
 
         {/* ---------- Receivables ---------- */}
-        <Region title={`Owed to us (${clients.length})`}>
+        <Region title={`${d.owedToUs} (${clients.length})`}>
           {clients.length === 0 ? (
             <Empty
-              title="Nothing outstanding"
-              body="Every issued invoice has been settled."
+              title={d.nothingOutstandingTitle}
+              body={d.nothingOutstandingReceivableBody}
             />
           ) : (
             <AgeingTable
@@ -108,14 +117,16 @@ export default async function AccountsPage() {
                 creditLimit: c.creditLimit.toNumber(),
               }))}
               totals={ledger.receivable.ageing}
+              dict={dict}
+              locale={locale}
             />
           )}
         </Region>
 
         {/* ---------- Payables ---------- */}
-        <Region title={`Owed by us (${vendors.length})`}>
+        <Region title={`${d.owedByUs} (${vendors.length})`}>
           {vendors.length === 0 ? (
-            <Empty title="Nothing outstanding" body="Every supplier bill has been settled." />
+            <Empty title={d.nothingOutstandingTitle} body={d.nothingOutstandingPayableBody} />
           ) : (
             <AgeingTable
               rows={vendors.map((v) => ({
@@ -126,6 +137,8 @@ export default async function AccountsPage() {
                 summary: v.summary,
               }))}
               totals={ledger.payable.ageing}
+              dict={dict}
+              locale={locale}
             />
           )}
         </Region>
@@ -149,23 +162,30 @@ interface AgeingRow {
   summary: CounterpartySummary;
 }
 
-function AgeingTable({ rows, totals }: { rows: AgeingRow[]; totals: AgeingBuckets }) {
+function AgeingTable({
+  rows, totals, dict, locale,
+}: { rows: AgeingRow[]; totals: AgeingBuckets; dict: Dictionary; locale: Locale }) {
+  const d = dict.finance.accounts.table;
   const cell = (value: number) =>
-    value === 0 ? <span className="gts-meta">—</span> : <Amount value={value} size="sm" currency={null} />;
+    value === 0 ? (
+      <span className="gts-meta">—</span>
+    ) : (
+      <Amount value={value} size="sm" currency={null} locale={locale} />
+    );
 
   return (
     <div className="gts-table-scroll">
       <table className="gts-table gts-table-comfortable">
-        <caption className="gts-sr">Outstanding balances by age since the due date</caption>
+        <caption className="gts-sr">{d.caption}</caption>
         <thead>
           <tr>
-            <th scope="col">Counterparty</th>
-            <th scope="col" className="gts-cell-num">Current</th>
-            <th scope="col" className="gts-cell-num">1–30</th>
-            <th scope="col" className="gts-cell-num">31–60</th>
-            <th scope="col" className="gts-cell-num">61–90</th>
-            <th scope="col" className="gts-cell-num">90+</th>
-            <th scope="col" className="gts-cell-num">Total</th>
+            <th scope="col">{d.counterparty}</th>
+            <th scope="col" className="gts-cell-num">{d.current}</th>
+            <th scope="col" className="gts-cell-num">{d.days1to30}</th>
+            <th scope="col" className="gts-cell-num">{d.days31to60}</th>
+            <th scope="col" className="gts-cell-num">{d.days61to90}</th>
+            <th scope="col" className="gts-cell-num">{d.over90}</th>
+            <th scope="col" className="gts-cell-num">{d.total}</th>
           </tr>
         </thead>
         <tbody>
@@ -176,13 +196,13 @@ function AgeingTable({ rows, totals }: { rows: AgeingRow[]; totals: AgeingBucket
                   {row.name}
                 </a>
                 <span className="gts-meta gts-cell-sub">
-                  {row.code} · {row.summary.openBillCount} open
+                  {row.code} · {row.summary.openBillCount} {d.openSuffix}
                   {row.summary.oldestOverdueDays > 0 &&
-                    ` · oldest ${row.summary.oldestOverdueDays} days late`}
+                    ` · ${d.oldestDaysLate.replace('{days}', String(row.summary.oldestOverdueDays))}`}
                   {row.creditLimit !== undefined &&
                     row.creditLimit > 0 &&
                     row.summary.outstanding.toNumber() > row.creditLimit &&
-                    ' · over credit limit'}
+                    ` · ${d.overCreditLimit}`}
                 </span>
               </th>
               <td className="gts-cell-num">{cell(row.summary.ageing.current.toNumber())}</td>
@@ -191,7 +211,12 @@ function AgeingTable({ rows, totals }: { rows: AgeingRow[]; totals: AgeingBucket
               <td className="gts-cell-num">
                 {row.summary.ageing.days61to90.toNumber() > 0 ? (
                   <Status tone="warning">
-                    <Amount value={row.summary.ageing.days61to90.toNumber()} size="sm" currency={null} />
+                    <Amount
+                      value={row.summary.ageing.days61to90.toNumber()}
+                      size="sm"
+                      currency={null}
+                      locale={locale}
+                    />
                   </Status>
                 ) : (
                   <span className="gts-meta">—</span>
@@ -200,21 +225,31 @@ function AgeingTable({ rows, totals }: { rows: AgeingRow[]; totals: AgeingBucket
               <td className="gts-cell-num">
                 {row.summary.ageing.over90.toNumber() > 0 ? (
                   <Status tone="danger">
-                    <Amount value={row.summary.ageing.over90.toNumber()} size="sm" currency={null} />
+                    <Amount
+                      value={row.summary.ageing.over90.toNumber()}
+                      size="sm"
+                      currency={null}
+                      locale={locale}
+                    />
                   </Status>
                 ) : (
                   <span className="gts-meta">—</span>
                 )}
               </td>
               <td className="gts-cell-num">
-                <Amount value={row.summary.outstanding.toNumber()} size="sm" currency={null} />
+                <Amount
+                  value={row.summary.outstanding.toNumber()}
+                  size="sm"
+                  currency={null}
+                  locale={locale}
+                />
               </td>
             </tr>
           ))}
         </tbody>
         <tfoot>
           <tr>
-            <th scope="row">Total</th>
+            <th scope="row">{d.total}</th>
             <td className="gts-cell-num">{cell(totals.current.toNumber())}</td>
             <td className="gts-cell-num">{cell(totals.days1to30.toNumber())}</td>
             <td className="gts-cell-num">{cell(totals.days31to60.toNumber())}</td>
@@ -233,17 +268,19 @@ function Figure({
   value,
   detail,
   tone,
+  locale,
 }: {
   label: string;
   value: number;
   detail: string;
   tone?: 'danger' | 'warning';
+  locale: Locale;
 }) {
   return (
     <div className="gts-stat">
       <p className="gts-overline">{label}</p>
       <p className={tone ? `gts-stat-value gts-stat-${tone}` : 'gts-stat-value'}>
-        <Amount value={value} size="md" />
+        <Amount value={value} size="md" locale={locale} />
       </p>
       <p className="gts-meta">{detail}</p>
     </div>

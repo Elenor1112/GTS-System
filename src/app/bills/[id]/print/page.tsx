@@ -7,8 +7,10 @@ import { organisation } from '@/lib/services/settings';
 import { outstandingOf } from '@/lib/services/billing';
 import { formatDate, splitAmount } from '@/lib/format';
 import { CURRENCY, TRN, GOVERNORATES } from '@/lib/egypt';
+import { t } from '@/lib/i18n';
+import { getLocale } from '@/lib/preferences';
 
-import { AutoPrint } from './auto-print';
+import { AutoPrint } from '@/components/auto-print';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +39,7 @@ export default async function BillPrintPage({ params }: { params: Promise<{ id: 
   await requirePermission('bills.view');
   const { id } = await params;
 
-  const [bill, org] = await Promise.all([
+  const [bill, org, dict, locale] = await Promise.all([
     db.electronicBill.findFirst({
       where: { id, deletedAt: null },
       include: {
@@ -48,17 +50,31 @@ export default async function BillPrintPage({ params }: { params: Promise<{ id: 
       },
     }),
     organisation(),
+    t(),
+    getLocale(),
   ]);
 
   if (!bill) notFound();
 
+  const p = dict.finance.bills.print;
+  const statusLabel = (status: string) =>
+    dict.finance.bills.status[
+      status
+        .toLowerCase()
+        .replace(/_([a-z])/g, (_, c: string) => c.toUpperCase()) as keyof typeof dict.finance.bills.status
+    ] ?? status.toLowerCase().replace('_', ' ');
+
   const money = (v: number | string) => {
-    const { negative, integer, fraction, decimal } = splitAmount(Number(v));
+    const { negative, integer, fraction, decimal } = splitAmount(Number(v), locale);
     return `${negative ? '−' : ''}${CURRENCY.mark}${integer}${decimal}${fraction}`;
   };
 
   const governorate = (code: number | null | undefined) =>
-    code ? GOVERNORATES.find((g) => g.code === code)?.en ?? null : null;
+    code
+      ? (locale === 'ar'
+          ? GOVERNORATES.find((g) => g.code === code)?.ar
+          : GOVERNORATES.find((g) => g.code === code)?.en) ?? null
+      : null;
 
   // A receivable is issued BY us TO the client; a payable is the reverse.
   // The document has to name both parties the right way round.
@@ -93,13 +109,13 @@ export default async function BillPrintPage({ params }: { params: Promise<{ id: 
           print stylesheet, as is every .gts-btn. */}
       <div className="gts-no-print" style={{ marginBlockEnd: '2rem', display: 'flex', gap: '0.5rem' }}>
         <a href={`/bills/${bill.id}`} className="gts-btn gts-btn-secondary">
-          Back to the bill
+          {p.backToBill}
         </a>
       </div>
 
       <header style={{ marginBlockEnd: '2rem' }}>
         <p className="gts-overline">
-          {receivable ? 'Tax invoice' : 'Purchase invoice'} · {bill.status.toLowerCase().replace('_', ' ')}
+          {receivable ? p.taxInvoice : p.purchaseInvoice} · {statusLabel(bill.status)}
         </p>
         <h1 className="gts-display" style={{ marginBlockStart: '0.25rem' }}>
           {bill.number}
@@ -115,29 +131,29 @@ export default async function BillPrintPage({ params }: { params: Promise<{ id: 
         }}
       >
         <div>
-          <p className="gts-overline">From</p>
+          <p className="gts-overline">{p.from}</p>
           <p style={{ fontWeight: 600 }}>{issuer.name}</p>
-          {issuer.trn && <p className="gts-meta">TRN {TRN.format(issuer.trn)}</p>}
+          {issuer.trn && <p className="gts-meta">{p.trn} {TRN.format(issuer.trn)}</p>}
           {issuer.address && <p className="gts-meta">{issuer.address}</p>}
           {issuer.gov && <p className="gts-meta">{issuer.gov}</p>}
         </div>
 
         <div>
-          <p className="gts-overline">To</p>
+          <p className="gts-overline">{p.to}</p>
           <p style={{ fontWeight: 600 }}>{recipient.name}</p>
-          {recipient.trn && <p className="gts-meta">TRN {TRN.format(recipient.trn)}</p>}
+          {recipient.trn && <p className="gts-meta">{p.trn} {TRN.format(recipient.trn)}</p>}
           {recipient.address && <p className="gts-meta">{recipient.address}</p>}
           {recipient.gov && <p className="gts-meta">{recipient.gov}</p>}
         </div>
 
         <div>
-          <p className="gts-overline">Issued</p>
-          <p>{formatDate(bill.issuedOn.toISOString())}</p>
-          <p className="gts-overline" style={{ marginBlockStart: '0.75rem' }}>Due</p>
-          <p>{formatDate(bill.dueOn.toISOString())}</p>
+          <p className="gts-overline">{p.issued}</p>
+          <p>{formatDate(bill.issuedOn.toISOString(), locale)}</p>
+          <p className="gts-overline" style={{ marginBlockStart: '0.75rem' }}>{p.due}</p>
+          <p>{formatDate(bill.dueOn.toISOString(), locale)}</p>
           {bill.project && (
             <>
-              <p className="gts-overline" style={{ marginBlockStart: '0.75rem' }}>Project</p>
+              <p className="gts-overline" style={{ marginBlockStart: '0.75rem' }}>{p.project}</p>
               <p>{bill.project.code}</p>
             </>
           )}
@@ -147,14 +163,14 @@ export default async function BillPrintPage({ params }: { params: Promise<{ id: 
       <table className="gts-table">
         <thead>
           <tr>
-            <th scope="col">#</th>
-            <th scope="col">Description</th>
-            <th scope="col" className="gts-cell-num">Qty</th>
-            <th scope="col">Unit</th>
-            <th scope="col" className="gts-cell-num">Unit price</th>
-            <th scope="col" className="gts-cell-num">Discount</th>
-            <th scope="col" className="gts-cell-num">VAT</th>
-            <th scope="col" className="gts-cell-num">Net</th>
+            <th scope="col">{p.table.index}</th>
+            <th scope="col">{p.table.description}</th>
+            <th scope="col" className="gts-cell-num">{p.table.qty}</th>
+            <th scope="col">{p.table.unit}</th>
+            <th scope="col" className="gts-cell-num">{p.table.unitPrice}</th>
+            <th scope="col" className="gts-cell-num">{p.table.discount}</th>
+            <th scope="col" className="gts-cell-num">{p.table.vat}</th>
+            <th scope="col" className="gts-cell-num">{p.table.net}</th>
           </tr>
         </thead>
         <tbody>
@@ -193,20 +209,20 @@ export default async function BillPrintPage({ params }: { params: Promise<{ id: 
       </table>
 
       <div className="gts-totals" style={{ marginBlockStart: '1.5rem', marginInlineStart: 'auto', maxInlineSize: '22rem' }}>
-        <Row label="Subtotal" value={money(bill.subtotal.toString())} />
+        <Row label={p.totals.subtotal} value={money(bill.subtotal.toString())} />
         {bill.discount.toNumber() > 0 && (
-          <Row label="Discount" value={`−${money(bill.discount.toString())}`} />
+          <Row label={p.totals.discount} value={`−${money(bill.discount.toString())}`} />
         )}
-        <Row label="Net" value={money(bill.net.toString())} />
-        <Row label="VAT" value={money(bill.vatAmount.toString())} />
-        <Row label="Total" value={money(bill.total.toString())} strong />
+        <Row label={p.totals.net} value={money(bill.net.toString())} />
+        <Row label={p.totals.vat} value={money(bill.vatAmount.toString())} />
+        <Row label={p.totals.total} value={money(bill.total.toString())} strong />
         {bill.whtAmount.toNumber() > 0 && (
           <>
             {/* Below the total, deliberately: withholding reduces the
                 cash collected, not the amount invoiced. */}
-            <Row label={`Withheld (${bill.whtRate.toString()}%)`} value={`−${money(bill.whtAmount.toString())}`} />
+            <Row label={p.totals.withheld(bill.whtRate.toString())} value={`−${money(bill.whtAmount.toString())}`} />
             <Row
-              label="Net payable"
+              label={p.totals.netPayable}
               value={money(bill.total.toNumber() - bill.whtAmount.toNumber())}
               strong
             />
@@ -214,15 +230,15 @@ export default async function BillPrintPage({ params }: { params: Promise<{ id: 
         )}
         {bill.paidAmount.toNumber() > 0 && (
           <>
-            <Row label="Paid" value={money(bill.paidAmount.toString())} />
-            <Row label="Outstanding" value={money(outstanding.toString())} strong />
+            <Row label={p.totals.paid} value={money(bill.paidAmount.toString())} />
+            <Row label={p.totals.outstanding} value={money(outstanding.toString())} strong />
           </>
         )}
       </div>
 
       {bill.notes && (
         <section style={{ marginBlockStart: '2rem' }}>
-          <p className="gts-overline">Notes</p>
+          <p className="gts-overline">{p.notes}</p>
           <p>{bill.notes}</p>
         </section>
       )}
@@ -231,8 +247,7 @@ export default async function BillPrintPage({ params }: { params: Promise<{ id: 
         <p className="gts-meta">
           {/* Honest about what this is. There is no ETA transmission
               integration, so the document does not imply one. */}
-          This document was produced by GTS. It has not been submitted to the Egyptian Tax
-          Authority from this system.
+          {p.disclaimer}
         </p>
       </footer>
     </main>

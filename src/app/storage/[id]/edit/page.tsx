@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Shell, PageHead } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { warehouseDetail } from '@/lib/services/catalogue';
+import { t } from '@/lib/i18n';
 import { WarehouseForm } from '../../warehouse-form';
 
 export const dynamic = 'force-dynamic';
@@ -18,19 +19,21 @@ export default async function EditWarehousePage({
   await requirePermission('warehouses.manage');
   const { id } = await params;
 
-  const warehouse = await warehouseDetail(id);
+  const [warehouse, dict] = await Promise.all([warehouseDetail(id), t()]);
   if (!warehouse) notFound();
+  const d = dict.catalogue.warehouses;
 
   return (
     <Shell active="/storage" domain="inventory">
       <main className="gts-page">
         <PageHead
           overline={`Warehouse · ${warehouse.code}`}
-          title="Edit warehouse"
-          lede="Changing these details does not move any stock. Quantities are the ledger's business."
+          title={d.edit.title}
+          lede={d.edit.lede}
         />
         <WarehouseForm
           mode="edit"
+          dict={d.form}
           values={{
             id: warehouse.id,
             code: warehouse.code,

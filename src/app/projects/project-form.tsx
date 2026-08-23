@@ -5,6 +5,7 @@ import { useActionState, useEffect } from 'react';
 import {
   FormError, FieldGrid, TextField, SelectField, TextArea, Submit, FormActions, errorFor,
 } from '@/components/form';
+import type { OperationsDict } from '@/lib/i18n/dict/operations';
 
 import { submitCreateProject, submitUpdateProject } from './actions';
 
@@ -17,13 +18,7 @@ import { submitCreateProject, submitUpdateProject } from './actions';
  * It is set from the project page, by someone allowed to set it.
  */
 
-const STATUSES = [
-  { value: 'PLANNING', label: 'Planning' },
-  { value: 'ACTIVE', label: 'Active' },
-  { value: 'ON_HOLD', label: 'On hold' },
-  { value: 'COMPLETED', label: 'Completed' },
-  { value: 'CANCELLED', label: 'Cancelled' },
-];
+export type ProjectFormDict = OperationsDict['operations']['projects']['form'];
 
 export interface ProjectFormValues {
   id?: string;
@@ -42,11 +37,21 @@ export function ProjectForm({
   mode,
   values,
   clients,
+  dict,
 }: {
   mode: 'create' | 'edit';
   values?: ProjectFormValues;
   clients: { id: string; code: string; nameEn: string }[];
+  dict: ProjectFormDict;
 }) {
+  const STATUSES = [
+    { value: 'PLANNING', label: dict.statusPlanning },
+    { value: 'ACTIVE', label: dict.statusActive },
+    { value: 'ON_HOLD', label: dict.statusOnHold },
+    { value: 'COMPLETED', label: dict.statusCompleted },
+    { value: 'CANCELLED', label: dict.statusCancelled },
+  ];
+
   const submit = mode === 'create' ? submitCreateProject : submitUpdateProject;
   const [state, formAction] = useActionState(submit, null);
 
@@ -67,8 +72,8 @@ export function ProjectForm({
       <FieldGrid>
         <TextField
           name="code"
-          label="Project code"
-          hint="Your own reference, e.g. PRJ-2026-014"
+          label={dict.codeLabel}
+          hint={dict.codeHint}
           required
           defaultValue={values?.code}
           error={e('code')}
@@ -76,7 +81,7 @@ export function ProjectForm({
         />
         <TextField
           name="nameEn"
-          label="Name (English)"
+          label={dict.nameEnLabel}
           required
           defaultValue={values?.nameEn}
           error={e('nameEn')}
@@ -84,61 +89,61 @@ export function ProjectForm({
         />
         <TextField
           name="nameAr"
-          label="Name (Arabic)"
+          label={dict.nameArLabel}
           defaultValue={values?.nameAr}
           error={e('nameAr')}
           maxLength={200}
         />
         <SelectField
           name="clientId"
-          label="Client"
+          label={dict.clientLabel}
           required
           defaultValue={values?.clientId ?? ''}
           error={e('clientId')}
-          placeholder="Choose a client"
+          placeholder={dict.clientPlaceholder}
           options={clients.map((c) => ({ value: c.id, label: `${c.code} — ${c.nameEn}` }))}
         />
         <SelectField
           name="status"
-          label="Status"
+          label={dict.statusLabel}
           defaultValue={values?.status ?? 'PLANNING'}
           error={e('status')}
           options={STATUSES}
         />
         <TextField
           name="budget"
-          label="Budget (EGP)"
-          hint="Optional. Leave blank if not yet agreed."
+          label={dict.budgetLabel}
+          hint={dict.budgetHint}
           inputMode="decimal"
           defaultValue={values?.budget}
           error={e('budget')}
         />
         <TextField
           name="startsOn"
-          label="Starts on"
+          label={dict.startsOnLabel}
           type="date"
           defaultValue={values?.startsOn}
           error={e('startsOn')}
         />
         <TextField
           name="endsOn"
-          label="Ends on"
+          label={dict.endsOnLabel}
           type="date"
           defaultValue={values?.endsOn}
           error={e('endsOn')}
         />
       </FieldGrid>
 
-      <TextArea name="notes" label="Notes" defaultValue={values?.notes} error={e('notes')} />
+      <TextArea name="notes" label={dict.notesLabel} defaultValue={values?.notes} error={e('notes')} />
 
       <FormActions>
         <a
           className="gts-btn gts-btn-ghost"
           href={values?.id ? `/projects/${values.id}` : '/projects'}
         >
-          Cancel
+          {dict.cancel}
         </a>
-        <Submit>{mode === 'create' ? 'Create project' : 'Save changes'}</Submit>
+        <Submit>{mode === 'create' ? dict.createProject : dict.saveChanges}</Submit>
       </FormActions>
     </form>
   );

@@ -5,6 +5,7 @@ import { Prisma } from '@prisma/client';
 import { db } from '../db';
 import { DomainError } from '../errors';
 import { writeAudit, writeUpdateAudit } from './audit';
+import { receiveStock } from './inventory';
 
 /**
  * GTS — products and warehouses.
@@ -31,6 +32,7 @@ export async function listProducts(options: {
   search?: string;
   categoryId?: string;
   vendorId?: string;
+  warehouseId?: string;
   lowStockOnly?: boolean;
 } = {}) {
   const products = await db.product.findMany({
@@ -38,6 +40,9 @@ export async function listProducts(options: {
       deletedAt: null,
       ...(options.categoryId ? { categoryId: options.categoryId } : {}),
       ...(options.vendorId ? { vendorId: options.vendorId } : {}),
+      ...(options.warehouseId
+        ? { stock: { some: { warehouseId: options.warehouseId, quantity: { gt: 0 } } } }
+        : {}),
       ...(options.search
         ? {
             OR: [
@@ -136,6 +141,10 @@ export interface ProductInput {
   salePrice: number | string;
   vatRate: number | string;
   reorderLevel: number | string;
+  /** Where the product starts out. Create-only — see `createProduct`. */
+  warehouseId?: string;
+  openingQuantity?: number | string;
+  binLocation?: string | null;
 }
 
 export async function createProduct(params: { actor: ActorRef; input: ProductInput }) {
@@ -146,6 +155,14 @@ export async function createProduct(params: { actor: ActorRef; input: ProductInp
     select: { id: true },
   });
   if (clash) throw new CatalogueError('DUPLICATE', `SKU ${input.sku} is already in use.`);
+
+  if (input.warehouseId) {
+    const warehouse = await db.warehouse.findFirst({
+      where: { id: input.warehouseId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!warehouse) throw new CatalogueError('NOT_FOUND', 'That warehouse does not exist.');
+  }
 
   const product = await db.product.create({
     data: {
@@ -173,6 +190,30 @@ export async function createProduct(params: { actor: ActorRef; input: ProductInp
     summary: `Created product ${product.sku} — ${product.nameEn}`,
     afterState: { sku: product.sku, nameEn: product.nameEn },
   });
+
+  // The opening quantity is a real inbound movement — it goes through
+  // the ledger like any other receipt, not a direct stock write. A
+  // product created with no quantity has no warehouse relationship yet;
+  // `WarehouseStock` rows only ever come from a movement, never from a
+  // bare "belongs to" assignment.
+  const openingQuantity = D(input.openingQuantity ?? 0);
+  if (input.warehouseId && openingQuantity.greaterThan(0)) {
+    await receiveStock({
+      actor,
+      productId: product.id,
+      warehouseId: input.warehouseId,
+      quantity: openingQuantity,
+      unitCost: D(input.costPrice),
+      reference: 'Opening stock',
+    });
+
+    if (input.binLocation) {
+      await db.warehouseStock.updateMany({
+        where: { warehouseId: input.warehouseId, productId: product.id },
+        data: { binLocation: input.binLocation },
+      });
+    }
+  }
 
   return product;
 }

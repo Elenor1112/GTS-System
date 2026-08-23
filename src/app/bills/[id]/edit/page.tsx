@@ -5,6 +5,7 @@ import { Shell, PageHead } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { isEditable } from '@/lib/services/billing';
+import { t } from '@/lib/i18n';
 import { BillForm } from '../../bill-form';
 
 export const dynamic = 'force-dynamic';
@@ -43,22 +44,26 @@ export default async function EditBillPage({ params }: { params: Promise<{ id: s
 
   if (!isEditable(bill.status)) redirect(`/bills/${bill.id}`);
 
-  const products = await db.product.findMany({
-    where: { deletedAt: null, isActive: true },
-    select: {
-      id: true, sku: true, nameEn: true, unit: true,
-      salePrice: true, costPrice: true, vatRate: true, gpcCode: true,
-    },
-    orderBy: { nameEn: 'asc' },
-  });
+  const [products, dict] = await Promise.all([
+    db.product.findMany({
+      where: { deletedAt: null, isActive: true },
+      select: {
+        id: true, sku: true, nameEn: true, unit: true,
+        salePrice: true, costPrice: true, vatRate: true, gpcCode: true,
+      },
+      orderBy: { nameEn: 'asc' },
+    }),
+    t(),
+  ]);
+  const f = dict.finance.bills.form;
 
   return (
     <Shell active="/bills" domain="finance">
       <main className="gts-page">
         <PageHead
-          overline={`Draft · ${bill.number}`}
-          title="Edit lines"
-          lede="Saving replaces every line on this bill and recomputes the totals on the server. Who it is for and when it was issued cannot be changed here."
+          overline={`${f.editOverlinePrefix} · ${bill.number}`}
+          title={f.editTitle}
+          lede={f.editLede}
         />
 
         <BillForm
@@ -94,6 +99,7 @@ export default async function EditBillPage({ params }: { params: Promise<{ id: s
             discount: item.discount.toString(),
             vatRate: item.vatRate.toString(),
           }))}
+          dict={f}
         />
       </main>
     </Shell>

@@ -65,7 +65,6 @@ export interface UserInput {
   nameAr?: string | null;
   phone?: string | null;
   roleId: string;
-  employeeId?: string | null;
   password?: string;
 }
 
@@ -85,21 +84,6 @@ export async function createUser(params: { actor: ActorRef; input: UserInput }) 
   const role = await db.role.findUnique({ where: { id: input.roleId }, select: { id: true, nameEn: true } });
   if (!role) throw new PeopleError('ROLE_NOT_FOUND', 'That role does not exist.');
 
-  // One user per employee: two logins sharing an employee record would
-  // let two people check in as the same person.
-  if (input.employeeId) {
-    const taken = await db.user.findFirst({
-      where: { employee: { id: input.employeeId }, deletedAt: null },
-      select: { email: true },
-    });
-    if (taken) {
-      throw new PeopleError(
-        'EMPLOYEE_LINKED',
-        `That employee is already linked to ${taken.email}.`,
-      );
-    }
-  }
-
   const user = await db.user.create({
     data: {
       email: input.email,
@@ -108,7 +92,6 @@ export async function createUser(params: { actor: ActorRef; input: UserInput }) 
       nameAr: input.nameAr ?? null,
       phone: input.phone ?? null,
       roleId: input.roleId,
-      ...(input.employeeId ? { employee: { connect: { id: input.employeeId } } } : {}),
     },
   });
 
@@ -404,19 +387,76 @@ export async function createRole(params: {
    EMPLOYEES
    ============================================================ */
 
-export async function listEmployees(options: { includeInactive?: boolean } = {}) {
+export async function listEmployees(options: {
+  search?: string;
+  jobTitle?: string;
+  department?: string;
+  /** Working on this project right now — a released assignment doesn't count. */
+  projectId?: string;
+  includeInactive?: boolean;
+} = {}) {
   return db.employee.findMany({
     where: {
       deletedAt: null,
       ...(options.includeInactive ? {} : { isActive: true }),
+      ...(options.jobTitle ? { jobTitleEn: options.jobTitle } : {}),
+      ...(options.department ? { department: options.department } : {}),
+      ...(options.projectId
+        ? { projects: { some: { projectId: options.projectId, releasedOn: null } } }
+        : {}),
+      ...(options.search
+        ? {
+            OR: [
+              { nameEn: { contains: options.search, mode: 'insensitive' } },
+              { nameAr: { contains: options.search } },
+              { code: { contains: options.search, mode: 'insensitive' } },
+              { email: { contains: options.search, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
     },
     select: {
       id: true, code: true, nameEn: true, nameAr: true,
       jobTitleEn: true, department: true, phone: true, email: true,
       hiredOn: true, dailyRate: true, isActive: true,
       user: { select: { id: true, email: true } },
-      _count: { select: { projects: true, attendance: true } },
+      projects: {
+        where: { releasedOn: null },
+        select: { roleOnSite: true, project: { select: { id: true, code: true, nameEn: true } } },
+      },
+      _count: { select: { attendance: true } },
     },
     orderBy: { nameEn: 'asc' },
   });
+}
+
+/** Distinct values to populate the employee filter selects — both
+ *  job title and department are free text, not lookup tables, so the
+ *  option list can only come from what is actually in use. */
+export async function employeeFilterOptions() {
+  const [jobTitles, departments, projects] = await Promise.all([
+    db.employee.findMany({
+      where: { deletedAt: null },
+      distinct: ['jobTitleEn'],
+      select: { jobTitleEn: true },
+      orderBy: { jobTitleEn: 'asc' },
+    }),
+    db.employee.findMany({
+      where: { deletedAt: null, department: { not: null } },
+      distinct: ['department'],
+      select: { department: true },
+      orderBy: { department: 'asc' },
+    }),
+    db.project.findMany({
+      where: { deletedAt: null, status: { in: ['PLANNING', 'ACTIVE'] } },
+      select: { id: true, code: true, nameEn: true },
+      orderBy: { nameEn: 'asc' },
+    }),
+  ]);
+
+  return {
+    jobTitles: jobTitles.map((j) => j.jobTitleEn),
+    departments: departments.map((d) => d.department!),
+    projects,
+  };
 }

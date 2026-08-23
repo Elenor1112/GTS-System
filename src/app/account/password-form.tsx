@@ -3,6 +3,7 @@
 import { useActionState } from 'react';
 
 import { FormError, FieldGrid, TextField, Submit, FormActions, errorFor } from '@/components/form';
+import type { Dictionary } from '@/lib/i18n';
 
 import { changePassword } from '../(auth)/actions';
 
@@ -15,7 +16,7 @@ import { changePassword } from '../(auth)/actions';
  * says so, since being signed out on your other devices is surprising if
  * it happens silently.
  */
-export function PasswordForm() {
+export function PasswordForm({ dict }: { dict: Dictionary['admin']['account']['passwordForm'] }) {
   const [state, formAction] = useActionState(changePassword, null);
 
   const e = (field: string) => errorFor(state, field);
@@ -23,7 +24,7 @@ export function PasswordForm() {
   if (state?.ok) {
     return (
       <div className="gts-auth-notice" role="status">
-        Your password has been changed. Any other device you were signed in on has been signed out.
+        {dict.successNotice}
       </div>
     );
   }
@@ -35,7 +36,7 @@ export function PasswordForm() {
       <FieldGrid>
         <TextField
           name="currentPassword"
-          label="Current password"
+          label={dict.currentPasswordLabel}
           type="password"
           required
           autoComplete="current-password"
@@ -46,16 +47,16 @@ export function PasswordForm() {
       <FieldGrid>
         <TextField
           name="newPassword"
-          label="New password"
+          label={dict.newPasswordLabel}
           type="password"
           required
           autoComplete="new-password"
-          hint="At least 12 characters. Length is what resists cracking — a passphrase beats a short password with symbols in it."
+          hint={dict.newPasswordHint}
           error={e('newPassword')}
         />
         <TextField
           name="confirmPassword"
-          label="Confirm new password"
+          label={dict.confirmPasswordLabel}
           type="password"
           required
           autoComplete="new-password"
@@ -64,7 +65,7 @@ export function PasswordForm() {
       </FieldGrid>
 
       <FormActions>
-        <Submit pendingLabel="Changing…">Change password</Submit>
+        <Submit pendingLabel={dict.changingButton}>{dict.changeButton}</Submit>
       </FormActions>
     </form>
   );

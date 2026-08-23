@@ -5,6 +5,8 @@ import { Status } from '@/components/primitives';
 import { requirePermission } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { formatDate, formatSiteTime } from '@/lib/format';
+import { t } from '@/lib/i18n';
+import { getLocale } from '@/lib/preferences';
 
 export const metadata: Metadata = { title: 'Audit log — GTS' };
 export const dynamic = 'force-dynamic';
@@ -39,6 +41,8 @@ export default async function AuditPage({
 }) {
   await requirePermission('audit.view');
   const params = await searchParams;
+  const dict = await t();
+  const locale = await getLocale();
 
   const action = ACTIONS.includes(params.action as (typeof ACTIONS)[number])
     ? params.action
@@ -82,18 +86,18 @@ export default async function AuditPage({
     <Shell active="/audit" domain="admin">
       <main className="gts-page">
         <PageHead
-          overline="System"
-          title="Audit log"
-          lede={`${total.toLocaleString('en-US')} recorded action${total === 1 ? '' : 's'}. Entries are never edited or deleted — a correction is a new entry, so the history of what was believed, and when, survives.`}
+          overline={dict.admin.audit.overline}
+          title={dict.admin.audit.title}
+          lede={`${total.toLocaleString('en-US')} ${dict.admin.audit.lede}`}
         />
 
         <form method="get" className="gts-filter-bar">
           <div className="gts-field">
             <label className="gts-sr" htmlFor="action">
-              Action
+              {dict.admin.audit.filter.actionLabel}
             </label>
             <select id="action" name="action" defaultValue={action ?? ''} className="gts-input gts-select">
-              <option value="">Any action</option>
+              <option value="">{dict.admin.audit.filter.anyAction}</option>
               {ACTIONS.map((a) => (
                 <option key={a} value={a}>
                   {a.toLowerCase().replace(/_/g, ' ')}
@@ -104,10 +108,10 @@ export default async function AuditPage({
 
           <div className="gts-field">
             <label className="gts-sr" htmlFor="actor">
-              Person
+              {dict.admin.audit.filter.personLabel}
             </label>
             <select id="actor" name="actor" defaultValue={params.actor ?? ''} className="gts-input gts-select">
-              <option value="">Anybody</option>
+              <option value="">{dict.admin.audit.filter.anybody}</option>
               {actors.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.nameEn}
@@ -118,10 +122,10 @@ export default async function AuditPage({
 
           <div className="gts-field">
             <label className="gts-sr" htmlFor="entity">
-              Record type
+              {dict.admin.audit.filter.recordLabel}
             </label>
             <select id="entity" name="entity" defaultValue={params.entity ?? ''} className="gts-input gts-select">
-              <option value="">Any record</option>
+              <option value="">{dict.admin.audit.filter.anyRecord}</option>
               {entityTypes.map((e) => (
                 <option key={e.entityType} value={e.entityType}>
                   {e.entityType} ({e._count})
@@ -131,22 +135,22 @@ export default async function AuditPage({
           </div>
 
           <button type="submit" className="gts-btn gts-btn-secondary">
-            Filter
+            {dict.admin.audit.filter.filterButton}
           </button>
           {(action || params.actor || params.entity) && (
             <a href="/audit" className="gts-btn gts-btn-ghost">
-              Clear
+              {dict.admin.audit.filter.clearButton}
             </a>
           )}
         </form>
 
         {entries.length === 0 ? (
           <Empty
-            title="Nothing recorded"
+            title={dict.admin.audit.emptyTitle}
             body={
               action || params.actor || params.entity
-                ? 'No entry matches that filter.'
-                : 'Actions appear here as they happen.'
+                ? dict.admin.audit.emptyBodyFiltered
+                : dict.admin.audit.emptyBodyDefault
             }
             filtered={Boolean(action || params.actor || params.entity)}
           />
@@ -154,24 +158,24 @@ export default async function AuditPage({
           <>
             <div className="gts-table-scroll">
               <table className="gts-table gts-table-compact">
-                <caption className="gts-sr">Audit entries, newest first</caption>
+                <caption className="gts-sr">{dict.admin.audit.tableCaption}</caption>
                 <thead>
                   <tr>
-                    <th scope="col">When</th>
-                    <th scope="col">Who</th>
-                    <th scope="col">Action</th>
-                    <th scope="col">Record</th>
-                    <th scope="col">What changed</th>
-                    <th scope="col">From</th>
+                    <th scope="col">{dict.admin.audit.table.when}</th>
+                    <th scope="col">{dict.admin.audit.table.who}</th>
+                    <th scope="col">{dict.admin.audit.table.action}</th>
+                    <th scope="col">{dict.admin.audit.table.record}</th>
+                    <th scope="col">{dict.admin.audit.table.whatChanged}</th>
+                    <th scope="col">{dict.admin.audit.table.from}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {entries.map((entry) => (
                     <tr key={entry.id}>
                       <th scope="row">
-                        {formatDate(entry.createdAt.toISOString())}
+                        {formatDate(entry.createdAt.toISOString(), locale)}
                         <span className="gts-meta gts-cell-sub">
-                          {formatSiteTime(entry.createdAt.toISOString())}
+                          {formatSiteTime(entry.createdAt.toISOString(), locale)}
                         </span>
                       </th>
                       <td>
@@ -182,7 +186,7 @@ export default async function AuditPage({
                           // was authenticated. The attempted address is
                           // still recorded.
                           <span className="gts-meta">
-                            {entry.actorEmail ?? 'not signed in'}
+                            {entry.actorEmail ?? dict.admin.audit.notSignedIn}
                           </span>
                         )}
                       </td>
@@ -212,18 +216,20 @@ export default async function AuditPage({
             </div>
 
             {pages > 1 && (
-              <nav className="gts-pagination" aria-label="Audit log pages">
+              <nav className="gts-pagination" aria-label={dict.admin.audit.pagination.label}>
                 {page > 1 && (
                   <a href={query({ page: page - 1 })} className="gts-btn gts-btn-secondary">
-                    Newer
+                    {dict.admin.audit.pagination.newer}
                   </a>
                 )}
                 <span className="gts-meta">
-                  Page {page} of {pages}
+                  {dict.admin.audit.pagination.pageOf
+                    .replace('{page}', String(page))
+                    .replace('{pages}', String(pages))}
                 </span>
                 {page < pages && (
                   <a href={query({ page: page + 1 })} className="gts-btn gts-btn-secondary">
-                    Older
+                    {dict.admin.audit.pagination.older}
                   </a>
                 )}
               </nav>

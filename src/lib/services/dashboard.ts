@@ -368,6 +368,39 @@ async function buildAlerts(actor: Actor): Promise<DashboardAlert[]> {
     }
   }
 
+  /* ---- Projects approaching or past their deadline ---- */
+  if (can(actor, 'projects.view')) {
+    const today = cairoWorkDate(now);
+    const horizon = new Date(today);
+    horizon.setUTCDate(horizon.getUTCDate() + 7);
+
+    const due = await db.project.findMany({
+      where: {
+        deletedAt: null,
+        status: { in: ['PLANNING', 'ACTIVE'] },
+        endsOn: { not: null, lte: horizon },
+      },
+      select: { id: true, code: true, nameEn: true, endsOn: true },
+      orderBy: { endsOn: 'asc' },
+      take: 3,
+    });
+
+    for (const project of due) {
+      const days = Math.round((project.endsOn!.getTime() - today.getTime()) / 86_400_000);
+      const overdue = days < 0;
+      alerts.push({
+        id: `deadline-${project.id}`,
+        tone: overdue ? 'danger' : 'warning',
+        title: overdue
+          ? `${project.code} — ${project.nameEn} is ${Math.abs(days)} day${Math.abs(days) === 1 ? '' : 's'} overdue`
+          : `${project.code} — ${project.nameEn} is due in ${days} day${days === 1 ? '' : 's'}`,
+        detail: `Deadline ${project.endsOn!.toISOString().slice(0, 10)}`,
+        href: `/projects/${project.id}`,
+        action: 'Open',
+      });
+    }
+  }
+
   /* ---- Projects running without a geofence ---- */
   if (can(actor, 'projects.location')) {
     const unpinned = await db.project.findMany({

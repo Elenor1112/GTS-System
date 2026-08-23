@@ -3,6 +3,7 @@
 import { useActionState, useState } from 'react';
 
 import { FormError, FormActions, Submit } from '@/components/form';
+import type { Dictionary } from '@/lib/i18n';
 
 import { submitRolePermissions } from './actions';
 
@@ -22,11 +23,13 @@ export function RolePermissionsForm({
   roleName,
   held,
   modules,
+  dict,
 }: {
   roleId: string;
   roleName: string;
   held: string[];
   modules: { module: string; permissions: { key: string; description: string }[] }[];
+  dict: Dictionary['admin']['permissions']['form'];
 }) {
   const [state, formAction] = useActionState(submitRolePermissions, null);
   const [checked, setChecked] = useState<Set<string>>(new Set(held));
@@ -54,8 +57,7 @@ export function RolePermissionsForm({
       <FormError state={state} />
       {state?.ok && (
         <p className="gts-form-success" role="status">
-          Saved — {roleName} now holds {String(state.data.count)} permissions. Anyone signed in
-          with this role is affected on their next request.
+          {dict.savedNotice.replace('{count}', String(state.data.count))}
         </p>
       )}
 
@@ -80,7 +82,7 @@ export function RolePermissionsForm({
                 className="gts-btn gts-btn-ghost gts-btn-xs"
                 onClick={() => toggleModule(keys, !allOn)}
               >
-                {allOn ? 'Clear all' : 'Select all'}
+                {allOn ? dict.clearAll : dict.selectAll}
               </button>
 
               {permissions.map((permission) => (
@@ -104,11 +106,11 @@ export function RolePermissionsForm({
       </div>
 
       <FormActions>
-        <Submit variant="accent" pendingLabel="Saving…">
-          Save {roleName} permissions
+        <Submit variant="accent" pendingLabel={dict.savingButton}>
+          {dict.saveButton} {roleName}
         </Submit>
         <span className="gts-meta" style={{ alignSelf: 'center' }}>
-          {checked.size} selected
+          {checked.size} {dict.selected}
         </span>
       </FormActions>
     </form>

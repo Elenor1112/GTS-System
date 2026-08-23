@@ -7,6 +7,7 @@ import { db } from '@/lib/db';
 import { allSettings } from '@/lib/services/settings';
 import { CURRENCY, VAT_STANDARD, WHT_THRESHOLD, GOVERNORATES } from '@/lib/egypt';
 import { MAX_ACCURACY_M } from '@/lib/geofence';
+import { t } from '@/lib/i18n';
 
 import { SettingsForm } from './settings-form';
 
@@ -26,6 +27,7 @@ export const dynamic = 'force-dynamic';
  */
 export default async function AdminPage() {
   const actor = await requirePermission('settings.manage');
+  const dict = await t();
 
   const [settings, counts] = await Promise.all([
     allSettings(),
@@ -46,15 +48,14 @@ export default async function AdminPage() {
     <Shell active="/admin" domain="admin">
       <main className="gts-page">
         <PageHead
-          overline="System"
-          title="Administration"
-          lede="The values the business logic reads. Changing the geofence radius or the late threshold changes what the server accepts, not merely what a screen displays."
+          overline={dict.admin.settings.overline}
+          title={dict.admin.settings.title}
+          lede={dict.admin.settings.lede}
         />
 
         {!orgTrn && (
           <p className="gts-form-error" role="status">
-            No tax registration number is set for this organisation. Every invoice you issue is
-            missing the issuer TRN, which makes it invalid as an Egyptian tax document.
+            {dict.admin.settings.noTrnWarning}
           </p>
         )}
 
@@ -82,40 +83,40 @@ export default async function AdminPage() {
             ),
           }}
           governorates={GOVERNORATES.map((g) => ({ value: g.code, label: `${g.en} — ${g.ar}` }))}
+          dict={dict.admin.settings}
         />
 
         {/* ---------- The market profile ----------
             Read-only: these are statutory, not preferences. Showing them
             is how somebody confirms the system is configured for Egypt
             rather than the market it was originally built for. */}
-        <Region title="Market">
+        <Region title={dict.admin.settings.market.title}>
           <div className="gts-stat-row">
-            <Fact label="Currency" value={`${CURRENCY.code} — ${CURRENCY.nameEn}`} />
-            <Fact label="Standard VAT" value={`${VAT_STANDARD}%`} />
-            <Fact label="Withholding threshold" value={`${CURRENCY.code} ${WHT_THRESHOLD}`} />
-            <Fact label="Working week" value="Sunday – Thursday" />
-            <Fact label="Timezone" value="Africa/Cairo" />
-            <Fact label="Governorates" value={String(GOVERNORATES.length)} />
+            <Fact label={dict.admin.settings.market.currency} value={`${CURRENCY.code} — ${CURRENCY.nameEn}`} />
+            <Fact label={dict.admin.settings.market.standardVat} value={`${VAT_STANDARD}%`} />
+            <Fact label={dict.admin.settings.market.withholdingThreshold} value={`${CURRENCY.code} ${WHT_THRESHOLD}`} />
+            <Fact label={dict.admin.settings.market.workingWeek} value={dict.admin.settings.market.workingWeekValue} />
+            <Fact label={dict.admin.settings.market.timezone} value="Africa/Cairo" />
+            <Fact label={dict.admin.settings.market.governorates} value={String(GOVERNORATES.length)} />
           </div>
           <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
-            Statutory values, set in <bdi>src/lib/egypt.ts</bdi> rather than here — VAT is 14%
-            because Law 67 of 2016 says so, not because somebody chose it.
+            {dict.admin.settings.market.note}
           </p>
         </Region>
 
         {/* ---------- ETA ---------- */}
-        <Region title="Egyptian Tax Authority e-invoicing">
+        <Region title={dict.admin.settings.eta.title}>
           <div className="gts-stat-row">
             <div className="gts-stat">
-              <p className="gts-overline">Document format</p>
+              <p className="gts-overline">{dict.admin.settings.eta.documentFormat}</p>
               <p className="gts-stat-value">
-                <Status tone="success">Implemented</Status>
+                <Status tone="success">{dict.admin.settings.eta.implemented}</Status>
               </p>
             </div>
             <div className="gts-stat">
-              <p className="gts-overline">Transmission</p>
+              <p className="gts-overline">{dict.admin.settings.eta.transmission}</p>
               <p className="gts-stat-value">
-                <Status tone="neutral">Not configured</Status>
+                <Status tone="neutral">{dict.admin.settings.eta.notConfigured}</Status>
               </p>
             </div>
           </div>
@@ -124,27 +125,22 @@ export default async function AdminPage() {
             className="gts-meta"
             style={{ marginBlockStart: 'var(--gts-space-4)', maxInlineSize: 'var(--gts-prose-max)' }}
           >
-            Bills are produced in the ETA&rsquo;s shape: both parties&rsquo; registration numbers,
-            GPC item codes, per-line VAT and the required document fields. They are{' '}
-            <strong>not transmitted</strong>. Submission needs taxpayer credentials, a client
-            id and secret, and an e-seal certificate to sign the canonical serialisation — none
-            of which can live in this repository. No document shows a UUID, because none has
-            been issued; inventing one would fabricate a compliance record.
+            {dict.admin.settings.eta.body}
           </p>
         </Region>
 
         {/* ---------- What the system holds ---------- */}
-        <Region title="System">
+        <Region title={dict.admin.settings.system.title}>
           <div className="gts-stat-row">
-            <Fact label="Active users" value={users.toLocaleString('en-US')} />
-            <Fact label="Employees" value={employees.toLocaleString('en-US')} />
-            <Fact label="Projects" value={projects.toLocaleString('en-US')} />
-            <Fact label="Bills" value={bills.toLocaleString('en-US')} />
-            <Fact label="Stock movements" value={movements.toLocaleString('en-US')} />
-            <Fact label="Audit entries" value={auditEntries.toLocaleString('en-US')} />
+            <Fact label={dict.admin.settings.system.activeUsers} value={users.toLocaleString('en-US')} />
+            <Fact label={dict.admin.settings.system.employees} value={employees.toLocaleString('en-US')} />
+            <Fact label={dict.admin.settings.system.projects} value={projects.toLocaleString('en-US')} />
+            <Fact label={dict.admin.settings.system.bills} value={bills.toLocaleString('en-US')} />
+            <Fact label={dict.admin.settings.system.stockMovements} value={movements.toLocaleString('en-US')} />
+            <Fact label={dict.admin.settings.system.auditEntries} value={auditEntries.toLocaleString('en-US')} />
           </div>
           <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
-            Signed in as {actor.nameEn} · {actor.roleNameEn}
+            {dict.admin.settings.system.signedInAs} {actor.nameEn} · {actor.roleNameEn}
           </p>
         </Region>
       </main>

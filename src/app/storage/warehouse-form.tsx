@@ -6,8 +6,11 @@ import {
   FormError, FieldGrid, TextField, SelectField, Submit, FormActions, errorFor,
 } from '@/components/form';
 import { GOVERNORATES } from '@/lib/egypt';
+import type { CatalogueDict } from '@/lib/i18n/dict/catalogue';
 
 import { submitCreateWarehouse, submitUpdateWarehouse } from './actions';
+
+type WarehouseFormDict = CatalogueDict['catalogue']['warehouses']['form'];
 
 /**
  * The warehouse form, used for both create and edit.
@@ -32,9 +35,11 @@ export interface WarehouseFormValues {
 export function WarehouseForm({
   mode,
   values,
+  dict,
 }: {
   mode: 'create' | 'edit';
   values?: WarehouseFormValues;
+  dict: WarehouseFormDict;
 }) {
   const submit = mode === 'create' ? submitCreateWarehouse : submitUpdateWarehouse;
   const [state, formAction] = useActionState(submit, null);
@@ -65,8 +70,8 @@ export function WarehouseForm({
       <FieldGrid>
         <TextField
           name="code"
-          label="Warehouse code"
-          hint="Your own reference, e.g. WH-CAI-01"
+          label={dict.codeLabel}
+          hint={dict.codeHint}
           required
           defaultValue={values?.code}
           error={e('code')}
@@ -74,7 +79,7 @@ export function WarehouseForm({
         />
         <TextField
           name="nameEn"
-          label="Name (English)"
+          label={dict.nameEnLabel}
           required
           defaultValue={values?.nameEn}
           error={e('nameEn')}
@@ -82,32 +87,32 @@ export function WarehouseForm({
         />
         <TextField
           name="nameAr"
-          label="Name (Arabic)"
+          label={dict.nameArLabel}
           defaultValue={values?.nameAr}
           error={e('nameAr')}
           maxLength={200}
         />
         <SelectField
           name="governorateCode"
-          label="Governorate"
+          label={dict.governorateLabel}
           defaultValue={values?.governorateCode ?? ''}
           error={e('governorateCode')}
           options={[
-            { value: '', label: 'Not recorded' },
+            { value: '', label: dict.notRecorded },
             ...GOVERNORATES.map((g) => ({ value: String(g.code), label: g.en })),
           ]}
         />
         <TextField
           name="addressLine"
-          label="Address"
+          label={dict.addressLabel}
           defaultValue={values?.addressLine}
           error={e('addressLine')}
           maxLength={300}
         />
         <TextField
           name="capacityM3"
-          label="Capacity (m³)"
-          hint="Nominal volume, used for the utilisation gauge. Leave blank if not measured."
+          label={dict.capacityLabel}
+          hint={dict.capacityHint}
           type="number"
           inputMode="decimal"
           defaultValue={values?.capacityM3}
@@ -115,8 +120,8 @@ export function WarehouseForm({
         />
         <TextField
           name="latitude"
-          label="Latitude"
-          hint="Optional. Enables the map link and geofenced attendance."
+          label={dict.latitudeLabel}
+          hint={dict.latitudeHint}
           type="number"
           inputMode="decimal"
           defaultValue={values?.latitude}
@@ -124,7 +129,7 @@ export function WarehouseForm({
         />
         <TextField
           name="longitude"
-          label="Longitude"
+          label={dict.longitudeLabel}
           type="number"
           inputMode="decimal"
           defaultValue={values?.longitude}
@@ -134,9 +139,9 @@ export function WarehouseForm({
 
       <FormActions>
         <a className="gts-btn gts-btn-ghost" href={values?.id ? `/storage/${values.id}` : '/storage'}>
-          Cancel
+          {dict.cancel}
         </a>
-        <Submit>{mode === 'create' ? 'Create warehouse' : 'Save changes'}</Submit>
+        <Submit>{mode === 'create' ? dict.createWarehouse : dict.saveChanges}</Submit>
       </FormActions>
     </form>
   );

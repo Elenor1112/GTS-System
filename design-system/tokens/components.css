@@ -361,13 +361,15 @@
 }
 
 /* MOBILE NAVIGATION — a different architecture, not a shrunk rail.
-   5 primary destinations + overflow sheet. Attendance is given
-   a raised center position because it is the daily action. */
+   4 primary destinations + a More sheet holding everything else,
+   filtered by the same permissions as the rail. `grid-auto-flow: column`
+   with `grid-auto-columns: 1fr` rather than a fixed column count: the
+   cells actually rendered vary with what the signed-in actor can see. */
 .gts-mobile-nav {
   position: fixed; inset-inline: 0; inset-block-end: 0;
   block-size: calc(var(--gts-mobile-nav-h) + env(safe-area-inset-bottom));
   padding-block-end: env(safe-area-inset-bottom);
-  display: grid; grid-template-columns: repeat(5, 1fr);
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
   background: var(--gts-bg-surface);
   border-block-start: 1px solid var(--gts-border-hairline);
   z-index: var(--gts-z-rail);
@@ -377,8 +379,50 @@
   gap: 3px; color: var(--gts-fg-muted); text-decoration: none;
   font: var(--gts-weight-medium) var(--gts-text-2xs)/1 var(--gts-font-display);
   min-block-size: var(--gts-touch-min);
+  background: transparent; border: none; padding: 0; cursor: pointer;
 }
 .gts-mobile-nav-item[aria-current='page'] { color: var(--gts-accent); }
+
+/* The More sheet — everything the rail shows, grouped the same way,
+   opened from the fifth mobile cell. Sits above the nav bar rather
+   than replacing it, so the trigger stays reachable to close it. */
+.gts-mobile-sheet-backdrop {
+  position: fixed; inset: 0;
+  background: var(--gts-scrim);
+  z-index: calc(var(--gts-z-rail) - 1);
+}
+.gts-mobile-sheet {
+  position: fixed; inset-inline: 0;
+  inset-block-end: calc(var(--gts-mobile-nav-h) + env(safe-area-inset-bottom));
+  max-block-size: min(70dvh, 32rem);
+  overflow-y: auto; overscroll-behavior: contain;
+  background: var(--gts-bg-surface);
+  border-start-start-radius: var(--gts-radius-lg);
+  border-start-end-radius: var(--gts-radius-lg);
+  border-block-end: 1px solid var(--gts-border-hairline);
+  box-shadow: var(--gts-shadow-overlay);
+  z-index: var(--gts-z-rail);
+  padding-block: var(--gts-space-2);
+}
+.gts-mobile-sheet-identity {
+  display: flex; align-items: center; gap: var(--gts-space-3);
+  padding: var(--gts-space-3) var(--gts-space-4);
+  border-block-end: 1px solid var(--gts-border-hairline);
+  margin-block-end: var(--gts-space-2);
+}
+.gts-mobile-sheet-group { padding-block: var(--gts-space-2); }
+.gts-mobile-sheet-group-label {
+  padding-inline: var(--gts-space-4); padding-block-end: var(--gts-space-2);
+  font: var(--gts-role-overline); letter-spacing: var(--gts-role-overline-tracking);
+  text-transform: uppercase; color: var(--gts-fg-muted);
+}
+.gts-mobile-sheet-item {
+  display: flex; align-items: center; gap: var(--gts-space-3);
+  block-size: var(--gts-control-lg); padding-inline: var(--gts-space-4);
+  color: var(--gts-fg-primary); text-decoration: none;
+  font: var(--gts-weight-medium) var(--gts-text-sm)/1 var(--gts-font-display);
+}
+.gts-mobile-sheet-item[aria-current='page'] { color: var(--gts-accent); }
 
 /* ============================================================
    LOADING STATES
@@ -677,6 +721,40 @@
 }
 .gts-user-sheet-item:hover { background: var(--gts-bg-hover) }
 
+/* Theme and language — a segmented control per preference, at the top
+   of the same sheet. Each option is its own submit button carrying its
+   value, so the whole thing works as a plain form post with no client
+   JS required. */
+.gts-pref-group {
+  padding: var(--gts-space-3) var(--gts-space-4);
+  border-block-end: 1px solid var(--gts-border-hairline);
+}
+.gts-pref-label {
+  font: var(--gts-role-overline); letter-spacing: var(--gts-role-overline-tracking);
+  text-transform: uppercase; color: var(--gts-fg-muted);
+  margin-block-end: var(--gts-space-2);
+}
+.gts-pref-segment {
+  display: flex; gap: 2px;
+  background: var(--gts-bg-inset); border-radius: var(--gts-radius-sm);
+  padding: 2px;
+}
+.gts-pref-option {
+  flex: 1 1 0; inline-size: 0;
+  padding-block: var(--gts-space-1); padding-inline: var(--gts-space-2);
+  background: transparent; border: none; border-radius: var(--gts-radius-xs);
+  color: var(--gts-fg-secondary); cursor: pointer;
+  font: var(--gts-role-meta); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  transition: var(--gts-tr-control);
+}
+.gts-pref-option:hover { color: var(--gts-fg-primary) }
+.gts-pref-option-active {
+  background: var(--gts-bg-surface); color: var(--gts-fg-primary);
+  font-weight: var(--gts-weight-medium);
+  box-shadow: var(--gts-shadow-hairline);
+}
+
 /* Mobile: a dot rather than a count — there is no room for a
    number, and "something is waiting" is the whole message. */
 .gts-mobile-nav-dot {
@@ -804,7 +882,7 @@ a.gts-list-title:hover { color: var(--gts-accent); text-decoration: underline;
   margin-block-start: 2px }
 .gts-alert .gts-btn { flex: none }
 
-@media (max-width: 640px) {
+@media (max-width: 430px) {
   .gts-alert { flex-direction: column; align-items: stretch }
   .gts-alert .gts-btn { inline-size: 100% }
 }
@@ -821,7 +899,7 @@ a.gts-list-title:hover { color: var(--gts-accent); text-decoration: underline;
   gap: var(--gts-space-3);
   padding-block: var(--gts-space-2);
 }
-@media (max-width: 640px) {
+@media (max-width: 430px) {
   .gts-filter-bar { align-items: stretch }
   .gts-filter-bar .gts-btn { inline-size: 100% }
 }
@@ -911,7 +989,7 @@ a.gts-list-title:hover { color: var(--gts-accent); text-decoration: underline;
   flex: none; display: flex; flex-direction: column;
   align-items: flex-end; gap: var(--gts-space-1);
 }
-@media (max-width: 640px) {
+@media (max-width: 430px) {
   .gts-timeline-row { flex-wrap: wrap }
   .gts-timeline-aside { inline-size: 100%; align-items: flex-start;
     flex-direction: row; gap: var(--gts-space-3);
@@ -952,7 +1030,7 @@ a.gts-list-title:hover { color: var(--gts-accent); text-decoration: underline;
   padding-block-start: var(--gts-space-5);
   border-block-start: 1px solid var(--gts-border-hairline);
 }
-@media (max-width: 640px) {
+@media (max-width: 430px) {
   .gts-form-actions { flex-direction: column-reverse }
   .gts-form-actions .gts-btn { inline-size: 100% }
 }
@@ -990,7 +1068,7 @@ a.gts-list-title:hover { color: var(--gts-accent); text-decoration: underline;
 
 /* Location helpers sit below the coordinate fields. */
 .gts-location-tools { display: flex; gap: var(--gts-space-3); flex-wrap: wrap }
-@media (max-width: 640px) {
+@media (max-width: 430px) {
   .gts-assign-form, .gts-location-tools { align-items: stretch }
   .gts-assign-form .gts-btn, .gts-location-tools .gts-btn { inline-size: 100% }
 }
@@ -1054,7 +1132,7 @@ a.gts-list-title:hover { color: var(--gts-accent); text-decoration: underline;
 .gts-payment-form > [role='alert'], .gts-payment-form > [role='status'] { flex: 1 1 100% }
 .gts-payment-form-actions { display: flex; gap: var(--gts-space-3) }
 
-@media (max-width: 640px) {
+@media (max-width: 430px) {
   .gts-totals { inline-size: 100% }
   .gts-workflow-actions .gts-btn, .gts-payment-form-actions .gts-btn { inline-size: 100% }
   .gts-payment-form-actions { flex: 1 1 100%; flex-direction: column-reverse }
@@ -1082,7 +1160,7 @@ a.gts-list-title:hover { color: var(--gts-accent); text-decoration: underline;
   background: var(--gts-bg-sunken);
   border-radius: var(--gts-radius-sm);
 }
-@media (max-width: 640px) {
+@media (max-width: 430px) {
   .gts-line-row > .gts-field { flex: 1 1 100% !important }
   .gts-line-row .gts-btn { inline-size: 100% }
 }
@@ -1115,7 +1193,7 @@ a.gts-list-title:hover { color: var(--gts-accent); text-decoration: underline;
 }
 .gts-decision-reason .gts-input { inline-size: min(16rem, 100%) }
 
-@media (max-width: 640px) {
+@media (max-width: 430px) {
   .gts-request-form > .gts-field { flex: 1 1 100% !important }
   .gts-decision-actions .gts-btn { flex: 1 1 auto }
 }
@@ -1214,7 +1292,7 @@ a.gts-list-title:hover { color: var(--gts-accent); text-decoration: underline;
   flex: none; display: flex; flex-direction: column;
   align-items: flex-end; gap: var(--gts-space-2);
 }
-@media (max-width: 640px) {
+@media (max-width: 430px) {
   .gts-notification { flex-direction: column }
   .gts-notification-aside { align-items: flex-start; flex-direction: row; gap: var(--gts-space-3) }
 }

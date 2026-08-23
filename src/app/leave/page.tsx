@@ -7,6 +7,8 @@ import { can } from '@/lib/permissions';
 import { db } from '@/lib/db';
 import { balancesFor, pendingRequests, requestsFor, awayOn } from '@/lib/services/leave';
 import { formatDate } from '@/lib/format';
+import { t } from '@/lib/i18n';
+import { getLocale } from '@/lib/preferences';
 
 import { RequestLeaveForm, DecisionButtons } from './leave-forms';
 
@@ -24,6 +26,8 @@ export const dynamic = 'force-dynamic';
  */
 export default async function LeavePage() {
   const actor = await requirePermission('leave.request');
+  const dict = await t();
+  const locale = await getLocale();
 
   const mayApprove = can(actor, 'leave.approve');
   const mayViewOthers = can(actor, 'leave.view');
@@ -67,22 +71,24 @@ export default async function LeavePage() {
     <Shell active="/leave" domain="attendance">
       <main className="gts-page">
         <PageHead
-          overline="People"
-          title="Leave"
+          overline={dict.people.leave.overline}
+          title={dict.people.leave.title}
           lede={
             mayApprove && queue.length > 0
-              ? `${queue.length} request${queue.length === 1 ? '' : 's'} waiting on you`
-              : 'Egyptian Labour Law 12/2003 — 21 days annual leave, rising to 30 after ten years’ service.'
+              ? dict.people.leave.ledeWaiting
+                  .replace('{count}', String(queue.length))
+                  .replace('{plural}', queue.length === 1 ? '' : 's')
+              : dict.people.leave.ledeLaw
           }
         />
 
         {/* ---------- Your balances ---------- */}
         {actor.employeeId ? (
-          <Region title={`Your balances · ${year}`}>
+          <Region title={dict.people.leave.balances.title.replace('{year}', String(year))}>
             {balances.length === 0 ? (
               <Empty
-                title="No entitlement recorded"
-                body="An administrator sets your annual entitlement from the Administration screen."
+                title={dict.people.leave.balances.empty.title}
+                body={dict.people.leave.balances.empty.body}
               />
             ) : (
               <div className="gts-balance-grid">
@@ -91,12 +97,21 @@ export default async function LeavePage() {
                     <p className="gts-overline">{balance.nameEn}</p>
                     <p className="gts-balance-figure">
                       <span className="gts-num gts-num-lg">{balance.available.toString()}</span>
-                      <span className="gts-meta"> of {balance.entitled.toString()} days</span>
+                      <span className="gts-meta">
+                        {' '}
+                        {dict.people.leave.balances.ofDays.replace(
+                          '{entitled}',
+                          balance.entitled.toString(),
+                        )}
+                      </span>
                     </p>
                     <p className="gts-meta">
-                      {balance.taken.toString()} taken
+                      {dict.people.leave.balances.taken.replace('{taken}', balance.taken.toString())}
                       {balance.pending.greaterThan(0) &&
-                        ` · ${balance.pending.toString()} reserved by a pending request`}
+                        dict.people.leave.balances.reservedPending.replace(
+                          '{pending}',
+                          balance.pending.toString(),
+                        )}
                     </p>
                     {/* Reserved days are held from submission, not from
                         approval — that is what stops two requests
@@ -127,45 +142,46 @@ export default async function LeavePage() {
           </Region>
         ) : (
           <Empty
-            title="No employee record"
-            body="Your login is not linked to an employee, so there is no leave to request or balance to show."
+            title={dict.people.leave.noEmployee.title}
+            body={dict.people.leave.noEmployee.body}
           />
         )}
 
         {/* ---------- Request leave ---------- */}
         {actor.employeeId && leaveTypes.length > 0 && (
-          <Region title="Request leave">
+          <Region title={dict.people.leave.request.title}>
             <RequestLeaveForm
-              leaveTypes={leaveTypes.map((t) => ({
-                id: t.id,
-                label: `${t.nameEn}${t.isPaid ? '' : ' — unpaid'}${
-                  t.requiresDocument ? ' (document required)' : ''
+              leaveTypes={leaveTypes.map((lt) => ({
+                id: lt.id,
+                label: `${lt.nameEn}${lt.isPaid ? '' : dict.people.leave.request.unpaidSuffix}${
+                  lt.requiresDocument ? dict.people.leave.request.documentRequiredSuffix : ''
                 }`,
               }))}
+              dict={dict.people.leave.request}
             />
           </Region>
         )}
 
         {/* ---------- The approval queue ---------- */}
         {mayApprove && (
-          <Region title={`Awaiting decision (${queue.length})`}>
+          <Region title={dict.people.leave.queue.title.replace('{count}', String(queue.length))}>
             {queue.length === 0 ? (
               <Empty
-                title="Nothing waiting"
-                body="Requests appear here the moment somebody submits one. Their balance stays reserved until you decide."
+                title={dict.people.leave.queue.empty.title}
+                body={dict.people.leave.queue.empty.body}
               />
             ) : (
               <div className="gts-table-scroll">
                 <table className="gts-table gts-table-comfortable">
                   <thead>
                     <tr>
-                      <th scope="col">Employee</th>
-                      <th scope="col">Type</th>
-                      <th scope="col">From</th>
-                      <th scope="col">To</th>
-                      <th scope="col" className="gts-cell-num">Working days</th>
-                      <th scope="col" className="gts-cell-num">Left after</th>
-                      <th scope="col">Reason</th>
+                      <th scope="col">{dict.people.leave.queue.employeeHeader}</th>
+                      <th scope="col">{dict.people.leave.queue.typeHeader}</th>
+                      <th scope="col">{dict.people.leave.queue.fromHeader}</th>
+                      <th scope="col">{dict.people.leave.queue.toHeader}</th>
+                      <th scope="col" className="gts-cell-num">{dict.people.leave.queue.workingDaysHeader}</th>
+                      <th scope="col" className="gts-cell-num">{dict.people.leave.queue.leftAfterHeader}</th>
+                      <th scope="col">{dict.people.leave.queue.reasonHeader}</th>
                       <th scope="col" />
                     </tr>
                   </thead>
@@ -184,11 +200,11 @@ export default async function LeavePage() {
                           <td>
                             {request.leaveType.nameEn}
                             {!request.leaveType.isPaid && (
-                              <span className="gts-meta gts-cell-sub">unpaid</span>
+                              <span className="gts-meta gts-cell-sub">{dict.people.leave.queue.unpaid}</span>
                             )}
                           </td>
-                          <td>{formatDate(request.startsOn.toISOString())}</td>
-                          <td>{formatDate(request.endsOn.toISOString())}</td>
+                          <td>{formatDate(request.startsOn.toISOString(), locale)}</td>
+                          <td>{formatDate(request.endsOn.toISOString(), locale)}</td>
                           <td className="gts-cell-num">
                             <span className="gts-num gts-num-sm">{days}</span>
                           </td>
@@ -205,7 +221,7 @@ export default async function LeavePage() {
                             {request.reason ?? <span className="gts-meta">—</span>}
                           </td>
                           <td>
-                            <DecisionButtons requestId={request.id} reference={request.ref} />
+                            <DecisionButtons requestId={request.id} reference={request.ref} dict={dict.people.leave.decision} />
                           </td>
                         </tr>
                       );
@@ -219,24 +235,24 @@ export default async function LeavePage() {
 
         {/* ---------- Your own requests ---------- */}
         {actor.employeeId && (
-          <Region title="Your requests">
+          <Region title={dict.people.leave.myRequests.title}>
             {myRequests.length === 0 ? (
               <Empty
-                title="You have not requested leave"
-                body="Requests you submit appear here with their decision."
+                title={dict.people.leave.myRequests.empty.title}
+                body={dict.people.leave.myRequests.empty.body}
               />
             ) : (
               <div className="gts-table-scroll">
                 <table className="gts-table gts-table-comfortable">
                   <thead>
                     <tr>
-                      <th scope="col">Reference</th>
-                      <th scope="col">Type</th>
-                      <th scope="col">From</th>
-                      <th scope="col">To</th>
-                      <th scope="col" className="gts-cell-num">Days</th>
-                      <th scope="col">Status</th>
-                      <th scope="col">Decided by</th>
+                      <th scope="col">{dict.people.leave.myRequests.referenceHeader}</th>
+                      <th scope="col">{dict.people.leave.myRequests.typeHeader}</th>
+                      <th scope="col">{dict.people.leave.myRequests.fromHeader}</th>
+                      <th scope="col">{dict.people.leave.myRequests.toHeader}</th>
+                      <th scope="col" className="gts-cell-num">{dict.people.leave.myRequests.daysHeader}</th>
+                      <th scope="col">{dict.people.leave.myRequests.statusHeader}</th>
+                      <th scope="col">{dict.people.leave.myRequests.decidedByHeader}</th>
                       <th scope="col" />
                     </tr>
                   </thead>
@@ -247,8 +263,8 @@ export default async function LeavePage() {
                           <bdi>{request.ref}</bdi>
                         </th>
                         <td>{request.leaveType.nameEn}</td>
-                        <td>{formatDate(request.startsOn.toISOString())}</td>
-                        <td>{formatDate(request.endsOn.toISOString())}</td>
+                        <td>{formatDate(request.startsOn.toISOString(), locale)}</td>
+                        <td>{formatDate(request.endsOn.toISOString(), locale)}</td>
                         <td className="gts-cell-num">{request.workingDays.toString()}</td>
                         <td>
                           <Status tone={leaveTone(request.status)}>
@@ -266,7 +282,7 @@ export default async function LeavePage() {
                               days; cancelling a pending one releases the
                               reservation. Both are the requester's call. */}
                           {(request.status === 'PENDING' || request.status === 'APPROVED') && (
-                            <DecisionButtons requestId={request.id} reference={request.ref} ownOnly />
+                            <DecisionButtons requestId={request.id} reference={request.ref} ownOnly dict={dict.people.leave.decision} />
                           )}
                         </td>
                       </tr>
@@ -280,9 +296,9 @@ export default async function LeavePage() {
 
         {/* ---------- Coverage ---------- */}
         {mayViewOthers && (
-          <Region title="Away today">
+          <Region title={dict.people.leave.away.title}>
             {awayToday.length === 0 ? (
-              <Empty title="Everybody is in" body="Nobody is on approved leave today." />
+              <Empty title={dict.people.leave.away.empty.title} body={dict.people.leave.away.empty.body} />
             ) : (
               <ul className="gts-list">
                 {awayToday.map((request) => (
@@ -297,7 +313,10 @@ export default async function LeavePage() {
                     <div className="gts-list-figure">
                       <span className="gts-meta">{request.leaveType.nameEn}</span>
                       <span className="gts-meta">
-                        until {formatDate(request.endsOn.toISOString())}
+                        {dict.people.leave.away.until.replace(
+                          '{date}',
+                          formatDate(request.endsOn.toISOString(), locale),
+                        )}
                       </span>
                     </div>
                   </li>

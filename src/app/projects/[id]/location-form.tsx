@@ -7,8 +7,11 @@ import {
 } from '@/components/form';
 import { GOVERNORATES } from '@/lib/egypt';
 import { DEFAULT_RADIUS, mapUrl } from '@/lib/geofence';
+import type { OperationsDict } from '@/lib/i18n/dict/operations';
 
 import { submitProjectLocation } from '../actions';
+
+export type LocationFormDict = OperationsDict['operations']['projects']['location'];
 
 /**
  * The site location and its geofence.
@@ -24,6 +27,7 @@ import { submitProjectLocation } from '../actions';
 export function LocationForm({
   projectId,
   existing,
+  dict,
 }: {
   projectId: string;
   existing: {
@@ -34,6 +38,7 @@ export function LocationForm({
     radiusMetres: number;
     siteType: string;
   } | null;
+  dict: LocationFormDict;
 }) {
   const [state, formAction] = useActionState(submitProjectLocation, null);
   const [lat, setLat] = useState(existing?.latitude ?? '');
@@ -63,8 +68,7 @@ export function LocationForm({
       <FormError state={state} />
       {state?.ok && (
         <p className="gts-form-success" role="status">
-          Site location saved. Anyone assigned to this project can now check in within the
-          radius below.
+          {dict.successMessage}
         </p>
       )}
 
@@ -74,19 +78,19 @@ export function LocationForm({
         <div className="gts-field-wide">
           <TextField
             name="addressLine"
-            label="Site address"
+            label={dict.addressLabel}
             required
             defaultValue={existing?.addressLine}
             error={e('addressLine')}
-            placeholder="Palm Hills New Cairo, Third Settlement, Cairo"
+            placeholder={dict.addressPlaceholder}
           />
         </div>
 
         <SelectField
           name="governorateCode"
-          label="Governorate"
+          label={dict.governorateLabel}
           required
-          placeholder="Select a governorate"
+          placeholder={dict.governoratePlaceholder}
           defaultValue={existing?.governorateCode ?? ''}
           error={e('governorateCode')}
           options={GOVERNORATES.map((g) => ({ value: g.code, label: `${g.en} — ${g.ar}` }))}
@@ -94,15 +98,15 @@ export function LocationForm({
 
         <SelectField
           name="siteType"
-          label="Site type"
-          hint="Sets a sensible default radius"
+          label={dict.siteTypeLabel}
+          hint={dict.siteTypeHint}
           defaultValue={existing?.siteType ?? 'site'}
           error={e('siteType')}
           options={[
-            { value: 'office', label: `Office — ${DEFAULT_RADIUS.office}m` },
-            { value: 'warehouse', label: `Warehouse — ${DEFAULT_RADIUS.warehouse}m` },
-            { value: 'site', label: `Site — ${DEFAULT_RADIUS.site}m` },
-            { value: 'yard', label: `Yard — ${DEFAULT_RADIUS.yard}m` },
+            { value: 'office', label: `${dict.siteTypeOffice} — ${DEFAULT_RADIUS.office}m` },
+            { value: 'warehouse', label: `${dict.siteTypeWarehouse} — ${DEFAULT_RADIUS.warehouse}m` },
+            { value: 'site', label: `${dict.siteTypeSite} — ${DEFAULT_RADIUS.site}m` },
+            { value: 'yard', label: `${dict.siteTypeYard} — ${DEFAULT_RADIUS.yard}m` },
           ]}
         />
       </FieldGrid>
@@ -110,7 +114,7 @@ export function LocationForm({
       <FieldGrid>
         <div className="gts-field">
           <label className="gts-label" htmlFor="latitude">
-            Latitude <span className="gts-required">*</span>
+            {dict.latitudeLabel} <span className="gts-required">*</span>
           </label>
           <input
             id="latitude"
@@ -128,7 +132,7 @@ export function LocationForm({
 
         <div className="gts-field">
           <label className="gts-label" htmlFor="longitude">
-            Longitude <span className="gts-required">*</span>
+            {dict.longitudeLabel} <span className="gts-required">*</span>
           </label>
           <input
             id="longitude"
@@ -146,8 +150,8 @@ export function LocationForm({
 
         <TextField
           name="radiusMetres"
-          label="Check-in radius (metres)"
-          hint="Between 25m and 5km. Too tight and GPS drift locks out honest staff."
+          label={dict.radiusLabel}
+          hint={dict.radiusHint}
           required
           type="number"
           inputMode="numeric"
@@ -158,7 +162,7 @@ export function LocationForm({
 
       <div className="gts-location-tools">
         <button type="button" className="gts-btn gts-btn-secondary" onClick={useMyPosition}>
-          {locating ? 'Finding you…' : 'Use my current position'}
+          {locating ? dict.findingYou : dict.useMyPosition}
         </button>
         {lat && lng && (
           <a
@@ -167,14 +171,14 @@ export function LocationForm({
             rel="noreferrer"
             className="gts-btn gts-btn-ghost"
           >
-            Check this pin on the map
+            {dict.checkPinOnMap}
           </a>
         )}
       </div>
 
       <FormActions>
-        <Submit variant="accent" pendingLabel="Saving…">
-          {existing ? 'Move the site boundary' : 'Set the site location'}
+        <Submit variant="accent" pendingLabel={dict.saving}>
+          {existing ? dict.moveSiteBoundary : dict.setSiteLocation}
         </Submit>
       </FormActions>
     </form>

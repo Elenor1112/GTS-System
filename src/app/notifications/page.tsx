@@ -5,6 +5,8 @@ import { Status } from '@/components/primitives';
 import { requireActor } from '@/lib/auth';
 import { listNotifications } from '@/lib/services/notifications';
 import { formatDate, formatSiteTime } from '@/lib/format';
+import { getLocale } from '@/lib/preferences';
+import { t } from '@/lib/i18n';
 
 import { MarkAllRead, NotificationLink } from './notification-forms';
 
@@ -29,6 +31,8 @@ export default async function NotificationsPage({
 }) {
   const actor = await requireActor();
   const params = await searchParams;
+  const dict = await t();
+  const locale = await getLocale();
 
   const unreadOnly = params.unread === '1';
   const notifications = await listNotifications(actor.id, { unreadOnly, limit: 100 });
@@ -38,33 +42,33 @@ export default async function NotificationsPage({
     <Shell active="/notifications" domain="admin">
       <main className="gts-page">
         <PageHead
-          overline="Your workspace"
-          title="Notifications"
+          overline={dict.overview.notifications.yourWorkspace}
+          title={dict.overview.notifications.title}
           lede={
             unread > 0
-              ? `${unread} unread`
-              : 'Everything here has been read.'
+              ? `${unread} ${dict.overview.notifications.unread}`
+              : dict.overview.notifications.allRead
           }
-          actions={unread > 0 ? <MarkAllRead /> : undefined}
+          actions={unread > 0 ? <MarkAllRead dict={{ markAllRead: dict.overview.notifications.markAllRead, marking: dict.overview.notifications.marking }} /> : undefined}
         />
 
         <form method="get" className="gts-filter-bar">
           <label className="gts-check">
             <input type="checkbox" name="unread" value="1" defaultChecked={unreadOnly} />
-            Unread only
+            {dict.overview.notifications.unreadOnly}
           </label>
           <button type="submit" className="gts-btn gts-btn-secondary">
-            Apply
+            {dict.overview.notifications.apply}
           </button>
         </form>
 
         {notifications.length === 0 ? (
           <Empty
-            title={unreadOnly ? 'Nothing unread' : 'Nothing yet'}
+            title={unreadOnly ? dict.overview.notifications.nothingUnread : dict.overview.notifications.nothingYet}
             body={
               unreadOnly
-                ? 'You have read everything.'
-                : 'Leave requests, bill approvals, overdue invoices and low stock appear here.'
+                ? dict.overview.notifications.nothingUnreadBody
+                : dict.overview.notifications.nothingYetBody
             }
             filtered={unreadOnly}
           />
@@ -93,8 +97,8 @@ export default async function NotificationsPage({
                     {notification.kind.toLowerCase().replace(/_/g, ' ')}
                   </Status>
                   <span className="gts-meta">
-                    {formatDate(notification.createdAt.toISOString())}{' '}
-                    {formatSiteTime(notification.createdAt.toISOString())}
+                    {formatDate(notification.createdAt.toISOString(), locale)}{' '}
+                    {formatSiteTime(notification.createdAt.toISOString(), locale)}
                   </span>
                 </div>
               </li>

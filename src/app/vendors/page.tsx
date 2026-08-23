@@ -6,6 +6,8 @@ import { requirePermission } from '@/lib/auth';
 import { can } from '@/lib/permissions';
 import { listVendors } from '@/lib/services/vendors';
 import { GOVERNORATES, TRN } from '@/lib/egypt';
+import { t } from '@/lib/i18n';
+import { getLocale } from '@/lib/preferences';
 
 export const metadata: Metadata = { title: 'Vendors — GTS' };
 export const dynamic = 'force-dynamic';
@@ -24,6 +26,8 @@ export default async function VendorsPage({
 }) {
   const actor = await requirePermission('vendors.view');
   const params = await searchParams;
+  const [dict, locale] = await Promise.all([t(), getLocale()]);
+  const d = dict.catalogue.vendors.list;
 
   const includeArchived = params.archived === '1';
   const vendors = await listVendors({ search: params.q, includeArchived });
@@ -38,17 +42,17 @@ export default async function VendorsPage({
     <Shell active="/vendors" domain="vendors">
       <main className="gts-page">
         <PageHead
-          overline="Supply"
-          title="Vendors"
-          lede={`${vendors.length} vendor${vendors.length === 1 ? '' : 's'}${
+          overline={d.overline}
+          title={d.title}
+          lede={`${vendors.length} ${vendors.length === 1 ? d.countOne : d.countOther}${
             totalOwed > 0
-              ? ` · EGP ${totalOwed.toLocaleString('en-US', { minimumFractionDigits: 2 })} payable`
+              ? ` · EGP ${totalOwed.toLocaleString('en-US', { minimumFractionDigits: 2 })} ${d.payableSuffix}`
               : ''
           }`}
           actions={
             can(actor, 'vendors.create') ? (
               <a href="/vendors/new" className="gts-btn gts-btn-accent">
-                New vendor
+                {d.newVendor}
               </a>
             ) : undefined
           }
@@ -57,44 +61,44 @@ export default async function VendorsPage({
         <form method="get" className="gts-filter-bar" role="search">
           <div className="gts-field" style={{ flex: '1 1 18rem' }}>
             <label className="gts-sr" htmlFor="q">
-              Search vendors
+              {d.searchLabel}
             </label>
             <input
               id="q"
               name="q"
               type="search"
               defaultValue={params.q ?? ''}
-              placeholder="Name, code or tax number"
+              placeholder={d.searchPlaceholder}
               className="gts-input"
             />
           </div>
           <label className="gts-check">
             <input type="checkbox" name="archived" value="1" defaultChecked={includeArchived} />
-            Include archived
+            {d.includeArchived}
           </label>
           <button type="submit" className="gts-btn gts-btn-secondary">
-            Search
+            {d.search}
           </button>
           {(params.q || includeArchived) && (
             <a href="/vendors" className="gts-btn gts-btn-ghost">
-              Clear
+              {d.clear}
             </a>
           )}
         </form>
 
         {vendors.length === 0 ? (
           <Empty
-            title={params.q ? 'No vendor matches that search' : 'No vendors yet'}
+            title={params.q ? d.emptySearchTitle : d.emptyTitle}
             body={
               params.q
-                ? 'Try a shorter search, or clear the filter.'
-                : 'A vendor supplies the products you receive into your warehouses and bills you for them.'
+                ? d.emptySearchBody
+                : d.emptyBody
             }
             filtered={Boolean(params.q)}
             action={
               can(actor, 'vendors.create') && !params.q ? (
                 <a href="/vendors/new" className="gts-btn gts-btn-accent">
-                  New vendor
+                  {d.newVendor}
                 </a>
               ) : undefined
             }
@@ -102,15 +106,15 @@ export default async function VendorsPage({
         ) : (
           <div className="gts-table-scroll">
             <table className="gts-table gts-table-comfortable">
-              <caption className="gts-sr">Vendors and what is payable to each</caption>
+              <caption className="gts-sr">{d.caption}</caption>
               <thead>
                 <tr>
-                  <th scope="col">Vendor</th>
-                  <th scope="col">Tax number</th>
-                  <th scope="col">Governorate</th>
-                  <th scope="col" className="gts-cell-num">Products</th>
-                  <th scope="col" className="gts-cell-num">Payable</th>
-                  <th scope="col" className="gts-cell-num">Overdue</th>
+                  <th scope="col">{d.colVendor}</th>
+                  <th scope="col">{d.colTaxNumber}</th>
+                  <th scope="col">{d.colGovernorate}</th>
+                  <th scope="col" className="gts-cell-num">{d.colProducts}</th>
+                  <th scope="col" className="gts-cell-num">{d.colPayable}</th>
+                  <th scope="col" className="gts-cell-num">{d.colOverdue}</th>
                 </tr>
               </thead>
               <tbody>
@@ -122,7 +126,7 @@ export default async function VendorsPage({
                       </a>
                       <span className="gts-meta gts-cell-sub">
                         {vendor.code}
-                        {!vendor.isActive && ' · archived'}
+                        {!vendor.isActive && ` · ${d.archivedSuffix}`}
                       </span>
                     </th>
                     <td>
@@ -138,7 +142,7 @@ export default async function VendorsPage({
                       {vendor.outstanding.isZero() ? (
                         <span className="gts-meta">—</span>
                       ) : (
-                        <Amount value={vendor.outstanding.toNumber()} size="sm" currency={null} />
+                        <Amount value={vendor.outstanding.toNumber()} size="sm" currency={null} locale={locale} />
                       )}
                     </td>
                     <td className="gts-cell-num">
@@ -146,7 +150,7 @@ export default async function VendorsPage({
                         <span className="gts-meta">—</span>
                       ) : (
                         <Status tone="danger">
-                          <Amount value={vendor.overdue.toNumber()} size="sm" currency={null} />
+                          <Amount value={vendor.overdue.toNumber()} size="sm" currency={null} locale={locale} />
                         </Status>
                       )}
                     </td>
@@ -157,14 +161,14 @@ export default async function VendorsPage({
                 <tfoot>
                   <tr>
                     <th scope="row" colSpan={4}>
-                      Total
+                      {d.total}
                     </th>
                     <td className="gts-cell-num">
-                      <Amount value={totalOwed} size="sm" currency={null} />
+                      <Amount value={totalOwed} size="sm" currency={null} locale={locale} />
                     </td>
                     <td className="gts-cell-num">
                       {totalOverdue > 0 ? (
-                        <Amount value={totalOverdue} size="sm" currency={null} />
+                        <Amount value={totalOverdue} size="sm" currency={null} locale={locale} />
                       ) : (
                         <span className="gts-meta">—</span>
                       )}

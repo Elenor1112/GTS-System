@@ -3,6 +3,7 @@
 import { useActionState, useState } from 'react';
 
 import { FormError, FormActions, FieldGrid, TextField, SelectField, Submit, errorFor } from '@/components/form';
+import type { Dictionary } from '@/lib/i18n';
 
 import { submitNewUser, submitUserAction } from './actions';
 
@@ -21,6 +22,7 @@ export function UserRow({
   isSelf,
   name,
   roles,
+  dict,
 }: {
   userId: string;
   currentRoleId: string;
@@ -28,6 +30,7 @@ export function UserRow({
   isSelf: boolean;
   name: string;
   roles: { id: string; label: string }[];
+  dict: Dictionary['admin']['users']['row'];
 }) {
   const [state, formAction] = useActionState(submitUserAction, null);
   const [resetting, setResetting] = useState(false);
@@ -44,18 +47,18 @@ export function UserRow({
           minLength={12}
           autoFocus
           className="gts-input gts-input-sm"
-          placeholder={`New password for ${name}`}
-          aria-label={`New password for ${name}`}
+          placeholder={`${dict.newPasswordPlaceholder} ${name}`}
+          aria-label={`${dict.newPasswordPlaceholder} ${name}`}
         />
         <Submit variant="primary" pendingLabel="…">
-          Set
+          {dict.set}
         </Submit>
         <button
           type="button"
           className="gts-btn gts-btn-ghost gts-btn-sm"
           onClick={() => setResetting(false)}
         >
-          Cancel
+          {dict.cancel}
         </button>
         {state && !state.ok && <p className="gts-help gts-help-error">{state.message}</p>}
       </form>
@@ -70,7 +73,7 @@ export function UserRow({
         name="roleId"
         defaultValue={currentRoleId}
         className="gts-input gts-select gts-input-sm"
-        aria-label={`Role for ${name}`}
+        aria-label={`${dict.roleLabel} ${name}`}
         onChange={(event) => event.currentTarget.form?.requestSubmit()}
       >
         {roles.map((role) => (
@@ -93,7 +96,7 @@ export function UserRow({
             setResetting(true);
           }}
         >
-          Reset password
+          {dict.resetPassword}
         </button>
 
         {/* You cannot deactivate yourself — the server refuses it too,
@@ -105,7 +108,7 @@ export function UserRow({
             value={isActive ? 'deactivate' : 'activate'}
             className={`gts-btn gts-btn-xs ${isActive ? 'gts-btn-danger' : 'gts-btn-secondary'}`}
           >
-            {isActive ? 'Deactivate' : 'Reactivate'}
+            {isActive ? dict.deactivate : dict.reactivate}
           </button>
         )}
       </div>
@@ -118,10 +121,10 @@ export function UserRow({
 /** Create a login. */
 export function NewUserForm({
   roles,
-  employees,
+  dict,
 }: {
   roles: { id: string; label: string }[];
-  employees: { id: string; label: string }[];
+  dict: Dictionary['admin']['users']['form'];
 }) {
   const [state, formAction] = useActionState(submitNewUser, null);
   const e = (field: string) => errorFor(state, field);
@@ -131,55 +134,46 @@ export function NewUserForm({
       <FormError state={state} />
       {state?.ok && (
         <p className="gts-form-success" role="status">
-          Created {String(state.data.email)}. They can sign in with the password you set.
+          {dict.createdNotice}
         </p>
       )}
 
       <FieldGrid>
+        <TextField name="nameEn" label={dict.nameLabel} required error={e('nameEn')} />
         <TextField
           name="email"
-          label="Email address"
+          label={dict.emailLabel}
           type="email"
           required
           error={e('email')}
           autoComplete="off"
         />
-        <TextField name="nameEn" label="Name" required error={e('nameEn')} />
-        <TextField name="nameAr" label="Name (Arabic)" error={e('nameAr')} />
-        <TextField name="phone" label="Phone" type="tel" error={e('phone')} />
+        <TextField name="nameAr" label={dict.nameArLabel} required error={e('nameAr')} />
+        <TextField name="phone" label={dict.phoneLabel} type="tel" required error={e('phone')} />
 
         <SelectField
           name="roleId"
-          label="Role"
+          label={dict.roleLabel}
           required
-          placeholder="Select a role"
+          placeholder={dict.rolePlaceholder}
           error={e('roleId')}
           options={roles.map((r) => ({ value: r.id, label: r.label }))}
         />
 
-        <SelectField
-          name="employeeId"
-          label="Employee record"
-          hint="Required for attendance and leave; leave blank for an office-only login"
-          placeholder="No employee record"
-          error={e('employeeId')}
-          options={employees.map((emp) => ({ value: emp.id, label: emp.label }))}
-        />
-
         <TextField
           name="password"
-          label="Password"
+          label={dict.passwordLabel}
           type="password"
           required
-          hint="At least 12 characters. Length matters more than symbols."
+          hint={dict.passwordHint}
           error={e('password')}
           autoComplete="new-password"
         />
       </FieldGrid>
 
       <FormActions>
-        <Submit variant="accent" pendingLabel="Creating…">
-          Create account
+        <Submit variant="accent" pendingLabel={dict.creatingButton}>
+          {dict.createButton}
         </Submit>
       </FormActions>
     </form>

@@ -7,6 +7,8 @@ import { requirePermission } from '@/lib/auth';
 import { can } from '@/lib/permissions';
 import { productDetail } from '@/lib/services/catalogue';
 import { formatDate } from '@/lib/format';
+import { t } from '@/lib/i18n';
+import { getLocale } from '@/lib/preferences';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,16 +22,6 @@ export async function generateMetadata({
   return { title: product ? `${product.nameEn} — GTS` : 'Product — GTS' };
 }
 
-const TX_LABEL: Record<string, string> = {
-  RECEIVE: 'Received',
-  ISSUE: 'Issued',
-  TRANSFER: 'Transfer',
-  RETURN: 'Returned',
-  DAMAGE: 'Damaged',
-  ADJUSTMENT: 'Adjustment',
-  PROJECT_ALLOCATION: 'Allocated',
-};
-
 /**
  * PRODUCT — one line of the catalogue, and where its units are.
  *
@@ -42,8 +34,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const actor = await requirePermission('products.view');
   const { id } = await params;
 
-  const product = await productDetail(id);
+  const [product, dict, locale] = await Promise.all([productDetail(id), t(), getLocale()]);
   if (!product) notFound();
+  const d = dict.catalogue.products.detail;
+  const txLabel = dict.catalogue.txLabel as Record<string, string>;
 
   const seesMoney = can(actor, 'accounts.view');
 
@@ -58,43 +52,48 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           overline={`Product · ${product.sku}`}
           title={product.nameEn}
           lede={
-            [product.brand, product.category?.nameEn, `Counted in ${product.unit}`]
+            [product.brand, product.category?.nameEn, `${d.counted} ${product.unit}`]
               .filter(Boolean)
               .join(' · ')
           }
           actions={
-            can(actor, 'products.edit') ? (
-              <a href={`/products/${product.id}/edit`} className="gts-btn gts-btn-primary">
-                Edit
+            <>
+              {can(actor, 'products.edit') && (
+                <a href={`/products/${product.id}/edit`} className="gts-btn gts-btn-primary">
+                  {d.edit}
+                </a>
+              )}
+              <a href={`/products/${product.id}/print`} className="gts-btn gts-btn-secondary">
+                {d.print}
               </a>
-            ) : undefined
+            </>
           }
         />
 
         <div className="gts-stat-row">
           <div className="gts-stat">
-            <p className="gts-overline">On hand</p>
+            <p className="gts-overline">{d.onHand}</p>
             <p className="gts-stat-value">
               <span className="gts-num gts-num-md">{product.onHand.toString()}</span>{' '}
               {product.unit}
               {low && (
                 <>
                   {' '}
-                  <Status tone="warning">low</Status>
+                  <Status tone="warning">{d.low}</Status>
                 </>
               )}
             </p>
           </div>
           {reserved > 0 && (
             <div className="gts-stat">
-              <p className="gts-overline">Reserved</p>
+              <p className="gts-overline">{d.reserved}</p>
               <p className="gts-stat-value">
                 <span className="gts-num gts-num-md">{reserved.toLocaleString('en-US')}</span>
               </p>
             </div>
           )}
           <div className="gts-stat">
-            <p className="gts-overline">Reorder level</p>
+            <p className="gts-overline">{d.reorderLevel}</p>
             <p className="gts-stat-value">
               <span className="gts-num gts-num-md">
                 {product.reorderLevel?.toString() ?? '—'}
@@ -104,27 +103,27 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           {seesMoney && (
             <>
               <div className="gts-stat">
-                <p className="gts-overline">Cost price</p>
+                <p className="gts-overline">{d.costPrice}</p>
                 <p className="gts-stat-value">
-                  <Amount value={product.costPrice.toNumber()} size="md" />
+                  <Amount value={product.costPrice.toNumber()} size="md" locale={locale} />
                 </p>
               </div>
               <div className="gts-stat">
-                <p className="gts-overline">Sale price</p>
+                <p className="gts-overline">{d.salePrice}</p>
                 <p className="gts-stat-value">
-                  <Amount value={product.salePrice.toNumber()} size="md" />
+                  <Amount value={product.salePrice.toNumber()} size="md" locale={locale} />
                 </p>
               </div>
               <div className="gts-stat">
-                <p className="gts-overline">Value at cost</p>
+                <p className="gts-overline">{d.valueAtCost}</p>
                 <p className="gts-stat-value">
-                  <Amount value={onHand * product.costPrice.toNumber()} size="md" />
+                  <Amount value={onHand * product.costPrice.toNumber()} size="md" locale={locale} />
                 </p>
               </div>
             </>
           )}
           <div className="gts-stat">
-            <p className="gts-overline">VAT</p>
+            <p className="gts-overline">{d.vat}</p>
             <p className="gts-stat-value">
               <span className="gts-num gts-num-md">{product.vatRate.toString()}</span>%
             </p>
@@ -133,7 +132,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
         {product.vendor && (
           <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
-            Preferred vendor:{' '}
+            {d.preferredVendor}{' '}
             <a href={`/vendors/${product.vendor.id}`} className="gts-cell-link">
               {product.vendor.code} — {product.vendor.nameEn}
             </a>
@@ -142,22 +141,22 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
         {/* ---------- WHERE IT IS ---------- */}
         <section style={{ marginBlockStart: 'var(--gts-space-7)' }}>
-          <h2 className="gts-overline">Stock by warehouse</h2>
+          <h2 className="gts-overline">{d.stockByWarehouse}</h2>
 
           {product.stock.length === 0 ? (
             <Empty
-              title="Not in stock anywhere"
-              body="This product exists in the catalogue but no units have been received into a warehouse."
+              title={d.emptyStockTitle}
+              body={d.emptyStockBody}
             />
           ) : (
             <table className="gts-table">
               <thead>
                 <tr>
-                  <th scope="col">Warehouse</th>
-                  <th scope="col">Bin</th>
-                  <th scope="col" className="gts-cell-num">Quantity</th>
-                  <th scope="col" className="gts-cell-num">Reserved</th>
-                  <th scope="col" className="gts-cell-num">Available</th>
+                  <th scope="col">{d.colWarehouse}</th>
+                  <th scope="col">{d.colBin}</th>
+                  <th scope="col" className="gts-cell-num">{d.colQuantity}</th>
+                  <th scope="col" className="gts-cell-num">{d.colReserved}</th>
+                  <th scope="col" className="gts-cell-num">{d.colAvailable}</th>
                 </tr>
               </thead>
               <tbody>
@@ -192,15 +191,15 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         {/* ---------- COMMITTED TO PROJECTS ---------- */}
         {product.projectProducts.length > 0 && (
           <section style={{ marginBlockStart: 'var(--gts-space-7)' }}>
-            <h2 className="gts-overline">On projects</h2>
+            <h2 className="gts-overline">{d.onProjects}</h2>
             <table className="gts-table">
               <thead>
                 <tr>
-                  <th scope="col">Project</th>
-                  <th scope="col" className="gts-cell-num">Allocated</th>
-                  <th scope="col" className="gts-cell-num">Delivered</th>
-                  <th scope="col" className="gts-cell-num">Returned</th>
-                  <th scope="col" className="gts-cell-num">Damaged</th>
+                  <th scope="col">{d.colProject}</th>
+                  <th scope="col" className="gts-cell-num">{d.colAllocated}</th>
+                  <th scope="col" className="gts-cell-num">{d.colDelivered}</th>
+                  <th scope="col" className="gts-cell-num">{d.colReturned}</th>
+                  <th scope="col" className="gts-cell-num">{d.colDamaged}</th>
                 </tr>
               </thead>
               <tbody>
@@ -232,30 +231,30 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
         {/* ---------- THE LEDGER ---------- */}
         <section style={{ marginBlockStart: 'var(--gts-space-7)' }}>
-          <h2 className="gts-overline">Movement history</h2>
+          <h2 className="gts-overline">{d.movementHistory}</h2>
 
           {product.movements.length === 0 ? (
-            <Empty title="No movements" body="This product has never moved." />
+            <Empty title={d.emptyMovementsTitle} body={d.emptyMovementsBody} />
           ) : (
             <table className="gts-table">
               <thead>
                 <tr>
-                  <th scope="col">Date</th>
-                  <th scope="col">Reference</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Warehouse</th>
-                  <th scope="col" className="gts-cell-num">Quantity</th>
-                  <th scope="col" className="gts-cell-num">Balance after</th>
-                  <th scope="col">By</th>
+                  <th scope="col">{d.colDate}</th>
+                  <th scope="col">{d.colReference}</th>
+                  <th scope="col">{d.colType}</th>
+                  <th scope="col">{d.colWarehouse}</th>
+                  <th scope="col" className="gts-cell-num">{d.colQuantity}</th>
+                  <th scope="col" className="gts-cell-num">{d.colBalanceAfter}</th>
+                  <th scope="col">{d.colBy}</th>
                 </tr>
               </thead>
               <tbody>
                 {product.movements.map((tx) => (
                   <tr key={tx.id}>
-                    <td>{formatDate(tx.occurredAt.toISOString())}</td>
+                    <td>{formatDate(tx.occurredAt.toISOString(), locale)}</td>
                     <td>{tx.ref}</td>
                     <td>
-                      {TX_LABEL[tx.type] ?? tx.type}
+                      {txLabel[tx.type] ?? tx.type}
                       {tx.destinationWarehouse && ` → ${tx.destinationWarehouse.code}`}
                       {tx.project && ` · ${tx.project.code}`}
                     </td>

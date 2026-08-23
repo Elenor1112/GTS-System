@@ -201,6 +201,11 @@
   --gts-fg-inverse:       var(--gts-ink-05);
   --gts-fg-inverse-muted: var(--gts-ink-30);
 
+  /* A dimming layer behind a sheet or dialog. Same weight in both
+     themes — it darkens whatever is beneath it rather than matching
+     the page, so it needs no dark-mode override. */
+  --gts-scrim: oklch(0% 0 0 / 0.4);
+
   /* Foreground */
   --gts-fg-primary:   var(--gts-ink-90);
   --gts-fg-secondary: var(--gts-ink-60);

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
 import { getActor } from '@/lib/auth';
+import { t } from '@/lib/i18n';
 import { SignInForm } from './sign-in-form';
 
 export const metadata: Metadata = {
@@ -27,6 +28,9 @@ export default async function SignInPage({
     redirect(params.from && params.from.startsWith('/') ? params.from : '/dashboard');
   }
 
+  const dict = await t();
+  const a = dict.auth;
+
   return (
     <main className="gts-auth">
       <div className="gts-auth-panel">
@@ -35,31 +39,31 @@ export default async function SignInPage({
             GTS<span style={{ color: 'var(--gts-accent)' }}>.</span>
           </span>
           <p className="gts-overline" style={{ marginBlockStart: 'var(--gts-space-3)' }}>
-            Business operating system
+            {a.tagline}
           </p>
         </div>
 
-        <h1 className="gts-auth-title">Sign in</h1>
+        <h1 className="gts-auth-title">{a.title}</h1>
 
         {params.reason === 'expired' && (
           <div className="gts-auth-notice" role="status">
-            Your session ended. Sign in again to continue.
+            {a.sessionExpired}
           </div>
         )}
         {params.reason === 'forbidden' && (
           <div className="gts-auth-notice" role="status">
-            You do not have permission to open that page.
+            {a.forbidden}
           </div>
         )}
 
-        <SignInForm redirectTo={params.from} />
+        <SignInForm redirectTo={params.from} dict={a} />
       </div>
 
       {/* The seeded development credentials. Rendered only outside
           production so a deployed instance never advertises them. */}
       {process.env.NODE_ENV !== 'production' && (
         <p className="gts-auth-hint">
-          Development sign-in — <code>admin@gts.example</code> / <code>Admin!2026</code>
+          {a.devHint} <code>admin@gts.example</code> / <code>Admin!2026</code>
         </p>
       )}
     </main>

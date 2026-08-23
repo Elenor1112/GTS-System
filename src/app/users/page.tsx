@@ -4,8 +4,10 @@ import { Region, Status } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { can, ADMIN_ROLE } from '@/lib/permissions';
-import { listUsers, listRoles, listEmployees } from '@/lib/services/people';
+import { listUsers, listRoles } from '@/lib/services/people';
 import { formatDate } from '@/lib/format';
+import { t } from '@/lib/i18n';
+import { getLocale } from '@/lib/preferences';
 
 import { UserRow, NewUserForm } from './user-forms';
 
@@ -27,63 +29,60 @@ export default async function UsersPage({
 }) {
   const actor = await requirePermission('users.view');
   const params = await searchParams;
+  const dict = await t();
+  const locale = await getLocale();
 
   const includeInactive = params.inactive === '1';
   const mayManage = can(actor, 'users.manage');
 
-  const [users, roles, employees] = await Promise.all([
+  const [users, roles] = await Promise.all([
     listUsers({ includeInactive }),
     listRoles(),
-    mayManage ? listEmployees() : [],
   ]);
 
   const admins = users.filter((u) => u.role.key === ADMIN_ROLE && u.isActive).length;
-  /** Employees with no login yet — the candidates for a new account. */
-  const unlinked = employees.filter((e) => !e.user);
 
   return (
     <Shell active="/users" domain="admin">
       <main className="gts-page">
         <PageHead
-          overline="System"
-          title="Users"
-          lede={`${users.length} account${users.length === 1 ? '' : 's'} · ${admins} administrator${
+          overline={dict.admin.users.overline}
+          title={dict.admin.users.title}
+          lede={`${users.length} ${dict.admin.users.ledeAccounts}${users.length === 1 ? '' : 's'} · ${admins} ${dict.admin.users.ledeAdministrators}${
             admins === 1 ? '' : 's'
           }`}
         />
 
         {admins === 1 && (
           <p className="gts-form-error" role="status">
-            There is only one administrator. If that account is lost, nobody can administer the
-            system — the last administrator cannot be demoted or deactivated for exactly that
-            reason. Consider promoting a second.
+            {dict.admin.users.lastAdminWarning}
           </p>
         )}
 
         <form method="get" className="gts-filter-bar">
           <label className="gts-check">
             <input type="checkbox" name="inactive" value="1" defaultChecked={includeInactive} />
-            Include deactivated
+            {dict.admin.users.includeDeactivated}
           </label>
           <button type="submit" className="gts-btn gts-btn-secondary">
-            Apply
+            {dict.admin.users.apply}
           </button>
         </form>
 
-        <Region title="Accounts">
+        <Region title={dict.admin.users.accountsRegion}>
           {users.length === 0 ? (
-            <Empty title="No users" body="Nobody can sign in yet." />
+            <Empty title={dict.admin.users.emptyTitle} body={dict.admin.users.emptyBody} />
           ) : (
             <div className="gts-table-scroll">
               <table className="gts-table gts-table-comfortable">
-                <caption className="gts-sr">User accounts, their roles and employee links</caption>
+                <caption className="gts-sr">{dict.admin.users.tableCaption}</caption>
                 <thead>
                   <tr>
-                    <th scope="col">User</th>
-                    <th scope="col">Role</th>
-                    <th scope="col">Employee</th>
-                    <th scope="col">Last signed in</th>
-                    <th scope="col">Status</th>
+                    <th scope="col">{dict.admin.users.table.user}</th>
+                    <th scope="col">{dict.admin.users.table.role}</th>
+                    <th scope="col">{dict.admin.users.table.employee}</th>
+                    <th scope="col">{dict.admin.users.table.lastSignedIn}</th>
+                    <th scope="col">{dict.admin.users.table.status}</th>
                     {mayManage && <th scope="col" />}
                   </tr>
                 </thead>
@@ -103,6 +102,7 @@ export default async function UsersPage({
                             isSelf={user.id === actor.id}
                             name={user.nameEn}
                             roles={roles.map((r) => ({ id: r.id, label: r.nameEn }))}
+                            dict={dict.admin.users.row}
                           />
                         ) : (
                           user.role.nameEn
@@ -119,25 +119,27 @@ export default async function UsersPage({
                         ) : (
                           // Not a defect: an accounts-only login has no
                           // attendance to record.
-                          <span className="gts-meta">no employee record</span>
+                          <span className="gts-meta">{dict.admin.users.noEmployeeRecord}</span>
                         )}
                       </td>
                       <td>
                         {user.lastLoginAt ? (
-                          formatDate(user.lastLoginAt.toISOString())
+                          formatDate(user.lastLoginAt.toISOString(), locale)
                         ) : (
-                          <span className="gts-meta">never</span>
+                          <span className="gts-meta">{dict.admin.users.never}</span>
                         )}
                         {user._count.sessions > 0 && (
                           <span className="gts-meta gts-cell-sub">
-                            {user._count.sessions} active session
-                            {user._count.sessions === 1 ? '' : 's'}
+                            {user._count.sessions}{' '}
+                            {user._count.sessions === 1
+                              ? dict.admin.users.activeSession
+                              : dict.admin.users.activeSessions}
                           </span>
                         )}
                       </td>
                       <td>
                         <Status tone={user.isActive ? 'success' : 'neutral'}>
-                          {user.isActive ? 'active' : 'deactivated'}
+                          {user.isActive ? dict.admin.users.statusActive : dict.admin.users.statusDeactivated}
                         </Status>
                       </td>
                       {mayManage && <td />}
@@ -150,63 +152,22 @@ export default async function UsersPage({
         </Region>
 
         {mayManage && (
-          <Region title="New account">
+          <Region title={dict.admin.users.newAccountRegion}>
             <NewUserForm
               roles={roles.map((r) => ({ id: r.id, label: r.nameEn }))}
-              employees={unlinked.map((e) => ({
-                id: e.id,
-                label: `${e.nameEn} — ${e.code}, ${e.jobTitleEn}`,
-              }))}
+              dict={dict.admin.users.form}
             />
           </Region>
         )}
 
         {can(actor, 'employees.view') && (
-          <Region title={`Employees (${employees.length})`}>
-            {employees.length === 0 ? (
-              <Empty
-                title="No employees"
-                body="An employee is a person the business employs, whether or not they have a login."
-              />
-            ) : (
-              <div className="gts-table-scroll">
-                <table className="gts-table gts-table-comfortable">
-                  <thead>
-                    <tr>
-                      <th scope="col">Employee</th>
-                      <th scope="col">Job title</th>
-                      <th scope="col">Department</th>
-                      <th scope="col">Hired</th>
-                      <th scope="col">Login</th>
-                      <th scope="col" className="gts-cell-num">Sites</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {employees.map((employee) => (
-                      <tr key={employee.id}>
-                        <th scope="row">
-                          {employee.nameEn}
-                          <span className="gts-meta gts-cell-sub">{employee.code}</span>
-                        </th>
-                        <td>{employee.jobTitleEn}</td>
-                        <td>{employee.department ?? <span className="gts-meta">—</span>}</td>
-                        <td>{formatDate(employee.hiredOn.toISOString())}</td>
-                        <td>
-                          {employee.user ? (
-                            employee.user.email
-                          ) : (
-                            <span className="gts-meta">none</span>
-                          )}
-                        </td>
-                        <td className="gts-cell-num">
-                          <span className="gts-num gts-num-sm">{employee._count.projects}</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+          <Region title={dict.admin.users.employeesRegion}>
+            <p className="gts-body">
+              {dict.admin.users.employeesBody}
+            </p>
+            <a href="/employees" className="gts-btn gts-btn-secondary">
+              {dict.admin.users.openEmployees}
+            </a>
           </Region>
         )}
       </main>

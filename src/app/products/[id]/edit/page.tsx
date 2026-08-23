@@ -5,6 +5,7 @@ import { Shell, PageHead } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { productDetail, listCategories } from '@/lib/services/catalogue';
 import { listVendors } from '@/lib/services/vendors';
+import { t } from '@/lib/i18n';
 import { ProductForm } from '../../product-form';
 
 export const dynamic = 'force-dynamic';
@@ -18,23 +19,26 @@ export default async function EditProductPage({
   await requirePermission('products.edit');
   const { id } = await params;
 
-  const [product, categories, vendors] = await Promise.all([
+  const [product, categories, vendors, dict] = await Promise.all([
     productDetail(id),
     listCategories(),
     listVendors(),
+    t(),
   ]);
   if (!product) notFound();
+  const d = dict.catalogue.products;
 
   return (
     <Shell active="/products" domain="inventory">
       <main className="gts-page">
         <PageHead
           overline={`Product · ${product.sku}`}
-          title="Edit product"
-          lede="Changing a price here affects future bills only. Lines already drafted keep the price they were written at."
+          title={d.edit.title}
+          lede={d.edit.lede}
         />
         <ProductForm
           mode="edit"
+          dict={d.form}
           categories={categories.map((c) => ({ id: c.id, nameEn: c.nameEn }))}
           vendors={vendors.map((v) => ({ id: v.id, nameEn: v.nameEn, code: v.code }))}
           values={{

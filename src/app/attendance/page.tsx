@@ -6,6 +6,8 @@ import { requirePermission } from '@/lib/auth';
 import { assignedSites, attendanceFor } from '@/lib/services/attendance';
 import { getSetting } from '@/lib/services/settings';
 import { formatSiteDate, formatSiteTime } from '@/lib/format';
+import { t } from '@/lib/i18n';
+import { getLocale } from '@/lib/preferences';
 
 import { CheckInPanel } from './check-in-panel';
 
@@ -27,6 +29,8 @@ export const dynamic = 'force-dynamic';
  */
 export default async function AttendancePage() {
   const actor = await requirePermission('attendance.check_in');
+  const dict = await t();
+  const locale = await getLocale();
 
   // A user without an employee record has no attendance to take. That is
   // a real state — an accounts-only login — not an error.
@@ -35,14 +39,14 @@ export default async function AttendancePage() {
       <Shell active="/attendance" domain="attendance">
         <main className="gts-page">
           <header>
-            <p className="gts-overline">Attendance</p>
+            <p className="gts-overline">{dict.people.attendance.overline}</p>
             <h1 className="gts-page-title" style={{ marginBlockStart: 'var(--gts-space-2)' }}>
-              Where you are
+              {dict.people.attendance.title}
             </h1>
           </header>
           <Empty
-            title="No employee record"
-            body="Your login is not linked to an employee, so there is no attendance to record. An administrator can link it from the Users screen."
+            title={dict.people.attendance.noEmployee.title}
+            body={dict.people.attendance.noEmployee.body}
           />
         </main>
       </Shell>
@@ -66,17 +70,17 @@ export default async function AttendancePage() {
       <main className="gts-page">
         <header>
           <p className="gts-overline">
-            Attendance · {formatSiteDate(new Date().toISOString())}
+            {dict.people.attendance.overline} · {formatSiteDate(new Date().toISOString(), locale)}
           </p>
           <h1 className="gts-page-title" style={{ marginBlockStart: 'var(--gts-space-2)' }}>
-            Where you are
+            {dict.people.attendance.title}
           </h1>
         </header>
 
         {sites.length === 0 ? (
           <Empty
-            title="No site assigned"
-            body="You are not currently assigned to a project with a pinned location. Attendance opens as soon as somebody assigns you to one."
+            title={dict.people.attendance.noSite.title}
+            body={dict.people.attendance.noSite.body}
           />
         ) : (
           <div className="gts-checkin-stack">
@@ -106,6 +110,7 @@ export default async function AttendancePage() {
                     : null
                 }
                 maxAccuracyMetres={maxAccuracy}
+                dict={dict.people.attendance.checkIn}
               />
             ))}
           </div>
@@ -113,39 +118,41 @@ export default async function AttendancePage() {
 
         <section className="gts-region">
           <header className="gts-region-head">
-            <h2 className="gts-region-title">Your last fortnight</h2>
+            <h2 className="gts-region-title">{dict.people.attendance.history.title}</h2>
             <span className="gts-meta">
-              Working day starts {workStart} · late after {lateThreshold} minutes
+              {dict.people.attendance.history.workingDayNote
+                .replace('{start}', workStart)
+                .replace('{minutes}', String(lateThreshold))}
             </span>
           </header>
 
           {history.length === 0 ? (
             <Empty
-              title="No attendance recorded yet"
-              body="Your check-ins appear here once you record the first one."
+              title={dict.people.attendance.history.empty.title}
+              body={dict.people.attendance.history.empty.body}
             />
           ) : (
             <div className="gts-table-scroll">
               <table className="gts-table gts-table-comfortable">
                 <thead>
                   <tr>
-                    <th scope="col">Date</th>
-                    <th scope="col">Project</th>
-                    <th scope="col">In</th>
-                    <th scope="col">Out</th>
-                    <th scope="col">Status</th>
-                    <th scope="col" className="gts-cell-num">Distance</th>
+                    <th scope="col">{dict.people.attendance.history.dateHeader}</th>
+                    <th scope="col">{dict.people.attendance.history.projectHeader}</th>
+                    <th scope="col">{dict.people.attendance.history.inHeader}</th>
+                    <th scope="col">{dict.people.attendance.history.outHeader}</th>
+                    <th scope="col">{dict.people.attendance.history.statusHeader}</th>
+                    <th scope="col" className="gts-cell-num">{dict.people.attendance.history.distanceHeader}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {history.map((record) => (
                     <tr key={record.id}>
-                      <th scope="row">{formatSiteDate(record.workDate.toISOString())}</th>
+                      <th scope="row">{formatSiteDate(record.workDate.toISOString(), locale)}</th>
                       <td>{record.project.code}</td>
-                      <td>{formatSiteTime(record.checkInAt.toISOString())}</td>
+                      <td>{formatSiteTime(record.checkInAt.toISOString(), locale)}</td>
                       <td>
                         {record.checkOutAt ? (
-                          formatSiteTime(record.checkOutAt.toISOString())
+                          formatSiteTime(record.checkOutAt.toISOString(), locale)
                         ) : (
                           <span className="gts-meta">—</span>
                         )}

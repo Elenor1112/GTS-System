@@ -6,8 +6,11 @@ import {
   FormError, FormActions, FieldGrid, TextField, SelectField, TextArea, Submit, errorFor,
 } from '@/components/form';
 import { GOVERNORATES } from '@/lib/egypt';
+import type { CatalogueDict } from '@/lib/i18n/dict/catalogue';
 
 import { submitCreateVendor, submitUpdateVendor } from './actions';
+
+type VendorFormDict = CatalogueDict['catalogue']['vendors']['form'];
 
 /**
  * The vendor form, used for both create and edit.
@@ -37,9 +40,11 @@ export interface VendorFormValues {
 export function VendorForm({
   mode,
   values,
+  dict,
 }: {
   mode: 'create' | 'edit';
   values?: VendorFormValues;
+  dict: VendorFormDict;
 }) {
   const submit = mode === 'create' ? submitCreateVendor : submitUpdateVendor;
   const [state, formAction] = useActionState(submit, null);
@@ -72,8 +77,8 @@ export function VendorForm({
       <FieldGrid>
         <TextField
           name="code"
-          label="Vendor code"
-          hint="Your own reference, e.g. CL-006"
+          label={dict.codeLabel}
+          hint={dict.codeHint}
           required
           defaultValue={values?.code}
           error={e('code')}
@@ -81,7 +86,7 @@ export function VendorForm({
         />
         <TextField
           name="nameEn"
-          label="Name (English)"
+          label={dict.nameEnLabel}
           required
           defaultValue={values?.nameEn}
           error={e('nameEn')}
@@ -89,15 +94,15 @@ export function VendorForm({
         />
         <TextField
           name="nameAr"
-          label="Name (Arabic)"
+          label={dict.nameArLabel}
           defaultValue={values?.nameAr}
           error={e('nameAr')}
           maxLength={200}
         />
         <TextField
           name="trn"
-          label="Tax registration number"
-          hint="9 digits, issued by the Egyptian Tax Authority"
+          label={dict.trnLabel}
+          hint={dict.trnHint}
           defaultValue={values?.trn}
           error={e('trn')}
           inputMode="numeric"
@@ -105,15 +110,15 @@ export function VendorForm({
         />
         <TextField
           name="commercialRegNo"
-          label="Commercial register"
-          hint="Issued by GAFI"
+          label={dict.commercialRegLabel}
+          hint={dict.commercialRegHint}
           defaultValue={values?.commercialRegNo}
           error={e('commercialRegNo')}
         />
         <SelectField
           name="governorateCode"
-          label="Governorate"
-          placeholder="Select a governorate"
+          label={dict.governorateLabel}
+          placeholder={dict.governoratePlaceholder}
           defaultValue={values?.governorateCode ?? ''}
           error={e('governorateCode')}
           options={GOVERNORATES.map((g) => ({ value: g.code, label: `${g.en} — ${g.ar}` }))}
@@ -124,7 +129,7 @@ export function VendorForm({
         <div className="gts-field-wide">
           <TextField
             name="addressLine"
-            label="Address"
+            label={dict.addressLabel}
             defaultValue={values?.addressLine}
             error={e('addressLine')}
             autoComplete="street-address"
@@ -132,13 +137,13 @@ export function VendorForm({
         </div>
         <TextField
           name="contactName"
-          label="Contact name"
+          label={dict.contactNameLabel}
           defaultValue={values?.contactName}
           error={e('contactName')}
         />
         <TextField
           name="contactPhone"
-          label="Contact phone"
+          label={dict.contactPhoneLabel}
           type="tel"
           defaultValue={values?.contactPhone}
           error={e('contactPhone')}
@@ -146,7 +151,7 @@ export function VendorForm({
         />
         <TextField
           name="contactEmail"
-          label="Contact email"
+          label={dict.contactEmailLabel}
           type="email"
           defaultValue={values?.contactEmail}
           error={e('contactEmail')}
@@ -156,8 +161,8 @@ export function VendorForm({
       <FieldGrid>
         <TextField
           name="paymentTermsDays"
-          label="Payment terms (days)"
-          hint="Applied to the due date when a bill is raised"
+          label={dict.paymentTermsLabel}
+          hint={dict.paymentTermsHint}
           type="number"
           inputMode="numeric"
           defaultValue={values?.paymentTermsDays ?? 30}
@@ -165,17 +170,17 @@ export function VendorForm({
         />
       </FieldGrid>
 
-      <TextArea name="notes" label="Notes" defaultValue={values?.notes} error={e('notes')} />
+      <TextArea name="notes" label={dict.notesLabel} defaultValue={values?.notes} error={e('notes')} />
 
       <FormActions>
-        <Submit variant="accent" pendingLabel={mode === 'create' ? 'Creating…' : 'Saving…'}>
-          {mode === 'create' ? 'Create vendor' : 'Save changes'}
+        <Submit variant="accent" pendingLabel={mode === 'create' ? dict.creating : dict.saving}>
+          {mode === 'create' ? dict.createVendor : dict.saveChanges}
         </Submit>
         <a
           href={mode === 'edit' && values?.id ? `/vendors/${values.id}` : '/vendors'}
           className="gts-btn gts-btn-secondary"
         >
-          Cancel
+          {dict.cancel}
         </a>
       </FormActions>
     </form>

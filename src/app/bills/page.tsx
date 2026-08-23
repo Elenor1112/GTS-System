@@ -7,8 +7,10 @@ import { can } from '@/lib/permissions';
 import { db } from '@/lib/db';
 import { outstandingOf } from '@/lib/services/billing';
 import { daysOverdue } from '@/lib/services/accounts';
-import { formatDate } from '@/lib/format';
+import { formatDate, formatMoney } from '@/lib/format';
 import { CURRENCY, VAT_STANDARD } from '@/lib/egypt';
+import { t } from '@/lib/i18n';
+import { getLocale } from '@/lib/preferences';
 
 export const metadata: Metadata = { title: 'Electronic bills — GTS' };
 export const dynamic = 'force-dynamic';
@@ -35,6 +37,14 @@ export default async function BillsPage({
 }) {
   const actor = await requirePermission('bills.view');
   const params = await searchParams;
+  const [dict, locale] = await Promise.all([t(), getLocale()]);
+  const d = dict.finance.bills.list;
+  const statusLabel = (status: string) =>
+    dict.finance.bills.status[
+      status
+        .toLowerCase()
+        .replace(/_([a-z])/g, (_, c: string) => c.toUpperCase()) as keyof typeof dict.finance.bills.status
+    ] ?? status.toLowerCase().replace('_', ' ');
 
   const status = STATUSES.includes(params.status as (typeof STATUSES)[number])
     ? (params.status as (typeof STATUSES)[number])
@@ -85,17 +95,17 @@ export default async function BillsPage({
     <Shell active="/bills" domain="finance">
       <main className="gts-page">
         <PageHead
-          overline={`Tax documents · VAT ${VAT_STANDARD}%`}
-          title="Electronic bills"
-          lede={`${bills.length} document${bills.length === 1 ? '' : 's'}${
+          overline={`${dict.finance.bills.nav.overline} · VAT ${VAT_STANDARD}%`}
+          title={dict.finance.bills.nav.title}
+          lede={`${d.documentCount(bills.length)}${
             outstanding > 0
-              ? ` · ${CURRENCY.code} ${outstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })} outstanding`
+              ? ` · ${formatMoney(outstanding, locale, CURRENCY.code)} ${d.outstandingSuffix}`
               : ''
           }`}
           actions={
             can(actor, 'bills.create') ? (
               <a href="/bills/new" className="gts-btn gts-btn-accent">
-                New bill
+                {d.newBill}
               </a>
             ) : undefined
           }
@@ -104,20 +114,20 @@ export default async function BillsPage({
         <form method="get" className="gts-filter-bar" role="search">
           <div className="gts-field" style={{ flex: '1 1 14rem' }}>
             <label className="gts-sr" htmlFor="q">
-              Search bills
+              {d.searchLabel}
             </label>
             <input
               id="q"
               name="q"
               type="search"
               defaultValue={params.q ?? ''}
-              placeholder="Number, counterparty or project"
+              placeholder={d.searchPlaceholder}
               className="gts-input"
             />
           </div>
           <div className="gts-field">
             <label className="gts-sr" htmlFor="direction">
-              Direction
+              {d.directionLabel}
             </label>
             <select
               id="direction"
@@ -125,14 +135,14 @@ export default async function BillsPage({
               defaultValue={direction ?? ''}
               className="gts-input gts-select"
             >
-              <option value="">Both directions</option>
-              <option value="RECEIVABLE">Receivable — issued to clients</option>
-              <option value="PAYABLE">Payable — received from vendors</option>
+              <option value="">{d.bothDirections}</option>
+              <option value="RECEIVABLE">{d.receivableOption}</option>
+              <option value="PAYABLE">{d.payableOption}</option>
             </select>
           </div>
           <div className="gts-field">
             <label className="gts-sr" htmlFor="status">
-              Status
+              {d.statusLabel}
             </label>
             <select
               id="status"
@@ -140,37 +150,37 @@ export default async function BillsPage({
               defaultValue={status ?? ''}
               className="gts-input gts-select"
             >
-              <option value="">Any status</option>
+              <option value="">{d.anyStatus}</option>
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {s.toLowerCase().replace('_', ' ')}
+                  {statusLabel(s)}
                 </option>
               ))}
             </select>
           </div>
           <button type="submit" className="gts-btn gts-btn-secondary">
-            Filter
+            {d.filter}
           </button>
           {(params.q || status || direction) && (
             <a href="/bills" className="gts-btn gts-btn-ghost">
-              Clear
+              {d.clear}
             </a>
           )}
         </form>
 
         {bills.length === 0 ? (
           <Empty
-            title={params.q || status || direction ? 'No bill matches' : 'No bills yet'}
+            title={params.q || status || direction ? d.noMatchTitle : d.noneYetTitle}
             body={
               params.q || status || direction
-                ? 'Try a different filter, or clear it to see everything.'
-                : 'A bill carries line items, and every total on it is computed from those lines on the server.'
+                ? d.noMatchBody
+                : d.noneYetBody
             }
             filtered={Boolean(params.q || status || direction)}
             action={
               can(actor, 'bills.create') && !params.q && !status ? (
                 <a href="/bills/new" className="gts-btn gts-btn-accent">
-                  New bill
+                  {d.newBill}
                 </a>
               ) : undefined
             }
@@ -179,19 +189,19 @@ export default async function BillsPage({
           <div className="gts-table-scroll">
             <table className="gts-table gts-table-comfortable">
               <caption className="gts-sr">
-                Electronic bills, with VAT and outstanding balances
+                {d.table.caption}
               </caption>
               <thead>
                 <tr>
-                  <th scope="col">Number</th>
-                  <th scope="col">Counterparty</th>
-                  <th scope="col">Project</th>
-                  <th scope="col">Issued</th>
-                  <th scope="col">Due</th>
-                  <th scope="col">Status</th>
-                  <th scope="col" className="gts-cell-num">VAT {VAT_STANDARD}%</th>
-                  <th scope="col" className="gts-cell-num">Total</th>
-                  <th scope="col" className="gts-cell-num">Outstanding</th>
+                  <th scope="col">{d.table.number}</th>
+                  <th scope="col">{d.table.counterparty}</th>
+                  <th scope="col">{d.table.project}</th>
+                  <th scope="col">{d.table.issued}</th>
+                  <th scope="col">{d.table.due}</th>
+                  <th scope="col">{d.table.status}</th>
+                  <th scope="col" className="gts-cell-num">{d.table.vat} {VAT_STANDARD}%</th>
+                  <th scope="col" className="gts-cell-num">{d.table.total}</th>
+                  <th scope="col" className="gts-cell-num">{d.table.outstanding}</th>
                 </tr>
               </thead>
               <tbody>
@@ -212,8 +222,8 @@ export default async function BillsPage({
                           <bdi>{bill.number}</bdi>
                         </a>
                         <span className="gts-meta gts-cell-sub">
-                          {bill.direction === 'RECEIVABLE' ? 'receivable' : 'payable'} ·{' '}
-                          {bill._count.items} line{bill._count.items === 1 ? '' : 's'}
+                          {bill.direction === 'RECEIVABLE' ? d.table.receivableTag : d.table.payableTag} ·{' '}
+                          {d.table.lineCount(bill._count.items)}
                         </span>
                       </th>
                       <td>
@@ -234,23 +244,23 @@ export default async function BillsPage({
                           <span className="gts-meta">—</span>
                         )}
                       </td>
-                      <td>{formatDate(bill.issuedOn.toISOString())}</td>
+                      <td>{formatDate(bill.issuedOn.toISOString(), locale)}</td>
                       <td>
-                        {formatDate(bill.dueOn.toISOString())}
+                        {formatDate(bill.dueOn.toISOString(), locale)}
                         {late > 0 && (
-                          <span className="gts-meta gts-cell-sub">{late} days late</span>
+                          <span className="gts-meta gts-cell-sub">{d.table.daysLate(late)}</span>
                         )}
                       </td>
                       <td>
                         <Status tone={billTone(bill.status)}>
-                          {bill.status.toLowerCase().replace('_', ' ')}
+                          {statusLabel(bill.status)}
                         </Status>
                       </td>
                       <td className="gts-cell-num">
-                        <Amount value={bill.vatAmount.toNumber()} size="sm" currency={null} />
+                        <Amount value={bill.vatAmount.toNumber()} size="sm" currency={null} locale={locale} />
                       </td>
                       <td className="gts-cell-num">
-                        <Amount value={bill.total.toNumber()} size="sm" currency={null} />
+                        <Amount value={bill.total.toNumber()} size="sm" currency={null} locale={locale} />
                         {bill.currency !== CURRENCY.code && (
                           <span className="gts-meta gts-cell-sub">{bill.currency}</span>
                         )}
@@ -258,10 +268,10 @@ export default async function BillsPage({
                       <td className="gts-cell-num">
                         {due.lessThanOrEqualTo(0) ? (
                           <span className="gts-meta">
-                            {bill.status === 'PAID' ? 'settled' : '—'}
+                            {bill.status === 'PAID' ? d.table.settled : '—'}
                           </span>
                         ) : (
-                          <Amount value={due.toNumber()} size="sm" currency={null} />
+                          <Amount value={due.toNumber()} size="sm" currency={null} locale={locale} />
                         )}
                       </td>
                     </tr>

@@ -8,13 +8,13 @@ import { Submit } from '@/components/form';
 import { submitMarkAllRead, submitMarkRead } from './actions';
 
 /** Clear the whole list. */
-export function MarkAllRead() {
+export function MarkAllRead({ dict }: { dict: { markAllRead: string; marking: string } }) {
   const [, formAction] = useActionState(submitMarkAllRead, null);
 
   return (
     <form action={formAction}>
-      <Submit variant="secondary" pendingLabel="Marking…">
-        Mark all read
+      <Submit variant="secondary" pendingLabel={dict.marking}>
+        {dict.markAllRead}
       </Submit>
     </form>
   );

@@ -6,8 +6,11 @@ import { FormError, FormActions, Submit, errorFor } from '@/components/form';
 import { computeTotals, type BillLine } from '@/lib/eta';
 import { CURRENCY, CURRENCY_OPTIONS, VAT_RATES, WHT_RATES } from '@/lib/egypt';
 import { splitAmount } from '@/lib/format';
+import type { Dictionary } from '@/lib/i18n';
 
 import { submitCreateBill, submitUpdateBillLines } from './actions';
+
+type BillFormDict = Dictionary['finance']['bills']['form'];
 
 /**
  * The bill form.
@@ -82,6 +85,7 @@ export function BillForm({
   billId,
   initialLines,
   initialWhtRate,
+  dict,
 }: {
   clients: Option[];
   vendors: Option[];
@@ -94,6 +98,7 @@ export function BillForm({
   billId?: string;
   initialLines?: Omit<DraftLine, 'key'>[];
   initialWhtRate?: string;
+  dict: BillFormDict;
 }) {
   const editing = mode === 'edit';
   const [state, formAction] = useActionState(
@@ -176,12 +181,12 @@ export function BillForm({
       {/* ---------- Who and when ---------- */}
       {!editing && (
       <fieldset className="gts-fieldset">
-        <legend className="gts-overline">Document</legend>
+        <legend className="gts-overline">{dict.documentLegend}</legend>
 
         <div className="gts-field-grid">
           <div className="gts-field">
             <label className="gts-label" htmlFor="direction">
-              Direction
+              {dict.directionLabel}
             </label>
             <select
               id="direction"
@@ -190,15 +195,15 @@ export function BillForm({
               value={direction}
               onChange={(event) => setDirection(event.target.value as 'RECEIVABLE' | 'PAYABLE')}
             >
-              <option value="RECEIVABLE">Receivable — we issue it to a client</option>
-              <option value="PAYABLE">Payable — a vendor issued it to us</option>
+              <option value="RECEIVABLE">{dict.receivableOption}</option>
+              <option value="PAYABLE">{dict.payableOption}</option>
             </select>
           </div>
 
           {direction === 'RECEIVABLE' ? (
             <div className="gts-field">
               <label className="gts-label" htmlFor="clientId">
-                Client <span className="gts-required">*</span>
+                {dict.clientLabel} <span className="gts-required">*</span>
               </label>
               <select
                 id="clientId"
@@ -209,7 +214,7 @@ export function BillForm({
                 onChange={(event) => setClientId(event.target.value)}
                 aria-invalid={e('clientId') ? true : undefined}
               >
-                <option value="">Select a client</option>
+                <option value="">{dict.selectClient}</option>
                 {clients.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.label}
@@ -221,7 +226,7 @@ export function BillForm({
           ) : (
             <div className="gts-field">
               <label className="gts-label" htmlFor="vendorId">
-                Vendor <span className="gts-required">*</span>
+                {dict.vendorLabel} <span className="gts-required">*</span>
               </label>
               <select
                 id="vendorId"
@@ -231,7 +236,7 @@ export function BillForm({
                 className="gts-input gts-select"
                 aria-invalid={e('vendorId') ? true : undefined}
               >
-                <option value="">Select a vendor</option>
+                <option value="">{dict.selectVendor}</option>
                 {vendors.map((v) => (
                   <option key={v.id} value={v.id}>
                     {v.label}
@@ -244,10 +249,10 @@ export function BillForm({
 
           <div className="gts-field">
             <label className="gts-label" htmlFor="projectId">
-              Project
+              {dict.projectLabel}
             </label>
             <select id="projectId" name="projectId" className="gts-input gts-select" defaultValue="">
-              <option value="">No project</option>
+              <option value="">{dict.noProject}</option>
               {availableProjects.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.label}
@@ -256,14 +261,14 @@ export function BillForm({
             </select>
             <p className="gts-help">
               {direction === 'RECEIVABLE' && !clientId
-                ? 'Choose a client first'
-                : 'Only this client’s projects are offered'}
+                ? dict.chooseClientFirst
+                : dict.onlyClientProjects}
             </p>
           </div>
 
           <div className="gts-field">
             <label className="gts-label" htmlFor="issuedOn">
-              Issue date <span className="gts-required">*</span>
+              {dict.issueDateLabel} <span className="gts-required">*</span>
             </label>
             <input
               id="issuedOn"
@@ -278,15 +283,15 @@ export function BillForm({
 
           <div className="gts-field">
             <label className="gts-label" htmlFor="dueOn">
-              Due date
+              {dict.dueDateLabel}
             </label>
             <input id="dueOn" name="dueOn" type="date" className="gts-input" />
-            <p className="gts-help">Left blank, the counterparty’s payment terms apply</p>
+            <p className="gts-help">{dict.dueDateHint}</p>
           </div>
 
           <div className="gts-field">
             <label className="gts-label" htmlFor="currency">
-              Currency
+              {dict.currencyLabel}
             </label>
             <select
               id="currency"
@@ -304,7 +309,7 @@ export function BillForm({
 
           <div className="gts-field">
             <label className="gts-label" htmlFor="exchangeRate">
-              Exchange rate
+              {dict.exchangeRateLabel}
             </label>
             <input
               id="exchangeRate"
@@ -314,12 +319,12 @@ export function BillForm({
               className="gts-input gts-input-num"
               aria-invalid={e('exchangeRate') ? true : undefined}
             />
-            <p className="gts-help">Required when the currency is not {CURRENCY.code}</p>
+            <p className="gts-help">{dict.exchangeRateHint.replace('{currency}', CURRENCY.code)}</p>
           </div>
 
           <div className="gts-field">
             <label className="gts-label" htmlFor="whtRate">
-              Withholding tax
+              {dict.withholdingLabel}
             </label>
             <select
               id="whtRate"
@@ -328,7 +333,7 @@ export function BillForm({
               value={whtRate}
               onChange={(event) => setWhtRate(event.target.value)}
             >
-              <option value="0">None</option>
+              <option value="0">{dict.withholdingNone}</option>
               {WHT_RATES.map((w) => (
                 <option key={w.rate} value={w.rate}>
                   {w.labelEn}
@@ -345,10 +350,10 @@ export function BillForm({
           out of the edit form would silently reset it to zero. */}
       {editing && (
         <fieldset className="gts-fieldset">
-          <legend className="gts-overline">Withholding</legend>
+          <legend className="gts-overline">{dict.withholdingLegend}</legend>
           <div className="gts-field" style={{ maxWidth: '22rem' }}>
             <label className="gts-label" htmlFor="whtRate">
-              Withholding tax
+              {dict.withholdingLabel}
             </label>
             <select
               id="whtRate"
@@ -357,7 +362,7 @@ export function BillForm({
               value={whtRate}
               onChange={(event) => setWhtRate(event.target.value)}
             >
-              <option value="0">None</option>
+              <option value="0">{dict.withholdingNone}</option>
               {WHT_RATES.map((w) => (
                 <option key={w.rate} value={w.rate}>
                   {w.labelEn}
@@ -370,14 +375,14 @@ export function BillForm({
 
       {/* ---------- The lines ---------- */}
       <fieldset className="gts-fieldset">
-        <legend className="gts-overline">Line items</legend>
+        <legend className="gts-overline">{dict.lineItemsLegend}</legend>
 
         <div className="gts-line-editor">
           {lines.map((line, index) => (
             <div key={line.key} className="gts-line-row">
               <div className="gts-field" style={{ flex: '2 1 16rem' }}>
                 <label className="gts-label" htmlFor={`product-${line.key}`}>
-                  Product
+                  {dict.productLabel}
                 </label>
                 <select
                   id={`product-${line.key}`}
@@ -386,7 +391,7 @@ export function BillForm({
                   value={line.productId}
                   onChange={(event) => applyProduct(line.key, event.target.value)}
                 >
-                  <option value="">Free text line</option>
+                  <option value="">{dict.freeTextLine}</option>
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.nameEn} — {p.sku}
@@ -397,7 +402,7 @@ export function BillForm({
 
               <div className="gts-field" style={{ flex: '2 1 16rem' }}>
                 <label className="gts-label" htmlFor={`desc-${line.key}`}>
-                  Description <span className="gts-required">*</span>
+                  {dict.descriptionLabel} <span className="gts-required">*</span>
                 </label>
                 <input
                   id={`desc-${line.key}`}
@@ -414,7 +419,7 @@ export function BillForm({
 
               <div className="gts-field" style={{ flex: '0 1 6rem' }}>
                 <label className="gts-label" htmlFor={`qty-${line.key}`}>
-                  Qty
+                  {dict.quantityLabel}
                 </label>
                 <input
                   id={`qty-${line.key}`}
@@ -430,7 +435,7 @@ export function BillForm({
 
               <div className="gts-field" style={{ flex: '0 1 5rem' }}>
                 <label className="gts-label" htmlFor={`unit-${line.key}`}>
-                  Unit
+                  {dict.unitLabel}
                 </label>
                 <input
                   id={`unit-${line.key}`}
@@ -443,7 +448,7 @@ export function BillForm({
 
               <div className="gts-field" style={{ flex: '0 1 8rem' }}>
                 <label className="gts-label" htmlFor={`price-${line.key}`}>
-                  Unit price
+                  {dict.unitPriceLabel}
                 </label>
                 <input
                   id={`price-${line.key}`}
@@ -459,7 +464,7 @@ export function BillForm({
 
               <div className="gts-field" style={{ flex: '0 1 7rem' }}>
                 <label className="gts-label" htmlFor={`disc-${line.key}`}>
-                  Discount
+                  {dict.discountLabel}
                 </label>
                 <input
                   id={`disc-${line.key}`}
@@ -474,7 +479,7 @@ export function BillForm({
 
               <div className="gts-field" style={{ flex: '0 1 9rem' }}>
                 <label className="gts-label" htmlFor={`vat-${line.key}`}>
-                  VAT
+                  {dict.vatLabel}
                 </label>
                 <select
                   id={`vat-${line.key}`}
@@ -496,9 +501,9 @@ export function BillForm({
                   type="button"
                   className="gts-btn gts-btn-ghost gts-btn-sm"
                   onClick={() => setLines((c) => c.filter((l) => l.key !== line.key))}
-                  aria-label={`Remove line ${index + 1}`}
+                  aria-label={dict.removeLine(index + 1)}
                 >
-                  Remove
+                  {dict.removeLabel}
                 </button>
               )}
             </div>
@@ -513,25 +518,24 @@ export function BillForm({
             setNextKey((k) => k + 1);
           }}
         >
-          Add a line
+          {dict.addLine}
         </button>
       </fieldset>
 
       {/* ---------- The preview ---------- */}
       <div className="gts-totals">
         <p className="gts-totals-note" style={{ borderBlockStart: 'none', paddingBlockStart: 0 }}>
-          A preview. The server recomputes every figure from the lines above and stores its own —
-          nothing here is submitted.
+          {dict.previewNote}
         </p>
-        <Row label="Subtotal" value={money(preview.gross)} />
-        {preview.discount > 0 && <Row label="Discount" value={`−${money(preview.discount)}`} />}
-        <Row label="Net" value={money(preview.net)} />
-        <Row label="VAT" value={money(preview.vat)} />
-        <Row label="Total" value={money(preview.total)} strong />
+        <Row label={dict.subtotal} value={money(preview.gross)} />
+        {preview.discount > 0 && <Row label={dict.discount} value={`−${money(preview.discount)}`} />}
+        <Row label={dict.net} value={money(preview.net)} />
+        <Row label={dict.vat} value={money(preview.vat)} />
+        <Row label={dict.total} value={money(preview.total)} strong />
         {preview.withheld > 0 && (
           <>
-            <Row label="Withheld" value={`−${money(preview.withheld)}`} />
-            <Row label="Net payable" value={money(preview.netPayable)} strong />
+            <Row label={dict.withheld} value={`−${money(preview.withheld)}`} />
+            <Row label={dict.netPayable} value={money(preview.netPayable)} strong />
           </>
         )}
       </div>
@@ -539,21 +543,21 @@ export function BillForm({
       {!editing && (
         <div className="gts-field">
           <label className="gts-label" htmlFor="notes">
-            Notes
+            {dict.notesLabel}
           </label>
           <textarea id="notes" name="notes" rows={2} className="gts-input gts-textarea" />
         </div>
       )}
 
       <FormActions>
-        <Submit variant="accent" pendingLabel={editing ? 'Saving…' : 'Creating…'}>
-          {editing ? 'Save lines' : 'Create draft bill'}
+        <Submit variant="accent" pendingLabel={editing ? dict.savingLabel : dict.creatingLabel}>
+          {editing ? dict.saveLines : dict.createDraft}
         </Submit>
         <a
           href={editing && billId ? `/bills/${billId}` : '/bills'}
           className="gts-btn gts-btn-secondary"
         >
-          Cancel
+          {dict.cancel}
         </a>
       </FormActions>
     </form>

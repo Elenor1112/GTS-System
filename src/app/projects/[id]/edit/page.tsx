@@ -5,6 +5,7 @@ import { Shell, PageHead } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { projectDetail } from '@/lib/services/projects';
 import { listClients } from '@/lib/services/clients';
+import { t } from '@/lib/i18n';
 import { ProjectForm } from '../../project-form';
 
 export const dynamic = 'force-dynamic';
@@ -24,17 +25,21 @@ export default async function EditProjectPage({
   const [project, clients] = await Promise.all([projectDetail(id), listClients()]);
   if (!project) notFound();
 
+  const dict = await t();
+  const d = dict.operations.projects.editPage;
+
   return (
     <Shell active="/projects" domain="projects">
       <main className="gts-page">
         <PageHead
           overline={`Project · ${project.code}`}
-          title="Edit project"
-          lede="The site location is set from the project page, not here — it carries its own permission because attendance is checked against it."
+          title={d.title}
+          lede={d.lede}
         />
         <ProjectForm
           mode="edit"
           clients={clients.map((c) => ({ id: c.id, code: c.code, nameEn: c.nameEn }))}
+          dict={dict.operations.projects.form}
           values={{
             id: project.id,
             code: project.code,

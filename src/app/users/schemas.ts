@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { optionalText, requiredText, id } from '@/lib/action';
+import { MOBILE_PATTERN } from '@/lib/egypt';
 
 /**
  * User administration schemas.
@@ -20,14 +21,17 @@ const password = z
   .min(12, 'Use at least 12 characters')
   .max(200, 'That password is too long');
 
+const phone = z
+  .string()
+  .trim()
+  .regex(MOBILE_PATTERN, 'Enter a valid Egyptian mobile number');
+
 export const newUserSchema = z.object({
   email: z.string().trim().toLowerCase().email('Enter a valid email address'),
   nameEn: requiredText('Name', 200),
-  nameAr: optionalText.optional(),
-  phone: optionalText.optional(),
+  nameAr: requiredText('Name (Arabic)', 200),
+  phone,
   roleId: id,
-  /** Optional: an accounts-only login has no employee record. */
-  employeeId: z.string().optional().nullable(),
   password,
 });
 

@@ -6,6 +6,8 @@ import { requireActor } from '@/lib/auth';
 import { can } from '@/lib/permissions';
 import { buildDashboard } from '@/lib/services/dashboard';
 import { formatDate } from '@/lib/format';
+import { getLocale } from '@/lib/preferences';
+import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = { title: 'Dashboard — GTS' };
 
@@ -36,6 +38,8 @@ export const dynamic = 'force-dynamic';
 export default async function DashboardPage() {
   const actor = await requireActor();
   const data = await buildDashboard(actor);
+  const dict = await t();
+  const locale = await getLocale();
 
   const seesMoney = can(actor, 'accounts.view');
   const firstName = actor.nameEn.split(' ')[0];
@@ -51,20 +55,20 @@ export default async function DashboardPage() {
           <div className="gts-grid-editorial" style={{ alignItems: 'end' }}>
             <div>
               <p className="gts-overline">
-                {seesMoney ? 'Net position' : 'Your workspace'} ·{' '}
-                {formatDate(new Date().toISOString())}
+                {seesMoney ? dict.overview.dashboard.netPosition : dict.overview.dashboard.yourWorkspace} ·{' '}
+                {formatDate(new Date().toISOString(), locale)}
               </p>
               <h1
                 className="gts-page-title"
                 style={{ marginBlockStart: 'var(--gts-space-2)' }}
               >
-                Good morning, {firstName}
+                {dict.overview.dashboard.goodMorning}, {firstName}
               </h1>
 
               {seesMoney ? (
                 <>
                   <div style={{ marginBlockStart: 'var(--gts-space-6)' }}>
-                    <Amount value={data.netPosition.toNumber()} size="hero" />
+                    <Amount value={data.netPosition.toNumber()} size="hero" locale={locale} />
                   </div>
                   <p
                     className="gts-meta"
@@ -77,14 +81,14 @@ export default async function DashboardPage() {
                     }}
                   >
                     <span>
-                      Receivable{' '}
-                      <Amount value={data.receivable.toNumber()} size="sm" currency={null} />
+                      {dict.overview.dashboard.receivable}{' '}
+                      <Amount value={data.receivable.toNumber()} size="sm" currency={null} locale={locale} />
                     </span>
                     <span aria-hidden="true" style={{ opacity: 0.5 }}>
                       ·
                     </span>
                     <span>
-                      payable <Amount value={data.payable.toNumber()} size="sm" currency={null} />
+                      {dict.overview.dashboard.payable} <Amount value={data.payable.toNumber()} size="sm" currency={null} locale={locale} />
                     </span>
                     {data.overdueReceivable.greaterThan(0) && (
                       <>
@@ -96,8 +100,9 @@ export default async function DashboardPage() {
                             value={data.overdueReceivable.toNumber()}
                             size="sm"
                             currency={null}
+                            locale={locale}
                           />{' '}
-                          overdue
+                          {dict.overview.dashboard.overdue}
                         </Status>
                       </>
                     )}
@@ -112,9 +117,11 @@ export default async function DashboardPage() {
                     marginBlockStart: 'var(--gts-space-4)',
                   }}
                 >
-                  {data.counts.activeProjects} active project
-                  {data.counts.activeProjects === 1 ? '' : 's'}. Your assigned sites and leave are
-                  in the rail.
+                  {data.counts.activeProjects}{' '}
+                  {data.counts.activeProjects === 1
+                    ? dict.overview.dashboard.activeProjectsSummary
+                    : dict.overview.dashboard.activeProjectsSummaryPlural}
+                  . {dict.overview.dashboard.railHint}
                 </p>
               )}
             </div>
@@ -137,22 +144,22 @@ export default async function DashboardPage() {
                         gap: 'var(--gts-space-4)',
                       }}
                     >
-                      <span className="gts-overline">Receipts · 12 months</span>
+                      <span className="gts-overline">{dict.overview.dashboard.receiptsTwelveMonths}</span>
                       <span className="gts-meta">
                         <Amount
                           value={data.collectedThisMonth.toNumber()}
                           size="sm"
                           currency={null}
+                          locale={locale}
                         />{' '}
-                        this month
+                        {dict.overview.dashboard.thisMonth}
                       </span>
                     </div>
                     <Chart data={data.receiptsSeries} />
                   </>
                 ) : (
                   <p className="gts-meta">
-                    No payments recorded yet. The receipts trend appears once money starts
-                    arriving.
+                    {dict.overview.dashboard.noReceiptsYet}
                   </p>
                 )}
               </div>
@@ -164,11 +171,11 @@ export default async function DashboardPage() {
             Not four equal KPIs: the lead cell is 1.6x its siblings. */}
         {seesMoney && (
           <div className="gts-grid-metrics">
-            <Metric label="Billed this month" value={data.billedThisMonth.toNumber()} lead />
-            <Metric label="Collected" value={data.collectedThisMonth.toNumber()} />
-            <Metric label="Outstanding" value={data.receivable.toNumber()} />
+            <Metric label={dict.overview.dashboard.billedThisMonth} value={data.billedThisMonth.toNumber()} lead />
+            <Metric label={dict.overview.dashboard.collected} value={data.collectedThisMonth.toNumber()} />
+            <Metric label={dict.overview.dashboard.outstanding} value={data.receivable.toNumber()} />
             <Metric
-              label="Overdue"
+              label={dict.overview.dashboard.overdue}
               value={data.overdueReceivable.toNumber()}
               tone={data.overdueReceivable.greaterThan(0) ? 'danger' : undefined}
             />
@@ -179,15 +186,15 @@ export default async function DashboardPage() {
         <div className="gts-grid-command">
           {can(actor, 'projects.view') ? (
             <Region
-              title="Active projects"
+              title={dict.overview.dashboard.activeProjects}
               action={
                 <a href="/projects" className="gts-btn gts-btn-ghost gts-btn-xs">
-                  All projects
+                  {dict.overview.dashboard.allProjects}
                 </a>
               }
             >
               {data.projects.length === 0 ? (
-                <Empty title="No active projects" body="Create one to begin tracking work." />
+                <Empty title={dict.overview.dashboard.noActiveProjects} body={dict.overview.dashboard.createProjectHint} />
               ) : (
                 <ul className="gts-list">
                   {data.projects.map((p) => {
@@ -213,7 +220,7 @@ export default async function DashboardPage() {
                                 gap: 'var(--gts-space-2)',
                               }}
                             >
-                              <span className="gts-meta">budget billed</span>
+                              <span className="gts-meta">{dict.overview.dashboard.budgetBilled}</span>
                               <span
                                 className="gts-num gts-num-sm"
                                 style={over ? { color: 'var(--gts-danger-fg)' } : undefined}
@@ -236,7 +243,7 @@ export default async function DashboardPage() {
                             </div>
                           </div>
                         ) : (
-                          <span className="gts-meta">No budget set</span>
+                          <span className="gts-meta">{dict.overview.dashboard.noBudgetSet}</span>
                         )}
                       </li>
                     );
@@ -249,7 +256,7 @@ export default async function DashboardPage() {
           )}
 
           <Region
-            title="Needs attention"
+            title={dict.overview.dashboard.needsAttention}
             action={
               data.alerts.length > 0 ? (
                 <span className="gts-num gts-num-sm" style={{ color: 'var(--gts-fg-muted)' }}>
@@ -260,8 +267,8 @@ export default async function DashboardPage() {
           >
             {data.alerts.length === 0 ? (
               <Empty
-                title="Nothing needs you"
-                body="No overdue bills, no low stock, nothing waiting on your approval."
+                title={dict.overview.dashboard.nothingNeedsYou}
+                body={dict.overview.dashboard.nothingNeedsYouBody}
               />
             ) : (
               <ul className="gts-alert-list">
@@ -286,15 +293,15 @@ export default async function DashboardPage() {
           <div className="gts-grid-editorial">
             {can(actor, 'inventory.view') && (
               <Panel
-                title="Storage"
+                title={dict.overview.dashboard.storage}
                 action={
                   <a href="/storage" className="gts-btn gts-btn-ghost gts-btn-xs">
-                    All
+                    {dict.overview.dashboard.all}
                   </a>
                 }
               >
                 {data.warehouses.length === 0 ? (
-                  <Empty title="No warehouses" body="Create one to start receiving stock." />
+                  <Empty title={dict.overview.dashboard.noWarehouses} body={dict.overview.dashboard.createWarehouseHint} />
                 ) : (
                   <ul className="gts-list">
                     {data.warehouses.map((w) => (
@@ -304,8 +311,10 @@ export default async function DashboardPage() {
                             {w.nameEn}
                           </a>
                           <p className="gts-meta">
-                            {w.distinctProducts} product{w.distinctProducts === 1 ? '' : 's'} in
-                            stock
+                            {w.distinctProducts}{' '}
+                            {w.distinctProducts === 1
+                              ? dict.overview.dashboard.productInStock
+                              : dict.overview.dashboard.productsInStock}
                           </p>
                         </div>
                         <span className="gts-num gts-num-sm">{w.totalUnits.toString()}</span>
@@ -318,32 +327,32 @@ export default async function DashboardPage() {
 
             {can(actor, 'attendance.view') && (
               <Panel
-                title="On site today"
+                title={dict.overview.dashboard.onSiteToday}
                 action={
                   <a href="/attendance" className="gts-btn gts-btn-ghost gts-btn-xs">
-                    All
+                    {dict.overview.dashboard.all}
                   </a>
                 }
               >
                 {data.attendanceToday.expected === 0 ? (
                   <Empty
-                    title="Nobody assigned"
-                    body="Assign employees to an active project to track attendance."
+                    title={dict.overview.dashboard.nobodyAssigned}
+                    body={dict.overview.dashboard.nobodyAssignedBody}
                   />
                 ) : data.attendanceToday.isWeekend ? (
                   // Friday and Saturday are the Egyptian weekend. An
                   // empty site is the expected state, not a problem.
                   <Empty
-                    title="Weekend"
-                    body="Friday and Saturday are the rest days. Attendance resumes on Sunday."
+                    title={dict.overview.dashboard.weekend}
+                    body={dict.overview.dashboard.weekendBody}
                   />
                 ) : (
                   <>
                     <div className="gts-stat-row">
-                      <Stat label="Present" value={data.attendanceToday.present} />
-                      <Stat label="Late" value={data.attendanceToday.late} tone="warning" />
+                      <Stat label={dict.overview.dashboard.present} value={data.attendanceToday.present} />
+                      <Stat label={dict.overview.dashboard.late} value={data.attendanceToday.late} tone="warning" />
                       <Stat
-                        label="Not in"
+                        label={dict.overview.dashboard.notIn}
                         value={data.attendanceToday.missing}
                         /*
                          * Red only once the working day has actually
@@ -395,10 +404,10 @@ export default async function DashboardPage() {
                       )}
                     </div>
                     <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-3)' }}>
-                      {data.attendanceToday.expected} expected on site today
+                      {data.attendanceToday.expected} {dict.overview.dashboard.expectedOnSite}
                       {data.attendanceToday.beforeWorkStart &&
                         data.attendanceToday.missing > 0 &&
-                        ' · the working day has not started yet'}
+                        ` · ${dict.overview.dashboard.workingDayNotStarted}`}
                     </p>
                   </>
                 )}

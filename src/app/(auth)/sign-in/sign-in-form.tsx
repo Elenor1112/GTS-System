@@ -3,6 +3,7 @@
 import { useActionState } from 'react';
 
 import { signIn } from '../actions';
+import type { Dictionary } from '@/lib/i18n';
 
 /**
  * The sign-in form.
@@ -16,7 +17,13 @@ import { signIn } from '../actions';
  * and land on the dashboard with no session attached. Only the failure
  * path returns a result, which is what `state` now carries.
  */
-export function SignInForm({ redirectTo }: { redirectTo?: string }) {
+export function SignInForm({
+  redirectTo,
+  dict,
+}: {
+  redirectTo?: string;
+  dict: Dictionary['auth'];
+}) {
   const [state, formAction, pending] = useActionState(signIn, null);
 
   const fieldError = (field: string) =>
@@ -43,7 +50,7 @@ export function SignInForm({ redirectTo }: { redirectTo?: string }) {
 
       <div className="gts-field">
         <label className="gts-label" htmlFor="email">
-          Email address
+          {dict.emailLabel}
         </label>
         <input
           id="email"
@@ -65,7 +72,7 @@ export function SignInForm({ redirectTo }: { redirectTo?: string }) {
 
       <div className="gts-field">
         <label className="gts-label" htmlFor="password">
-          Password
+          {dict.passwordLabel}
         </label>
         <input
           id="password"
@@ -89,7 +96,7 @@ export function SignInForm({ redirectTo }: { redirectTo?: string }) {
         className="gts-btn gts-btn-primary gts-btn-lg gts-btn-block"
         disabled={pending}
       >
-        {pending ? 'Signing in…' : 'Sign in'}
+        {pending ? dict.signingIn : dict.signIn}
       </button>
     </form>
   );

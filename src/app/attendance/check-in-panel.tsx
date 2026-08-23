@@ -51,14 +51,47 @@ export interface TodayProps {
   distanceMetres: number;
 }
 
+export interface CheckInDict {
+  checkedIn: string;
+  distanceFromSite: string;
+  minutesLate: string;
+  checkedOut: string;
+  distanceToSite: string;
+  opensWithin: string;
+  fixAccurate: string;
+  opensWithinBody: string;
+  dayRecorded: string;
+  checkOut: string;
+  recording: string;
+  attend: string;
+  attendHint: string;
+  findingYou: string;
+  findingYouHint: string;
+  tryAgain: string;
+  checkInLabel: string;
+  almostThere: string;
+  tooFar: string;
+  onSiteHint: string;
+  offSiteHint: string;
+  siteBoundary: string;
+  siteBoundaryBody: string;
+  openInMaps: string;
+  cannotReportLocation: string;
+  locationDenied: string;
+  locationTimeout: string;
+  locationUnavailable: string;
+}
+
 export function CheckInPanel({
   site,
   today,
   maxAccuracyMetres,
+  dict,
 }: {
   site: SiteProps;
   today: TodayProps | null;
   maxAccuracyMetres: number;
+  dict: CheckInDict;
 }) {
   const [phase, setPhase] = useState<Phase>(today ? 'DONE' : 'IDLE');
   const [fix, setFix] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
@@ -83,7 +116,7 @@ export function CheckInPanel({
   const locate = useCallback(() => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
       setPhase('UNAVAILABLE');
-      setMessage('This device cannot report its location.');
+      setMessage(dict.cannotReportLocation);
       return;
     }
 
@@ -104,15 +137,13 @@ export function CheckInPanel({
       (error) => {
         if (error.code === error.PERMISSION_DENIED) {
           setPhase('DENIED');
-          setMessage(
-            'Location permission was refused. Attendance is recorded against the site you are standing on, so it cannot be taken without it.',
-          );
+          setMessage(dict.locationDenied);
         } else {
           setPhase('UNAVAILABLE');
           setMessage(
             error.code === error.TIMEOUT
-              ? 'Finding your position took too long. Move into the open and try again.'
-              : 'Your position could not be determined.',
+              ? dict.locationTimeout
+              : dict.locationUnavailable,
           );
         }
       },
@@ -132,7 +163,7 @@ export function CheckInPanel({
       navigator.geolocation.clearWatch(watchId);
       window.clearTimeout(stop);
     };
-  }, [fence.lat, fence.lng, fence.radius]);
+  }, [fence.lat, fence.lng, fence.radius, dict]);
 
   useEffect(() => {
     if (today) setPhase('DONE');
@@ -214,34 +245,37 @@ export function CheckInPanel({
 
           {today ? (
             <div>
-              <p className="gts-overline">Checked in</p>
+              <p className="gts-overline">{dict.checkedIn}</p>
               <p className="gts-num gts-num-lg" style={{ marginBlockStart: 'var(--gts-space-2)' }}>
                 {formatSiteTime(today.checkInAt)}
               </p>
               <p className="gts-meta">
-                {today.distanceMetres}m from the site centre
-                {today.minutesLate > 0 && ` · ${today.minutesLate} minutes late`}
+                {dict.distanceFromSite.replace('{distance}', String(today.distanceMetres))}
+                {today.minutesLate > 0 &&
+                  ` · ${dict.minutesLate.replace('{minutes}', String(today.minutesLate))}`}
               </p>
               {today.checkOutAt && (
-                <p className="gts-meta">Checked out {formatSiteTime(today.checkOutAt)}</p>
+                <p className="gts-meta">
+                  {dict.checkedOut.replace('{time}', formatSiteTime(today.checkOutAt))}
+                </p>
               )}
             </div>
           ) : distance ? (
             <div>
-              <p className="gts-overline">Distance to site</p>
+              <p className="gts-overline">{dict.distanceToSite}</p>
               <p style={{ marginBlockStart: 'var(--gts-space-2)' }}>
                 <span className="gts-num gts-num-hero">{distance.value}</span>
                 <span className="gts-num-currency">{distance.unit}</span>
               </p>
               <p className="gts-meta">
-                Check-in opens within {site.radiusMetres}m
-                {fix && ` · fix accurate to ${Math.round(fix.accuracy)}m`}
+                {dict.opensWithin.replace('{radius}', String(site.radiusMetres))}
+                {fix &&
+                  ` · ${dict.fixAccurate.replace('{accuracy}', String(Math.round(fix.accuracy)))}`}
               </p>
             </div>
           ) : (
             <p className="gts-meta">
-              Check-in opens within {site.radiusMetres}m of the site. Your position is
-              checked again on the server before anything is recorded.
+              {dict.opensWithinBody.replace('{radius}', String(site.radiusMetres))}
             </p>
           )}
 
@@ -254,7 +288,7 @@ export function CheckInPanel({
           {/* ---- The action ---- */}
           {today ? (
             today.checkOutAt ? (
-              <p className="gts-status gts-status-success">Day recorded</p>
+              <p className="gts-status gts-status-success">{dict.dayRecorded}</p>
             ) : (
               <button
                 type="button"
@@ -262,22 +296,22 @@ export function CheckInPanel({
                 onClick={checkOut}
                 disabled={phase === 'SUBMITTING'}
               >
-                {phase === 'SUBMITTING' ? 'Recording…' : 'Check out'}
+                {phase === 'SUBMITTING' ? dict.recording : dict.checkOut}
               </button>
             )
           ) : phase === 'IDLE' ? (
             <button type="button" className="gts-checkin" onClick={locate}>
-              Attend
-              <span className="gts-meta">Uses your location to confirm you are on site</span>
+              {dict.attend}
+              <span className="gts-meta">{dict.attendHint}</span>
             </button>
           ) : phase === 'REQUESTING' ? (
             <button type="button" className="gts-checkin" disabled>
-              Finding you…
-              <span className="gts-meta">Allow location access when prompted</span>
+              {dict.findingYou}
+              <span className="gts-meta">{dict.findingYouHint}</span>
             </button>
           ) : phase === 'DENIED' || phase === 'UNAVAILABLE' ? (
             <button type="button" className="gts-btn gts-btn-secondary gts-btn-lg" onClick={locate}>
-              Try again
+              {dict.tryAgain}
             </button>
           ) : (
             /* LOCATED, or SUBMITTING after this button was pressed. */
@@ -290,16 +324,14 @@ export function CheckInPanel({
               disabled={!canCheckIn || submitting}
             >
               {submitting
-                ? 'Recording…'
+                ? dict.recording
                 : canCheckIn
-                  ? 'Check in'
+                  ? dict.checkInLabel
                   : state === 'approaching'
-                    ? 'Almost there'
-                    : 'Too far to check in'}
+                    ? dict.almostThere
+                    : dict.tooFar}
               <span className="gts-meta">
-                {canCheckIn
-                  ? "You're on site — tap to record your arrival"
-                  : 'Check-in unlocks inside the site boundary'}
+                {canCheckIn ? dict.onSiteHint : dict.offSiteHint}
               </span>
               {canCheckIn && !submitting && <span className="gts-pulse-ring" />}
             </button>
@@ -309,10 +341,11 @@ export function CheckInPanel({
         {/* ---- Right: the site, and how to get to it ---- */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--gts-space-4)' }}>
           <div>
-            <p className="gts-overline">Site boundary</p>
+            <p className="gts-overline">{dict.siteBoundary}</p>
             <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-2)' }}>
-              {site.radiusMetres}m radius, set by your administrator. A fix accurate to worse
-              than {maxAccuracyMetres}m is refused — it cannot tell inside from outside.
+              {dict.siteBoundaryBody
+                .replace('{radius}', String(site.radiusMetres))
+                .replace('{maxAccuracy}', String(maxAccuracyMetres))}
             </p>
           </div>
 
@@ -327,7 +360,7 @@ export function CheckInPanel({
             rel="noreferrer"
             className="gts-btn gts-btn-secondary"
           >
-            Open in Google Maps
+            {dict.openInMaps}
           </a>
         </div>
       </div>

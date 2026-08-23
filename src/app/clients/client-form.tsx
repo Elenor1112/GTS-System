@@ -6,6 +6,7 @@ import {
   FormError, FormActions, FieldGrid, TextField, SelectField, TextArea, Submit, errorFor,
 } from '@/components/form';
 import { GOVERNORATES } from '@/lib/egypt';
+import type { OperationsDict } from '@/lib/i18n/dict/operations';
 
 import { submitCreateClient, submitUpdateClient } from './actions';
 
@@ -17,6 +18,8 @@ import { submitCreateClient, submitUpdateClient } from './actions';
  * populated, and duplicating 120 lines of markup to express that would
  * guarantee the two drift apart.
  */
+
+export type ClientFormDict = OperationsDict['operations']['clients']['form'];
 
 export interface ClientFormValues {
   id?: string;
@@ -38,9 +41,11 @@ export interface ClientFormValues {
 export function ClientForm({
   mode,
   values,
+  dict,
 }: {
   mode: 'create' | 'edit';
   values?: ClientFormValues;
+  dict: ClientFormDict;
 }) {
   const submit = mode === 'create' ? submitCreateClient : submitUpdateClient;
   const [state, formAction] = useActionState(submit, null);
@@ -73,8 +78,8 @@ export function ClientForm({
       <FieldGrid>
         <TextField
           name="code"
-          label="Client code"
-          hint="Your own reference, e.g. CL-006"
+          label={dict.codeLabel}
+          hint={dict.codeHint}
           required
           defaultValue={values?.code}
           error={e('code')}
@@ -82,7 +87,7 @@ export function ClientForm({
         />
         <TextField
           name="nameEn"
-          label="Name (English)"
+          label={dict.nameEnLabel}
           required
           defaultValue={values?.nameEn}
           error={e('nameEn')}
@@ -90,15 +95,15 @@ export function ClientForm({
         />
         <TextField
           name="nameAr"
-          label="Name (Arabic)"
+          label={dict.nameArLabel}
           defaultValue={values?.nameAr}
           error={e('nameAr')}
           maxLength={200}
         />
         <TextField
           name="trn"
-          label="Tax registration number"
-          hint="9 digits, issued by the Egyptian Tax Authority"
+          label={dict.trnLabel}
+          hint={dict.trnHint}
           defaultValue={values?.trn}
           error={e('trn')}
           inputMode="numeric"
@@ -106,15 +111,15 @@ export function ClientForm({
         />
         <TextField
           name="commercialRegNo"
-          label="Commercial register"
-          hint="Issued by GAFI"
+          label={dict.commercialRegLabel}
+          hint={dict.commercialRegHint}
           defaultValue={values?.commercialRegNo}
           error={e('commercialRegNo')}
         />
         <SelectField
           name="governorateCode"
-          label="Governorate"
-          placeholder="Select a governorate"
+          label={dict.governorateLabel}
+          placeholder={dict.governoratePlaceholder}
           defaultValue={values?.governorateCode ?? ''}
           error={e('governorateCode')}
           options={GOVERNORATES.map((g) => ({ value: g.code, label: `${g.en} — ${g.ar}` }))}
@@ -125,7 +130,7 @@ export function ClientForm({
         <div className="gts-field-wide">
           <TextField
             name="addressLine"
-            label="Address"
+            label={dict.addressLabel}
             defaultValue={values?.addressLine}
             error={e('addressLine')}
             autoComplete="street-address"
@@ -133,13 +138,13 @@ export function ClientForm({
         </div>
         <TextField
           name="contactName"
-          label="Contact name"
+          label={dict.contactNameLabel}
           defaultValue={values?.contactName}
           error={e('contactName')}
         />
         <TextField
           name="contactPhone"
-          label="Contact phone"
+          label={dict.contactPhoneLabel}
           type="tel"
           defaultValue={values?.contactPhone}
           error={e('contactPhone')}
@@ -147,7 +152,7 @@ export function ClientForm({
         />
         <TextField
           name="contactEmail"
-          label="Contact email"
+          label={dict.contactEmailLabel}
           type="email"
           defaultValue={values?.contactEmail}
           error={e('contactEmail')}
@@ -157,8 +162,8 @@ export function ClientForm({
       <FieldGrid>
         <TextField
           name="paymentTermsDays"
-          label="Payment terms (days)"
-          hint="Applied to the due date when a bill is raised"
+          label={dict.paymentTermsLabel}
+          hint={dict.paymentTermsHint}
           type="number"
           inputMode="numeric"
           defaultValue={values?.paymentTermsDays ?? 30}
@@ -166,8 +171,8 @@ export function ClientForm({
         />
         <TextField
           name="creditLimit"
-          label="Credit limit (EGP)"
-          hint="0 means no limit"
+          label={dict.creditLimitLabel}
+          hint={dict.creditLimitHint}
           type="number"
           inputMode="decimal"
           defaultValue={values?.creditLimit ?? '0'}
@@ -175,17 +180,17 @@ export function ClientForm({
         />
       </FieldGrid>
 
-      <TextArea name="notes" label="Notes" defaultValue={values?.notes} error={e('notes')} />
+      <TextArea name="notes" label={dict.notesLabel} defaultValue={values?.notes} error={e('notes')} />
 
       <FormActions>
-        <Submit variant="accent" pendingLabel={mode === 'create' ? 'Creating…' : 'Saving…'}>
-          {mode === 'create' ? 'Create client' : 'Save changes'}
+        <Submit variant="accent" pendingLabel={mode === 'create' ? dict.creating : dict.saving}>
+          {mode === 'create' ? dict.createClient : dict.saveChanges}
         </Submit>
         <a
           href={mode === 'edit' && values?.id ? `/clients/${values.id}` : '/clients'}
           className="gts-btn gts-btn-secondary"
         >
-          Cancel
+          {dict.cancel}
         </a>
       </FormActions>
     </form>

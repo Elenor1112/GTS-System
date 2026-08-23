@@ -5,6 +5,7 @@ import { useActionState } from 'react';
 import {
   FormError, FormActions, FieldGrid, TextField, SelectField, Submit, errorFor,
 } from '@/components/form';
+import type { Dictionary } from '@/lib/i18n';
 
 import { submitSettings } from './actions';
 
@@ -20,9 +21,11 @@ import { submitSettings } from './actions';
 export function SettingsForm({
   values,
   governorates,
+  dict,
 }: {
   values: Record<string, string | number>;
   governorates: { value: number; label: string }[];
+  dict: Dictionary['admin']['settings'];
 }) {
   const [state, formAction] = useActionState(submitSettings, null);
   const e = (field: string) => errorFor(state, field);
@@ -32,50 +35,49 @@ export function SettingsForm({
       <FormError state={state} />
       {state?.ok && (
         <p className="gts-form-success" role="status">
-          Saved. The new values apply to the next check-in and the next bill raised.
+          {dict.savedNotice}
         </p>
       )}
 
       {/* ---------- Tax identity ---------- */}
       <fieldset className="gts-fieldset">
-        <legend className="gts-overline">Tax identity</legend>
+        <legend className="gts-overline">{dict.taxIdentity.legend}</legend>
         <p className="gts-help">
-          Printed on every invoice as the issuer. An invoice without a valid 9-digit
-          registration number is not a valid Egyptian tax document.
+          {dict.taxIdentity.help}
         </p>
 
         <FieldGrid>
           <TextField
             name="org.nameEn"
-            label="Organisation name"
+            label={dict.taxIdentity.orgNameLabel}
             required
             defaultValue={values['org.nameEn']}
             error={e('org.nameEn')}
           />
           <TextField
             name="org.nameAr"
-            label="Organisation name (Arabic)"
+            label={dict.taxIdentity.orgNameArLabel}
             defaultValue={values['org.nameAr']}
             error={e('org.nameAr')}
           />
           <TextField
             name="org.trn"
-            label="Tax registration number"
-            hint="9 digits, issued by the Egyptian Tax Authority"
+            label={dict.taxIdentity.trnLabel}
+            hint={dict.taxIdentity.trnHint}
             inputMode="numeric"
             defaultValue={values['org.trn']}
             error={e('org.trn')}
           />
           <TextField
             name="org.commercialRegNo"
-            label="Commercial register"
-            hint="Issued by GAFI"
+            label={dict.taxIdentity.commercialRegLabel}
+            hint={dict.taxIdentity.commercialRegHint}
             defaultValue={values['org.commercialRegNo']}
             error={e('org.commercialRegNo')}
           />
           <SelectField
             name="org.governorateCode"
-            label="Governorate"
+            label={dict.taxIdentity.governorateLabel}
             defaultValue={values['org.governorateCode']}
             error={e('org.governorateCode')}
             options={governorates}
@@ -83,7 +85,7 @@ export function SettingsForm({
           <div className="gts-field-wide">
             <TextField
               name="org.addressLine"
-              label="Address"
+              label={dict.taxIdentity.addressLabel}
               defaultValue={values['org.addressLine']}
               error={e('org.addressLine')}
             />
@@ -93,33 +95,31 @@ export function SettingsForm({
 
       {/* ---------- Attendance ---------- */}
       <fieldset className="gts-fieldset">
-        <legend className="gts-overline">Attendance</legend>
+        <legend className="gts-overline">{dict.attendance.legend}</legend>
         <p className="gts-help">
-          These decide what the server accepts. A check-in outside the radius, or from a fix
-          coarser than the accuracy limit, is refused — raising these values widens what counts
-          as being on site.
+          {dict.attendance.help}
         </p>
 
         <FieldGrid>
           <TextField
             name="attendance.workStart"
-            label="Working day starts"
-            hint="24-hour, Cairo time"
+            label={dict.attendance.workStartLabel}
+            hint={dict.attendance.workStartHint}
             defaultValue={values['attendance.workStart']}
             error={e('attendance.workStart')}
             placeholder="08:00"
           />
           <TextField
             name="attendance.workEnd"
-            label="Working day ends"
+            label={dict.attendance.workEndLabel}
             defaultValue={values['attendance.workEnd']}
             error={e('attendance.workEnd')}
             placeholder="17:00"
           />
           <TextField
             name="attendance.lateThresholdMinutes"
-            label="Late after (minutes)"
-            hint="Grace period before a check-in is marked late"
+            label={dict.attendance.lateThresholdLabel}
+            hint={dict.attendance.lateThresholdHint}
             type="number"
             inputMode="numeric"
             defaultValue={values['attendance.lateThresholdMinutes']}
@@ -127,8 +127,8 @@ export function SettingsForm({
           />
           <TextField
             name="attendance.defaultRadiusMetres"
-            label="Default site radius (metres)"
-            hint="Suggested when a new project location is pinned"
+            label={dict.attendance.defaultRadiusLabel}
+            hint={dict.attendance.defaultRadiusHint}
             type="number"
             inputMode="numeric"
             defaultValue={values['attendance.defaultRadiusMetres']}
@@ -136,8 +136,8 @@ export function SettingsForm({
           />
           <TextField
             name="attendance.maxAccuracyMetres"
-            label="Refuse a fix coarser than (metres)"
-            hint="Below this, a position cannot tell inside a site from outside it"
+            label={dict.attendance.maxAccuracyLabel}
+            hint={dict.attendance.maxAccuracyHint}
             type="number"
             inputMode="numeric"
             defaultValue={values['attendance.maxAccuracyMetres']}
@@ -148,16 +148,15 @@ export function SettingsForm({
 
       {/* ---------- Billing ---------- */}
       <fieldset className="gts-fieldset">
-        <legend className="gts-overline">Billing</legend>
+        <legend className="gts-overline">{dict.billing.legend}</legend>
         <p className="gts-help">
-          Applied when a counterparty has no terms of their own. VAT and the withholding
-          threshold are statutory and are not set here.
+          {dict.billing.help}
         </p>
 
         <FieldGrid>
           <TextField
             name="bills.defaultPaymentTermsDays"
-            label="Default payment terms (days)"
+            label={dict.billing.paymentTermsLabel}
             type="number"
             inputMode="numeric"
             defaultValue={values['bills.defaultPaymentTermsDays']}
@@ -167,8 +166,8 @@ export function SettingsForm({
       </fieldset>
 
       <FormActions>
-        <Submit variant="accent" pendingLabel="Saving…">
-          Save settings
+        <Submit variant="accent" pendingLabel={dict.savingButton}>
+          {dict.saveButton}
         </Submit>
       </FormActions>
     </form>

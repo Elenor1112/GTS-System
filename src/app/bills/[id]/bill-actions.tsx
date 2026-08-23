@@ -3,9 +3,15 @@
 import { useActionState, useState } from 'react';
 
 import { FormError, Submit, errorFor } from '@/components/form';
+import type { Dictionary } from '@/lib/i18n';
 import { PAYMENT_METHODS } from './payment-methods';
 
 import { submitBillWorkflow, submitPayment } from '../actions';
+
+type WorkflowDict = Dictionary['finance']['bills']['workflow'];
+type PaymentsDict = Dictionary['finance']['bills']['detail']['payments'];
+type PaymentMethodsDict = Dictionary['finance']['bills']['paymentMethods'];
+type StatusDict = Dictionary['finance']['bills']['status'];
 
 /**
  * The bill workflow controls.
@@ -25,6 +31,7 @@ export function BillWorkflow({
   canApprove,
   canSend,
   canCancel,
+  dict,
 }: {
   billId: string;
   number: string;
@@ -32,6 +39,7 @@ export function BillWorkflow({
   canApprove: boolean;
   canSend: boolean;
   canCancel: boolean;
+  dict: WorkflowDict;
 }) {
   const [state, formAction] = useActionState(submitBillWorkflow, null);
   const [reasonFor, setReasonFor] = useState<'reject' | 'cancel' | null>(null);
@@ -47,7 +55,7 @@ export function BillWorkflow({
 
           <div className="gts-field" style={{ flex: '1 1 20rem' }}>
             <label className="gts-label" htmlFor="note">
-              Why is {number} being {reasonFor === 'reject' ? 'rejected' : 'cancelled'}?
+              {dict.whyPrefix} {number} {reasonFor === 'reject' ? dict.beingRejected : dict.beingCancelled}
             </label>
             <input
               id="note"
@@ -57,8 +65,8 @@ export function BillWorkflow({
               className="gts-input"
               placeholder={
                 reasonFor === 'reject'
-                  ? 'Wrong rate applied on line 2'
-                  : 'Client withdrew the order'
+                  ? dict.rejectPlaceholder
+                  : dict.cancelPlaceholder
               }
               aria-invalid={errorFor(state, 'note') ? true : undefined}
             />
@@ -67,15 +75,15 @@ export function BillWorkflow({
             )}
           </div>
 
-          <Submit variant={reasonFor === 'cancel' ? 'danger' : 'primary'} pendingLabel="Recording…">
-            {reasonFor === 'reject' ? 'Reject' : 'Cancel the bill'}
+          <Submit variant={reasonFor === 'cancel' ? 'danger' : 'primary'} pendingLabel={dict.recording}>
+            {reasonFor === 'reject' ? dict.reject : dict.cancelBill}
           </Submit>
           <button
             type="button"
             className="gts-btn gts-btn-ghost"
             onClick={() => setReasonFor(null)}
           >
-            Never mind
+            {dict.neverMind}
           </button>
         </form>
       ) : (
@@ -84,26 +92,26 @@ export function BillWorkflow({
 
           {canSubmit && (
             <button type="submit" name="intent" value="submit" className="gts-btn gts-btn-accent">
-              Submit for approval
+              {dict.submitForApproval}
             </button>
           )}
           {canApprove && (
             <>
               <button type="submit" name="intent" value="approve" className="gts-btn gts-btn-accent">
-                Approve
+                {dict.approve}
               </button>
               <button
                 type="button"
                 className="gts-btn gts-btn-secondary"
                 onClick={() => setReasonFor('reject')}
               >
-                Reject
+                {dict.reject}
               </button>
             </>
           )}
           {canSend && (
             <button type="submit" name="intent" value="send" className="gts-btn gts-btn-primary">
-              Mark as sent
+              {dict.markSent}
             </button>
           )}
           {canCancel && (
@@ -112,7 +120,7 @@ export function BillWorkflow({
               className="gts-btn gts-btn-danger"
               onClick={() => setReasonFor('cancel')}
             >
-              Cancel
+              {dict.cancel}
             </button>
           )}
         </form>
@@ -133,24 +141,39 @@ export function PaymentForm({
   billId,
   outstanding,
   suggestedWht,
+  dict,
+  paymentMethods,
+  statuses,
 }: {
   billId: string;
   outstanding: string;
   suggestedWht: string;
+  dict: PaymentsDict;
+  paymentMethods: PaymentMethodsDict;
+  statuses: StatusDict;
 }) {
   const [state, formAction] = useActionState(submitPayment, null);
   const [open, setOpen] = useState(false);
 
   const today = new Date().toISOString().slice(0, 10);
 
+  const methodLabel = (value: (typeof PAYMENT_METHODS)[number]['value']) =>
+    ({
+      BANK_TRANSFER: paymentMethods.bankTransfer,
+      CHEQUE: paymentMethods.cheque,
+      CASH: paymentMethods.cash,
+      CARD: paymentMethods.card,
+      OTHER: paymentMethods.other,
+    })[value];
+
   if (!open) {
     return (
       <div className="gts-payment-trigger">
         <button type="button" className="gts-btn gts-btn-accent" onClick={() => setOpen(true)}>
-          Record a payment
+          {dict.recordPayment}
         </button>
         <span className="gts-meta">
-          {outstanding} outstanding
+          {outstanding} {dict.outstandingSuffix}
         </span>
       </div>
     );
@@ -161,8 +184,12 @@ export function PaymentForm({
       <FormError state={state} />
       {state?.ok && (
         <p className="gts-form-success" role="status">
-          Payment {String(state.data.ref)} recorded. The bill is now{' '}
-          {String(state.data.status).toLowerCase().replace('_', ' ')}.
+          {dict.form.successPrefix} {String(state.data.ref)} {dict.form.successNowStatus}{' '}
+          {statuses[
+            String(state.data.status)
+              .toLowerCase()
+              .replace(/_([a-z])/g, (_, c: string) => c.toUpperCase()) as keyof StatusDict
+          ] ?? String(state.data.status).toLowerCase().replace('_', ' ')}.
         </p>
       )}
 
@@ -170,7 +197,7 @@ export function PaymentForm({
 
       <div className="gts-field">
         <label className="gts-label" htmlFor="amount">
-          Amount <span className="gts-required">*</span>
+          {dict.form.amountLabel} <span className="gts-required">*</span>
         </label>
         <input
           id="amount"
@@ -189,7 +216,7 @@ export function PaymentForm({
 
       <div className="gts-field">
         <label className="gts-label" htmlFor="whtDeducted">
-          Withholding deducted
+          {dict.form.withholdingLabel}
         </label>
         <input
           id="whtDeducted"
@@ -199,17 +226,17 @@ export function PaymentForm({
           defaultValue={suggestedWht}
           className="gts-input gts-input-num"
         />
-        <p className="gts-help">Remitted to the ETA by the payer</p>
+        <p className="gts-help">{dict.form.withholdingHint}</p>
       </div>
 
       <div className="gts-field">
         <label className="gts-label" htmlFor="method">
-          Method
+          {dict.form.methodLabel}
         </label>
         <select id="method" name="method" defaultValue="BANK_TRANSFER" className="gts-input gts-select">
           {PAYMENT_METHODS.map((m) => (
             <option key={m.value} value={m.value}>
-              {m.label}
+              {methodLabel(m.value)}
             </option>
           ))}
         </select>
@@ -217,7 +244,7 @@ export function PaymentForm({
 
       <div className="gts-field">
         <label className="gts-label" htmlFor="receivedOn">
-          Received on <span className="gts-required">*</span>
+          {dict.form.receivedOnLabel} <span className="gts-required">*</span>
         </label>
         <input
           id="receivedOn"
@@ -231,17 +258,17 @@ export function PaymentForm({
 
       <div className="gts-field" style={{ flex: '1 1 12rem' }}>
         <label className="gts-label" htmlFor="reference">
-          Bank reference
+          {dict.form.bankReferenceLabel}
         </label>
-        <input id="reference" name="reference" className="gts-input" placeholder="TT-482913" />
+        <input id="reference" name="reference" className="gts-input" placeholder={dict.form.bankReferencePlaceholder} />
       </div>
 
       <div className="gts-payment-form-actions">
-        <Submit variant="accent" pendingLabel="Recording…">
-          Record payment
+        <Submit variant="accent" pendingLabel={dict.form.recording}>
+          {dict.form.recordPayment}
         </Submit>
         <button type="button" className="gts-btn gts-btn-ghost" onClick={() => setOpen(false)}>
-          Cancel
+          {dict.form.cancel}
         </button>
       </div>
     </form>

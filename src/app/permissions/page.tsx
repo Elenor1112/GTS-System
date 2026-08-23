@@ -6,6 +6,7 @@ import { Shell, PageHead } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { can, PERMISSIONS_BY_MODULE, ADMIN_ROLE } from '@/lib/permissions';
 import { listRoles } from '@/lib/services/people';
+import { t } from '@/lib/i18n';
 
 import { RolePermissionsForm } from './permission-forms';
 
@@ -27,6 +28,7 @@ export const dynamic = 'force-dynamic';
 export default async function PermissionsPage() {
   const actor = await requirePermission('roles.manage');
   const roles = await listRoles();
+  const dict = await t();
 
   const modules = Object.entries(PERMISSIONS_BY_MODULE).sort(([a], [b]) => a.localeCompare(b));
   const mayEdit = can(actor, 'roles.manage');
@@ -35,26 +37,26 @@ export default async function PermissionsPage() {
     <Shell active="/permissions" domain="admin">
       <main className="gts-page">
         <PageHead
-          overline="System"
-          title="Permissions"
-          lede={`${roles.length} roles across ${modules.length} modules. Every one of these keys is checked on the server before the action runs — hiding a button is a courtesy, not a control.`}
+          overline={dict.admin.permissions.overline}
+          title={dict.admin.permissions.title}
+          lede={`${roles.length} ${dict.admin.permissions.lede.replace('{modules}', String(modules.length))}`}
         />
 
         {/* ---------- The matrix ---------- */}
-        <Region title="Access matrix">
+        <Region title={dict.admin.permissions.matrix.title}>
           <div className="gts-table-scroll">
             <table className="gts-table gts-table-compact">
               <caption className="gts-sr">
-                Which permissions each role holds, by module
+                {dict.admin.permissions.matrix.caption}
               </caption>
               <thead>
                 <tr>
-                  <th scope="col">Permission</th>
+                  <th scope="col">{dict.admin.permissions.matrix.permissionHeader}</th>
                   {roles.map((role) => (
                     <th key={role.id} scope="col" className="gts-matrix-head">
                       {role.nameEn}
                       <span className="gts-meta gts-cell-sub">
-                        {role.holdsAllImplicitly ? 'all' : `${role.permissionKeys.length}`}
+                        {role.holdsAllImplicitly ? dict.admin.permissions.matrix.allBadge : `${role.permissionKeys.length}`}
                       </span>
                     </th>
                   ))}
@@ -83,12 +85,12 @@ export default async function PermissionsPage() {
                               {held ? (
                                 <span
                                   className="gts-matrix-yes"
-                                  aria-label={`${role.nameEn} may ${permission.description.toLowerCase()}`}
+                                  aria-label={`${role.nameEn} ${dict.admin.permissions.matrix.mayLabel} ${permission.description.toLowerCase()}`}
                                 >
                                   ●
                                 </span>
                               ) : (
-                                <span className="gts-matrix-no" aria-label="not held">
+                                <span className="gts-matrix-no" aria-label={dict.admin.permissions.matrix.notHeld}>
                                   ·
                                 </span>
                               )}
@@ -111,20 +113,18 @@ export default async function PermissionsPage() {
               <p className="gts-meta" style={{ marginBlockEnd: 'var(--gts-space-4)' }}>
                 {role.description}
                 {' · '}
-                {role._count.users} user{role._count.users === 1 ? '' : 's'}
+                {role._count.users} {role._count.users === 1 ? dict.admin.permissions.userCount : dict.admin.permissions.userCountPlural}
                 {role.isSystem && (
                   <>
                     {' · '}
-                    <Status tone="info">system role</Status>
+                    <Status tone="info">{dict.admin.permissions.systemRoleBadge}</Status>
                   </>
                 )}
               </p>
 
               {role.key === ADMIN_ROLE ? (
                 <p className="gts-form-error" role="status">
-                  The administrator role holds every permission implicitly, so there is nothing
-                  to tick or untick — a reduced set here would appear to save and change nothing.
-                  Create a separate role if somebody needs narrower access.
+                  {dict.admin.permissions.adminLocked}
                 </p>
               ) : (
                 <RolePermissionsForm
@@ -138,6 +138,7 @@ export default async function PermissionsPage() {
                       description: p.description,
                     })),
                   }))}
+                  dict={dict.admin.permissions.form}
                 />
               )}
             </Region>

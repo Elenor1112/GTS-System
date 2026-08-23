@@ -6,6 +6,8 @@ import { requirePermission } from '@/lib/auth';
 import { can } from '@/lib/permissions';
 import { listProjects } from '@/lib/services/projects';
 import { formatDate } from '@/lib/format';
+import { t } from '@/lib/i18n';
+import { getLocale } from '@/lib/preferences';
 
 export const metadata: Metadata = { title: 'Projects — GTS' };
 export const dynamic = 'force-dynamic';
@@ -27,6 +29,9 @@ export default async function ProjectsPage({
 }) {
   const actor = await requirePermission('projects.view');
   const params = await searchParams;
+  const dict = await t();
+  const locale = await getLocale();
+  const d = dict.operations.projects.list;
 
   const status = STATUSES.includes(params.status as (typeof STATUSES)[number])
     ? (params.status as (typeof STATUSES)[number])
@@ -39,17 +44,15 @@ export default async function ProjectsPage({
     <Shell active="/projects" domain="projects">
       <main className="gts-page">
         <PageHead
-          overline="Operations"
-          title="Projects"
-          lede={`${projects.length} project${projects.length === 1 ? '' : 's'}${
-            unpinned > 0
-              ? ` · ${unpinned} active without a pinned site, so nobody can check in there`
-              : ''
+          overline={d.overline}
+          title={d.title}
+          lede={`${projects.length} ${projects.length === 1 ? d.count_one : d.count_other}${
+            unpinned > 0 ? ` · ${unpinned} ${d.unpinnedWarning}` : ''
           }`}
           actions={
             can(actor, 'projects.create') ? (
               <a href="/projects/new" className="gts-btn gts-btn-accent">
-                New project
+                {d.newProject}
               </a>
             ) : undefined
           }
@@ -58,53 +61,49 @@ export default async function ProjectsPage({
         <form method="get" className="gts-filter-bar" role="search">
           <div className="gts-field" style={{ flex: '1 1 16rem' }}>
             <label className="gts-sr" htmlFor="q">
-              Search projects
+              {d.searchLabel}
             </label>
             <input
               id="q"
               name="q"
               type="search"
               defaultValue={params.q ?? ''}
-              placeholder="Project, code or client"
+              placeholder={d.searchPlaceholder}
               className="gts-input"
             />
           </div>
           <div className="gts-field">
             <label className="gts-sr" htmlFor="status">
-              Status
+              {d.statusLabel}
             </label>
             <select id="status" name="status" defaultValue={status ?? ''} className="gts-input gts-select">
-              <option value="">Any status</option>
+              <option value="">{d.anyStatus}</option>
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {s.toLowerCase().replace('_', ' ')}
+                  {statusLabel(dict, s)}
                 </option>
               ))}
             </select>
           </div>
           <button type="submit" className="gts-btn gts-btn-secondary">
-            Filter
+            {d.filter}
           </button>
           {(params.q || status) && (
             <a href="/projects" className="gts-btn gts-btn-ghost">
-              Clear
+              {d.clear}
             </a>
           )}
         </form>
 
         {projects.length === 0 ? (
           <Empty
-            title={params.q || status ? 'No project matches' : 'No projects yet'}
-            body={
-              params.q || status
-                ? 'Try a different search, or clear the filter.'
-                : 'A project carries a client, a site location, the people assigned to it and the materials allocated to it.'
-            }
+            title={params.q || status ? d.emptyNoMatchTitle : d.emptyNoneTitle}
+            body={params.q || status ? d.emptyNoMatchBody : d.emptyNoneBody}
             filtered={Boolean(params.q || status)}
             action={
               can(actor, 'projects.create') && !params.q && !status ? (
                 <a href="/projects/new" className="gts-btn gts-btn-accent">
-                  New project
+                  {d.newProject}
                 </a>
               ) : undefined
             }
@@ -112,16 +111,17 @@ export default async function ProjectsPage({
         ) : (
           <div className="gts-table-scroll">
             <table className="gts-table gts-table-comfortable">
-              <caption className="gts-sr">Projects, their sites and budget consumption</caption>
+              <caption className="gts-sr">{d.caption}</caption>
               <thead>
                 <tr>
-                  <th scope="col">Project</th>
-                  <th scope="col">Client</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">Site</th>
-                  <th scope="col" className="gts-cell-num">Team</th>
-                  <th scope="col" className="gts-cell-num">Billed</th>
-                  <th scope="col" className="gts-cell-num">Of budget</th>
+                  <th scope="col">{d.colProject}</th>
+                  <th scope="col">{d.colClient}</th>
+                  <th scope="col">{d.colStatus}</th>
+                  <th scope="col">{d.colSite}</th>
+                  <th scope="col">{d.colEnds}</th>
+                  <th scope="col" className="gts-cell-num">{d.colTeam}</th>
+                  <th scope="col" className="gts-cell-num">{d.colBilled}</th>
+                  <th scope="col" className="gts-cell-num">{d.colOfBudget}</th>
                 </tr>
               </thead>
               <tbody>
@@ -133,7 +133,7 @@ export default async function ProjectsPage({
                       </a>
                       <span className="gts-meta gts-cell-sub">
                         {project.code}
-                        {project.startsOn && ` · from ${formatDate(project.startsOn.toISOString())}`}
+                        {project.startsOn && ` · ${d.startsFrom} ${formatDate(project.startsOn.toISOString(), locale)}`}
                       </span>
                     </th>
                     <td>
@@ -143,7 +143,7 @@ export default async function ProjectsPage({
                     </td>
                     <td>
                       <Status tone={statusTone(project.status)}>
-                        {project.status.toLowerCase().replace('_', ' ')}
+                        {statusLabel(dict, project.status)}
                       </Status>
                     </td>
                     <td>
@@ -156,15 +156,16 @@ export default async function ProjectsPage({
                         >
                           {project.location.addressLine}
                           <span className="gts-meta gts-cell-sub">
-                            {project.location.radiusMetres}m fence
+                            {project.location.radiusMetres}{d.siteFence}
                           </span>
                         </a>
                       ) : (
                         // Not a cosmetic gap: without coordinates there is
                         // no fence, and nobody assigned here can attend.
-                        <Status tone="warning">No site pinned</Status>
+                        <Status tone="warning">{d.noSitePinned}</Status>
                       )}
                     </td>
+                    <td>{deadlineCell(project.endsOn, project.status, d, locale)}</td>
                     <td className="gts-cell-num">
                       <span className="gts-num gts-num-sm">{project._count.employees}</span>
                     </td>
@@ -172,12 +173,12 @@ export default async function ProjectsPage({
                       {project.billed.isZero() ? (
                         <span className="gts-meta">—</span>
                       ) : (
-                        <Amount value={project.billed.toNumber()} size="sm" currency={null} />
+                        <Amount value={project.billed.toNumber()} size="sm" currency={null} locale={locale} />
                       )}
                     </td>
                     <td className="gts-cell-num">
                       {project.consumedPct === null ? (
-                        <span className="gts-meta">no budget</span>
+                        <span className="gts-meta">{d.noBudget}</span>
                       ) : (
                         <span
                           className={`gts-num gts-num-sm${project.consumedPct > 100 ? ' gts-num-negative' : ''}`}
@@ -197,10 +198,47 @@ export default async function ProjectsPage({
   );
 }
 
+function statusLabel(dict: Awaited<ReturnType<typeof t>>, status: string) {
+  const f = dict.operations.projects.form;
+  switch (status) {
+    case 'PLANNING': return f.statusPlanning;
+    case 'ACTIVE': return f.statusActive;
+    case 'ON_HOLD': return f.statusOnHold;
+    case 'COMPLETED': return f.statusCompleted;
+    case 'CANCELLED': return f.statusCancelled;
+    default: return status.toLowerCase().replace('_', ' ');
+  }
+}
+
 function statusTone(status: string) {
   if (status === 'ACTIVE') return 'success' as const;
   if (status === 'COMPLETED') return 'info' as const;
   if (status === 'CANCELLED') return 'danger' as const;
   if (status === 'ON_HOLD') return 'warning' as const;
   return 'neutral' as const;
+}
+
+/** A near or past deadline only matters while the project is still running. */
+function deadlineCell(
+  endsOn: Date | null,
+  status: string,
+  d: Awaited<ReturnType<typeof t>>['operations']['projects']['list'],
+  locale: 'en' | 'ar',
+) {
+  if (!endsOn) return <span className="gts-meta">—</span>;
+
+  const tracked = status === 'PLANNING' || status === 'ACTIVE';
+  const days = Math.round((endsOn.getTime() - Date.now()) / 86_400_000);
+  const label = formatDate(endsOn.toISOString(), locale);
+
+  if (!tracked || days > 7) return <span className="gts-meta gts-cell-sub">{label}</span>;
+
+  return (
+    <Status tone={days < 0 ? 'danger' : 'warning'}>
+      {label}
+      <span className="gts-meta gts-cell-sub">
+        {days < 0 ? `${Math.abs(days)}${d.overdueSuffix}` : `${days}${d.leftSuffix}`}
+      </span>
+    </Status>
+  );
 }

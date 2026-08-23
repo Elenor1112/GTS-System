@@ -25,10 +25,9 @@ const createUserAction = action({
       input: {
         email: input.email,
         nameEn: input.nameEn,
-        nameAr: input.nameAr ?? null,
-        phone: input.phone ?? null,
+        nameAr: input.nameAr,
+        phone: input.phone,
         roleId: input.roleId,
-        employeeId: input.employeeId || null,
         password: input.password,
       },
     });

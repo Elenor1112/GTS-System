@@ -55,9 +55,22 @@ const productSchema = z.object({
   reorderLevel: decimalTextOrZero('Reorder level', { min: 0, max: 9_999_999 }),
 });
 
+/**
+ * Create-only: where the product physically starts out.
+ *
+ * Not part of `productSchema` because an edit form must never silently
+ * re-receive stock — `warehouseId` has no meaning once a product exists
+ * in more than one warehouse.
+ */
+const createProductSchema = productSchema.extend({
+  warehouseId: id,
+  openingQuantity: decimalTextOrZero('Opening quantity', { min: 0, max: 9_999_999 }),
+  binLocation: optionalText,
+});
+
 const createProductAction = action({
   permission: 'products.create',
-  input: productSchema,
+  input: createProductSchema,
   handler: async (input, { actor }) => {
     const product = await createProduct({ actor, input });
     revalidatePath('/products');

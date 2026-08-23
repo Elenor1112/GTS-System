@@ -9,6 +9,8 @@ import { vendorDetail } from '@/lib/services/vendors';
 import { vendorSummary, vendorActivity, daysOverdue } from '@/lib/services/accounts';
 import { GOVERNORATES, TRN } from '@/lib/egypt';
 import { formatDate } from '@/lib/format';
+import { t } from '@/lib/i18n';
+import { getLocale } from '@/lib/preferences';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +39,13 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
   const vendor = await vendorDetail(id);
   if (!vendor) notFound();
 
-  const [summary, activity] = await Promise.all([vendorSummary(id), vendorActivity(id, 40)]);
+  const [summary, activity, dict, locale] = await Promise.all([
+    vendorSummary(id),
+    vendorActivity(id, 40),
+    t(),
+    getLocale(),
+  ]);
+  const d = dict.catalogue.vendors.detail;
 
   const governorate = vendor.governorateCode
     ? GOVERNORATES.find((g) => g.code === vendor.governorateCode)?.en
@@ -64,12 +72,17 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
             <>
               {can(actor, 'bills.create') && (
                 <a href={`/bills/new?vendorId=${vendor.id}`} className="gts-btn gts-btn-secondary">
-                  Record a bill
+                  {d.recordBill}
                 </a>
               )}
               {can(actor, 'vendors.edit') && (
                 <a href={`/vendors/${vendor.id}/edit`} className="gts-btn gts-btn-primary">
-                  Edit
+                  {d.edit}
+                </a>
+              )}
+              {seesMoney && (
+                <a href={`/vendors/${vendor.id}/print`} className="gts-btn gts-btn-secondary">
+                  {d.printStatement}
                 </a>
               )}
             </>
@@ -77,39 +90,41 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
         />
 
         {seesMoney && (
-          <Region title="Account">
+          <Region title={d.account}>
             <div className="gts-stat-row">
-              <Figure label="Billed by them" value={summary.billed.toNumber()} />
-              <Figure label="Paid" value={summary.paid.toNumber()} />
+              <Figure label={d.billedByThem} value={summary.billed.toNumber()} locale={locale} />
+              <Figure label={d.paid} value={summary.paid.toNumber()} locale={locale} />
               <Figure
-                label="Payable"
+                label={d.payable}
                 value={summary.outstanding.toNumber()}
                 tone={summary.outstanding.greaterThan(0) ? 'warning' : undefined}
+                locale={locale}
               />
               <Figure
-                label="Overdue"
+                label={d.overdue}
                 value={summary.overdue.toNumber()}
                 tone={summary.overdue.greaterThan(0) ? 'danger' : undefined}
+                locale={locale}
               />
             </div>
             <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
-              Payment terms {vendor.paymentTermsDays} days
+              {d.paymentTerms} {vendor.paymentTermsDays} {d.daysSuffix}
             </p>
           </Region>
         )}
 
         {/* ---------- What they have supplied ---------- */}
         {can(actor, 'inventory.view') && vendor.supplied.length > 0 && (
-          <Region title="Supplied">
+          <Region title={d.supplied}>
             <div className="gts-table-scroll">
               <table className="gts-table gts-table-comfortable">
                 <caption className="gts-sr">Goods received from this vendor, and returns</caption>
                 <thead>
                   <tr>
-                    <th scope="col">Product</th>
-                    <th scope="col" className="gts-cell-num">Received</th>
-                    <th scope="col" className="gts-cell-num">Returned</th>
-                    <th scope="col" className="gts-cell-num">Net</th>
+                    <th scope="col">{d.colProduct}</th>
+                    <th scope="col" className="gts-cell-num">{d.colReceived}</th>
+                    <th scope="col" className="gts-cell-num">{d.colReturned}</th>
+                    <th scope="col" className="gts-cell-num">{d.colNet}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -144,16 +159,16 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
 
         {/* ---------- Their catalogue, and what we hold ---------- */}
         {can(actor, 'products.view') && vendor.catalogue.length > 0 && (
-          <Region title={`Catalogue (${vendor.catalogue.length})`}>
+          <Region title={`${d.catalogue} (${vendor.catalogue.length})`}>
             <div className="gts-table-scroll">
               <table className="gts-table gts-table-comfortable">
                 <thead>
                   <tr>
-                    <th scope="col">Product</th>
-                    <th scope="col" className="gts-cell-num">Cost</th>
-                    <th scope="col" className="gts-cell-num">Sale</th>
-                    <th scope="col" className="gts-cell-num">On hand</th>
-                    <th scope="col" className="gts-cell-num">Reorder at</th>
+                    <th scope="col">{d.colProduct}</th>
+                    <th scope="col" className="gts-cell-num">{d.colCost}</th>
+                    <th scope="col" className="gts-cell-num">{d.colSale}</th>
+                    <th scope="col" className="gts-cell-num">{d.colOnHand}</th>
+                    <th scope="col" className="gts-cell-num">{d.colReorderAt}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -172,10 +187,10 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
                           </span>
                         </th>
                         <td className="gts-cell-num">
-                          <Amount value={product.costPrice.toNumber()} size="sm" currency={null} />
+                          <Amount value={product.costPrice.toNumber()} size="sm" currency={null} locale={locale} />
                         </td>
                         <td className="gts-cell-num">
-                          <Amount value={product.salePrice.toNumber()} size="sm" currency={null} />
+                          <Amount value={product.salePrice.toNumber()} size="sm" currency={null} locale={locale} />
                         </td>
                         <td className="gts-cell-num">
                           {low ? (
@@ -202,20 +217,20 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
 
         {/* ---------- Bills ---------- */}
         {can(actor, 'bills.view') && (
-          <Region title={`Bills (${vendor.bills.length})`}>
+          <Region title={`${d.bills} (${vendor.bills.length})`}>
             {vendor.bills.length === 0 ? (
-              <Empty title="No bills" body="Nothing has been billed by this vendor yet." />
+              <Empty title={d.emptyBillsTitle} body={d.emptyBillsBody} />
             ) : (
               <div className="gts-table-scroll">
                 <table className="gts-table gts-table-comfortable">
                   <thead>
                     <tr>
-                      <th scope="col">Number</th>
-                      <th scope="col">Issued</th>
-                      <th scope="col">Due</th>
-                      <th scope="col">Status</th>
-                      <th scope="col" className="gts-cell-num">Total</th>
-                      <th scope="col" className="gts-cell-num">Outstanding</th>
+                      <th scope="col">{d.colNumber}</th>
+                      <th scope="col">{d.colIssued}</th>
+                      <th scope="col">{d.colDue}</th>
+                      <th scope="col">{d.colStatus}</th>
+                      <th scope="col" className="gts-cell-num">{d.colTotal}</th>
+                      <th scope="col" className="gts-cell-num">{d.colOutstanding}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -229,11 +244,11 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
                               <bdi>{bill.number}</bdi>
                             </a>
                           </th>
-                          <td>{formatDate(bill.issuedOn.toISOString())}</td>
+                          <td>{formatDate(bill.issuedOn.toISOString(), locale)}</td>
                           <td>
-                            {formatDate(bill.dueOn.toISOString())}
+                            {formatDate(bill.dueOn.toISOString(), locale)}
                             {late > 0 && (
-                              <span className="gts-meta gts-cell-sub">{late} days late</span>
+                              <span className="gts-meta gts-cell-sub">{late} {d.daysLateSuffix}</span>
                             )}
                           </td>
                           <td>
@@ -242,13 +257,13 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
                             </Status>
                           </td>
                           <td className="gts-cell-num">
-                            <Amount value={bill.total.toNumber()} size="sm" currency={null} />
+                            <Amount value={bill.total.toNumber()} size="sm" currency={null} locale={locale} />
                           </td>
                           <td className="gts-cell-num">
                             {outstanding.lessThanOrEqualTo(0) ? (
-                              <span className="gts-meta">settled</span>
+                              <span className="gts-meta">{d.settled}</span>
                             ) : (
-                              <Amount value={outstanding.toNumber()} size="sm" currency={null} />
+                              <Amount value={outstanding.toNumber()} size="sm" currency={null} locale={locale} />
                             )}
                           </td>
                         </tr>
@@ -262,11 +277,11 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
         )}
 
         {/* ---------- Activity ---------- */}
-        <Region title="Activity">
+        <Region title={d.activity}>
           {activity.length === 0 ? (
             <Empty
-              title="Nothing has happened yet"
-              body="Receipts, bills and payments appear here as they occur."
+              title={d.emptyActivityTitle}
+              body={d.emptyActivityBody}
             />
           ) : (
             <ol className="gts-timeline">
@@ -286,9 +301,9 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
                     <p className="gts-meta">{event.detail}</p>
                   </div>
                   <div className="gts-timeline-aside">
-                    <span className="gts-meta">{formatDate(event.at.toISOString())}</span>
+                    <span className="gts-meta">{formatDate(event.at.toISOString(), locale)}</span>
                     {event.amount && seesMoney && (
-                      <Amount value={event.amount.toNumber()} size="sm" currency={null} />
+                      <Amount value={event.amount.toNumber()} size="sm" currency={null} locale={locale} />
                     )}
                   </div>
                 </li>
@@ -305,16 +320,18 @@ function Figure({
   label,
   value,
   tone,
+  locale,
 }: {
   label: string;
   value: number;
   tone?: 'danger' | 'warning';
+  locale?: 'en' | 'ar';
 }) {
   return (
     <div className="gts-stat">
       <p className="gts-overline">{label}</p>
       <p className={tone ? `gts-stat-value gts-stat-${tone}` : 'gts-stat-value'}>
-        <Amount value={value} size="md" />
+        <Amount value={value} size="md" locale={locale} />
       </p>
     </div>
   );

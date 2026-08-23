@@ -4,6 +4,8 @@ import { Shell, PageHead } from '@/components/shell';
 import { requireActor } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { formatDate } from '@/lib/format';
+import { t } from '@/lib/i18n';
+import { getLocale } from '@/lib/preferences';
 
 import { PasswordForm } from './password-form';
 
@@ -24,6 +26,8 @@ export const dynamic = 'force-dynamic';
  */
 export default async function AccountPage() {
   const actor = await requireActor();
+  const dict = await t();
+  const locale = await getLocale();
 
   const [user, sessionCount] = await Promise.all([
     db.user.findUnique({
@@ -46,34 +50,34 @@ export default async function AccountPage() {
     <Shell active="/account" domain="admin">
       <main className="gts-page">
         <PageHead
-          overline="Your account"
+          overline={dict.admin.account.overline}
           title={user.nameEn}
           lede={[user.role.nameEn, user.employee?.jobTitleEn].filter(Boolean).join(' · ')}
         />
 
         <div className="gts-stat-row">
           <div className="gts-stat">
-            <p className="gts-overline">Email</p>
+            <p className="gts-overline">{dict.admin.account.email}</p>
             <p className="gts-stat-value">{user.email}</p>
           </div>
           <div className="gts-stat">
-            <p className="gts-overline">Role</p>
+            <p className="gts-overline">{dict.admin.account.role}</p>
             <p className="gts-stat-value">{user.role.nameEn}</p>
           </div>
           {user.employee && (
             <div className="gts-stat">
-              <p className="gts-overline">Employee</p>
+              <p className="gts-overline">{dict.admin.account.employee}</p>
               <p className="gts-stat-value">{user.employee.code}</p>
             </div>
           )}
           <div className="gts-stat">
-            <p className="gts-overline">Last signed in</p>
+            <p className="gts-overline">{dict.admin.account.lastSignedIn}</p>
             <p className="gts-stat-value">
-              {user.lastLoginAt ? formatDate(user.lastLoginAt.toISOString()) : '—'}
+              {user.lastLoginAt ? formatDate(user.lastLoginAt.toISOString(), locale) : '—'}
             </p>
           </div>
           <div className="gts-stat">
-            <p className="gts-overline">Active sessions</p>
+            <p className="gts-overline">{dict.admin.account.activeSessions}</p>
             <p className="gts-stat-value">
               <span className="gts-num gts-num-md">{sessionCount}</span>
             </p>
@@ -81,13 +85,12 @@ export default async function AccountPage() {
         </div>
 
         <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
-          Your name, role and employee record are administered from Users. Ask an administrator if
-          any of them is wrong.
+          {dict.admin.account.administeredNote}
         </p>
 
         <section style={{ marginBlockStart: 'var(--gts-space-7)' }}>
-          <h2 className="gts-overline">Change your password</h2>
-          <PasswordForm />
+          <h2 className="gts-overline">{dict.admin.account.passwordSectionTitle}</h2>
+          <PasswordForm dict={dict.admin.account.passwordForm} />
         </section>
       </main>
     </Shell>

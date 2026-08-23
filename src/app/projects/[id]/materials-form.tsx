@@ -3,12 +3,15 @@
 import { useActionState, useState } from 'react';
 
 import { FormError, Submit, errorFor } from '@/components/form';
+import type { OperationsDict } from '@/lib/i18n/dict/operations';
 
 import {
   submitAllocateToProject,
   submitDeliverToProject,
   submitReturnFromProject,
 } from '../actions';
+
+export type MaterialsFormDict = OperationsDict['operations']['projects']['materials'];
 
 export interface StockOption {
   id: string;
@@ -34,10 +37,12 @@ export function AllocateForm({
   projectId,
   products,
   closed,
+  dict,
 }: {
   projectId: string;
   products: StockOption[];
   closed: boolean;
+  dict: MaterialsFormDict;
 }) {
   const [state, formAction] = useActionState(submitAllocateToProject, null);
   const [productId, setProductId] = useState('');
@@ -47,7 +52,7 @@ export function AllocateForm({
   if (closed) {
     return (
       <p className="gts-meta">
-        This project is closed. Stock can no longer be allocated to it.
+        {dict.closedNotice}
       </p>
     );
   }
@@ -55,8 +60,7 @@ export function AllocateForm({
   if (products.length === 0) {
     return (
       <p className="gts-meta">
-        No warehouse is holding stock. Receive stock into a warehouse before
-        allocating it to a site.
+        {dict.noStockNotice}
       </p>
     );
   }
@@ -66,8 +70,7 @@ export function AllocateForm({
       <FormError state={state} />
       {state?.ok && (
         <p className="gts-form-success" role="status">
-          Allocated. The units have left the warehouse and are now against this
-          project — record the delivery once they reach the site.
+          {dict.allocatedMessage}
         </p>
       )}
 
@@ -75,7 +78,7 @@ export function AllocateForm({
 
       <div className="gts-field" style={{ flex: '1 1 15rem' }}>
         <label className="gts-label" htmlFor="allocate-productId">
-          Product
+          {dict.productLabel}
         </label>
         <select
           id="allocate-productId"
@@ -86,7 +89,7 @@ export function AllocateForm({
           onChange={(event) => setProductId(event.target.value)}
           aria-invalid={errorFor(state, 'productId') ? true : undefined}
         >
-          <option value="">Select a product</option>
+          <option value="">{dict.productPlaceholder}</option>
           {products.map((product) => (
             <option key={product.id} value={product.id}>
               {product.nameEn} — {product.sku}
@@ -97,7 +100,7 @@ export function AllocateForm({
 
       <div className="gts-field" style={{ flex: '1 1 13rem' }}>
         <label className="gts-label" htmlFor="allocate-warehouseId">
-          From warehouse
+          {dict.fromWarehouseLabel}
         </label>
         <select
           id="allocate-warehouseId"
@@ -109,11 +112,11 @@ export function AllocateForm({
           aria-invalid={errorFor(state, 'warehouseId') ? true : undefined}
         >
           <option value="">
-            {selected ? 'Select a warehouse' : 'Choose a product first'}
+            {selected ? dict.selectWarehouse : dict.chooseProductFirst}
           </option>
           {selected?.warehouses.map((warehouse) => (
             <option key={warehouse.id} value={warehouse.id}>
-              {warehouse.nameEn} — {warehouse.available} {selected.unit} free
+              {warehouse.nameEn} — {warehouse.available} {selected.unit} {dict.freeSuffix}
             </option>
           ))}
         </select>
@@ -121,7 +124,7 @@ export function AllocateForm({
 
       <div className="gts-field" style={{ flex: '0 1 8rem' }}>
         <label className="gts-label" htmlFor="allocate-quantity">
-          Quantity{selected ? ` (${selected.unit})` : ''}
+          {dict.quantityLabel}{selected ? ` (${selected.unit})` : ''}
         </label>
         <input
           id="allocate-quantity"
@@ -137,7 +140,7 @@ export function AllocateForm({
 
       <div className="gts-field" style={{ flex: '0 1 9rem' }}>
         <label className="gts-label" htmlFor="allocate-agreedPrice">
-          Agreed price
+          {dict.agreedPriceLabel}
         </label>
         <input
           id="allocate-agreedPrice"
@@ -146,13 +149,13 @@ export function AllocateForm({
           step="0.01"
           min="0"
           className="gts-input gts-input-num"
-          placeholder={selected ? selected.salePrice : 'catalogue'}
+          placeholder={selected ? selected.salePrice : dict.agreedPricePlaceholder}
           aria-invalid={errorFor(state, 'agreedPrice') ? true : undefined}
         />
       </div>
 
-      <Submit variant="primary" pendingLabel="Allocating…">
-        Allocate
+      <Submit variant="primary" pendingLabel={dict.allocating}>
+        {dict.allocate}
       </Submit>
     </form>
   );
@@ -171,6 +174,7 @@ export function RowActions({
   inTransit,
   onSite,
   warehouses,
+  dict,
 }: {
   projectId: string;
   productId: string;
@@ -181,6 +185,7 @@ export function RowActions({
   /** Delivered, minus what has come back or been written off. */
   onSite: string;
   warehouses: { id: string; code: string; nameEn: string }[];
+  dict: MaterialsFormDict;
 }) {
   const [open, setOpen] = useState<'deliver' | 'return' | null>(null);
 
@@ -201,7 +206,7 @@ export function RowActions({
             aria-expanded={open === 'deliver'}
             onClick={() => setOpen(open === 'deliver' ? null : 'deliver')}
           >
-            Deliver
+            {dict.deliver}
           </button>
         )}
         {canReturn && (
@@ -211,7 +216,7 @@ export function RowActions({
             aria-expanded={open === 'return'}
             onClick={() => setOpen(open === 'return' ? null : 'return')}
           >
-            Return
+            {dict.return}
           </button>
         )}
       </div>
@@ -224,6 +229,7 @@ export function RowActions({
           unit={unit}
           inTransit={inTransit}
           onDone={() => setOpen(null)}
+          dict={dict}
         />
       )}
 
@@ -236,6 +242,7 @@ export function RowActions({
           onSite={onSite}
           warehouses={warehouses}
           onDone={() => setOpen(null)}
+          dict={dict}
         />
       )}
     </div>
@@ -249,6 +256,7 @@ function DeliverForm({
   unit,
   inTransit,
   onDone,
+  dict,
 }: {
   projectId: string;
   productId: string;
@@ -256,6 +264,7 @@ function DeliverForm({
   unit: string;
   inTransit: string;
   onDone: () => void;
+  dict: MaterialsFormDict;
 }) {
   const [state, formAction] = useActionState(submitDeliverToProject, null);
 
@@ -264,7 +273,7 @@ function DeliverForm({
       <FormError state={state} />
       {state?.ok && (
         <p className="gts-form-success" role="status">
-          Delivery recorded against the client statement.
+          {dict.deliveredMessage}
         </p>
       )}
 
@@ -273,7 +282,7 @@ function DeliverForm({
 
       <div className="gts-field" style={{ flex: '0 1 9rem' }}>
         <label className="gts-label" htmlFor={`deliver-qty-${productId}`}>
-          Deliver ({unit})
+          {dict.deliverQuantityLabel} ({unit})
         </label>
         <input
           id={`deliver-qty-${productId}`}
@@ -289,27 +298,27 @@ function DeliverForm({
           aria-invalid={errorFor(state, 'quantity') ? true : undefined}
         />
         <p className="gts-help" id={`deliver-help-${productId}`}>
-          {inTransit} {unit} of {productName} in transit.
+          {inTransit} {unit} {dict.deliverHelp.replace('{product}', productName)}
         </p>
       </div>
 
       <div className="gts-field" style={{ flex: '1 1 11rem' }}>
         <label className="gts-label" htmlFor={`deliver-ref-${productId}`}>
-          Reference
+          {dict.referenceLabel}
         </label>
         <input
           id={`deliver-ref-${productId}`}
           name="reference"
           className="gts-input"
-          placeholder="Delivery note no."
+          placeholder={dict.referencePlaceholder}
         />
       </div>
 
-      <Submit variant="primary" pendingLabel="Recording…">
-        Record delivery
+      <Submit variant="primary" pendingLabel={dict.recording}>
+        {dict.recordDelivery}
       </Submit>
       <button type="button" className="gts-btn gts-btn-ghost gts-btn-sm" onClick={onDone}>
-        Cancel
+        {dict.cancel}
       </button>
     </form>
   );
@@ -323,6 +332,7 @@ function ReturnForm({
   onSite,
   warehouses,
   onDone,
+  dict,
 }: {
   projectId: string;
   productId: string;
@@ -331,6 +341,7 @@ function ReturnForm({
   onSite: string;
   warehouses: { id: string; code: string; nameEn: string }[];
   onDone: () => void;
+  dict: MaterialsFormDict;
 }) {
   const [state, formAction] = useActionState(submitReturnFromProject, null);
   const [damaged, setDamaged] = useState(false);
@@ -340,9 +351,7 @@ function ReturnForm({
       <FormError state={state} />
       {state?.ok && (
         <p className="gts-form-success" role="status">
-          {damaged
-            ? 'Written off — the ledger keeps the loss rather than restocking the units.'
-            : 'Returned. The units are back on the shelf and available again.'}
+          {damaged ? dict.writtenOffMessage : dict.returnedMessage}
         </p>
       )}
 
@@ -351,7 +360,7 @@ function ReturnForm({
 
       <div className="gts-field" style={{ flex: '0 1 9rem' }}>
         <label className="gts-label" htmlFor={`return-qty-${productId}`}>
-          Quantity ({unit})
+          {dict.returnQuantityLabel} ({unit})
         </label>
         <input
           id={`return-qty-${productId}`}
@@ -366,13 +375,13 @@ function ReturnForm({
           aria-invalid={errorFor(state, 'quantity') ? true : undefined}
         />
         <p className="gts-help" id={`return-help-${productId}`}>
-          {onSite} {unit} of {productName} still on site.
+          {onSite} {unit} {dict.returnHelp.replace('{product}', productName)}
         </p>
       </div>
 
       <div className="gts-field" style={{ flex: '1 1 11rem' }}>
         <label className="gts-label" htmlFor={`return-warehouseId-${productId}`}>
-          {damaged ? 'Write off against' : 'Back into'}
+          {damaged ? dict.writeOffAgainst : dict.backInto}
         </label>
         <select
           id={`return-warehouseId-${productId}`}
@@ -392,13 +401,13 @@ function ReturnForm({
 
       <div className="gts-field" style={{ flex: '1 1 11rem' }}>
         <label className="gts-label" htmlFor={`return-reason-${productId}`}>
-          Reason
+          {dict.reasonLabel}
         </label>
         <input
           id={`return-reason-${productId}`}
           name="reason"
           className="gts-input"
-          placeholder={damaged ? 'Crushed in transit' : 'Surplus to requirement'}
+          placeholder={damaged ? dict.reasonDamagedPlaceholder : dict.reasonSurplusPlaceholder}
         />
       </div>
 
@@ -411,15 +420,15 @@ function ReturnForm({
             checked={damaged}
             onChange={(event) => setDamaged(event.target.checked)}
           />{' '}
-          Damaged — write off rather than restock
+          {dict.damagedLabel}
         </label>
       </div>
 
-      <Submit variant="primary" pendingLabel="Recording…">
-        {damaged ? 'Write off' : 'Return to stock'}
+      <Submit variant="primary" pendingLabel={dict.recording}>
+        {damaged ? dict.writeOff : dict.returnToStock}
       </Submit>
       <button type="button" className="gts-btn gts-btn-ghost gts-btn-sm" onClick={onDone}>
-        Cancel
+        {dict.cancel}
       </button>
     </form>
   );

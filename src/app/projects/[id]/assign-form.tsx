@@ -3,8 +3,11 @@
 import { useActionState } from 'react';
 
 import { FormError, Submit, errorFor } from '@/components/form';
+import type { OperationsDict } from '@/lib/i18n/dict/operations';
 
 import { submitAssignEmployee, submitReleaseEmployee } from '../actions';
+
+export type AssignFormDict = OperationsDict['operations']['projects']['assign'];
 
 /**
  * Assign somebody to the site, and release them from it.
@@ -18,17 +21,19 @@ export function AssignForm({
   projectId,
   candidates,
   hasLocation,
+  dict,
 }: {
   projectId: string;
   candidates: { id: string; code: string; nameEn: string; jobTitleEn: string }[];
   hasLocation: boolean;
+  dict: AssignFormDict;
 }) {
   const [state, formAction] = useActionState(submitAssignEmployee, null);
 
   if (candidates.length === 0) {
     return (
       <p className="gts-meta">
-        Every active employee is already assigned to this project.
+        {dict.allAssigned}
       </p>
     );
   }
@@ -38,9 +43,7 @@ export function AssignForm({
       <FormError state={state} />
       {state?.ok && (
         <p className={hasLocation ? 'gts-form-success' : 'gts-form-error'} role="status">
-          {hasLocation
-            ? 'Assigned. They can check in at this site from the Attendance screen.'
-            : 'Assigned — but this project has no site location, so they cannot check in yet. Set the location above.'}
+          {hasLocation ? dict.assignedWithLocation : dict.assignedWithoutLocation}
         </p>
       )}
 
@@ -48,7 +51,7 @@ export function AssignForm({
 
       <div className="gts-field" style={{ flex: '1 1 14rem' }}>
         <label className="gts-label" htmlFor="employeeId">
-          Employee
+          {dict.employeeLabel}
         </label>
         <select
           id="employeeId"
@@ -58,7 +61,7 @@ export function AssignForm({
           defaultValue=""
           aria-invalid={errorFor(state, 'employeeId') ? true : undefined}
         >
-          <option value="">Select an employee</option>
+          <option value="">{dict.employeePlaceholder}</option>
           {candidates.map((employee) => (
             <option key={employee.id} value={employee.id}>
               {employee.nameEn} — {employee.jobTitleEn}
@@ -69,18 +72,18 @@ export function AssignForm({
 
       <div className="gts-field" style={{ flex: '1 1 12rem' }}>
         <label className="gts-label" htmlFor="roleOnSite">
-          Role on site
+          {dict.roleOnSiteLabel}
         </label>
         <input
           id="roleOnSite"
           name="roleOnSite"
           className="gts-input"
-          placeholder="Site foreman"
+          placeholder={dict.roleOnSitePlaceholder}
         />
       </div>
 
-      <Submit variant="primary" pendingLabel="Assigning…">
-        Assign
+      <Submit variant="primary" pendingLabel={dict.assigning}>
+        {dict.assign}
       </Submit>
     </form>
   );
@@ -91,10 +94,12 @@ export function ReleaseButton({
   assignmentId,
   projectId,
   name,
+  dict,
 }: {
   assignmentId: string;
   projectId: string;
   name: string;
+  dict: AssignFormDict;
 }) {
   const [state, formAction] = useActionState(submitReleaseEmployee, null);
 
@@ -105,9 +110,9 @@ export function ReleaseButton({
       <button
         type="submit"
         className="gts-btn gts-btn-ghost gts-btn-xs"
-        aria-label={`Release ${name} from this project`}
+        aria-label={dict.releaseAria.replace('{name}', name)}
       >
-        Release
+        {dict.release}
       </button>
       {state && !state.ok && (
         <p className="gts-help gts-help-error">{state.message}</p>

@@ -5,8 +5,11 @@ import { useActionState, useEffect } from 'react';
 import {
   FormError, FieldGrid, TextField, SelectField, Submit, FormActions, errorFor,
 } from '@/components/form';
+import type { CatalogueDict } from '@/lib/i18n/dict/catalogue';
 
 import { submitCreateProduct, submitUpdateProduct } from './actions';
+
+type ProductFormDict = CatalogueDict['catalogue']['products']['form'];
 
 /**
  * The product form, used for both create and edit.
@@ -38,11 +41,15 @@ export function ProductForm({
   values,
   categories,
   vendors,
+  warehouses,
+  dict,
 }: {
   mode: 'create' | 'edit';
   values?: ProductFormValues;
   categories: { id: string; nameEn: string }[];
   vendors: { id: string; nameEn: string; code: string }[];
+  warehouses?: { id: string; nameEn: string; code: string }[];
+  dict: ProductFormDict;
 }) {
   const submit = mode === 'create' ? submitCreateProduct : submitUpdateProduct;
   const [state, formAction] = useActionState(submit, null);
@@ -66,8 +73,8 @@ export function ProductForm({
       <FieldGrid>
         <TextField
           name="sku"
-          label="SKU"
-          hint="Your own stock code, e.g. CBL-3C-25"
+          label={dict.skuLabel}
+          hint={dict.skuHint}
           required
           defaultValue={values?.sku}
           error={e('sku')}
@@ -75,7 +82,7 @@ export function ProductForm({
         />
         <TextField
           name="nameEn"
-          label="Name (English)"
+          label={dict.nameEnLabel}
           required
           defaultValue={values?.nameEn}
           error={e('nameEn')}
@@ -83,15 +90,15 @@ export function ProductForm({
         />
         <TextField
           name="nameAr"
-          label="Name (Arabic)"
+          label={dict.nameArLabel}
           defaultValue={values?.nameAr}
           error={e('nameAr')}
           maxLength={200}
         />
         <TextField
           name="unit"
-          label="Unit"
-          hint="How it is counted — each, m, kg, roll"
+          label={dict.unitLabel}
+          hint={dict.unitHint}
           required
           defaultValue={values?.unit}
           error={e('unit')}
@@ -99,71 +106,99 @@ export function ProductForm({
         />
         <SelectField
           name="categoryId"
-          label="Category"
+          label={dict.categoryLabel}
           defaultValue={values?.categoryId ?? ''}
           error={e('categoryId')}
           options={[
-            { value: '', label: 'Uncategorised' },
+            { value: '', label: dict.uncategorised },
             ...categories.map((c) => ({ value: c.id, label: c.nameEn })),
           ]}
         />
         <SelectField
           name="vendorId"
-          label="Preferred vendor"
+          label={dict.vendorLabel}
           defaultValue={values?.vendorId ?? ''}
           error={e('vendorId')}
           options={[
-            { value: '', label: 'None' },
+            { value: '', label: dict.noneOption },
             ...vendors.map((v) => ({ value: v.id, label: `${v.code} — ${v.nameEn}` })),
           ]}
         />
         <TextField
           name="brand"
-          label="Brand"
+          label={dict.brandLabel}
           defaultValue={values?.brand}
           error={e('brand')}
           maxLength={120}
         />
         <TextField
           name="gpcCode"
-          label="GPC code"
-          hint="Egyptian e-invoicing item code, if the item has one"
+          label={dict.gpcCodeLabel}
+          hint={dict.gpcCodeHint}
           defaultValue={values?.gpcCode}
           error={e('gpcCode')}
           maxLength={64}
         />
         <TextField
           name="costPrice"
-          label="Cost price (EGP)"
-          hint="What you pay. Drives stock valuation."
+          label={dict.costPriceLabel}
+          hint={dict.costPriceHint}
           inputMode="decimal"
           defaultValue={values?.costPrice}
           error={e('costPrice')}
         />
         <TextField
           name="salePrice"
-          label="Sale price (EGP)"
-          hint="What you charge. Used to price bill lines."
+          label={dict.salePriceLabel}
+          hint={dict.salePriceHint}
           inputMode="decimal"
           defaultValue={values?.salePrice}
           error={e('salePrice')}
         />
         <TextField
           name="vatRate"
-          label="VAT rate (%)"
-          hint="14 is the Egyptian standard rate. Zero-rated and exempt goods take 0."
+          label={dict.vatRateLabel}
+          hint={dict.vatRateHint}
           inputMode="decimal"
           defaultValue={values?.vatRate}
           error={e('vatRate')}
         />
         <TextField
           name="reorderLevel"
-          label="Reorder level"
-          hint="Stock at or below this raises the low-stock flag."
+          label={dict.reorderLevelLabel}
+          hint={dict.reorderLevelHint}
           inputMode="decimal"
           defaultValue={values?.reorderLevel}
           error={e('reorderLevel')}
         />
+
+        {mode === 'create' && (
+          <>
+            <SelectField
+              name="warehouseId"
+              label={dict.warehouseLabel}
+              hint={dict.warehouseHint}
+              required
+              placeholder={dict.warehousePlaceholder}
+              error={e('warehouseId')}
+              options={(warehouses ?? []).map((w) => ({ value: w.id, label: `${w.code} — ${w.nameEn}` }))}
+            />
+            <TextField
+              name="openingQuantity"
+              label={dict.openingQuantityLabel}
+              hint={dict.openingQuantityHint}
+              inputMode="decimal"
+              error={e('openingQuantity')}
+            />
+            <TextField
+              name="binLocation"
+              label={dict.binLocationLabel}
+              hint={dict.binLocationHint}
+              error={e('binLocation')}
+              maxLength={64}
+            />
+          </>
+        )}
       </FieldGrid>
 
       <FormActions>
@@ -171,9 +206,9 @@ export function ProductForm({
           className="gts-btn gts-btn-ghost"
           href={values?.id ? `/products/${values.id}` : '/products'}
         >
-          Cancel
+          {dict.cancel}
         </a>
-        <Submit>{mode === 'create' ? 'Create product' : 'Save changes'}</Submit>
+        <Submit>{mode === 'create' ? dict.createProduct : dict.saveChanges}</Submit>
       </FormActions>
     </form>
   );
