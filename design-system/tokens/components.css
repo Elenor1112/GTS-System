@@ -646,7 +646,7 @@
    nav from pushing the identity block off the bottom — and what stops
    two competing `auto` margins from overlapping it. */
 .gts-rail-nav {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-block-size: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
