@@ -32,7 +32,7 @@
   transition: var(--gts-tr-control);
   -webkit-tap-highlight-color: transparent;
 }
-.gts-btn:active:not(:disabled) { transform: translateY(0.5px); }
+.gts-btn:active:not(:disabled) { transform: scale(0.97); }
 .gts-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* PRIMARY — solid brand blue. Unlike the old ochre brand, a
@@ -299,9 +299,11 @@
 .gts-card {
   background: var(--gts-bg-raised); border-radius: var(--gts-radius-md);
   box-shadow: var(--gts-shadow-raised); padding: var(--gts-pad-card);
-  transition: var(--gts-tr-control);
+  transition: box-shadow var(--gts-dur-fast) var(--gts-ease-move),
+              transform var(--gts-dur-instant) var(--gts-ease-press);
 }
 .gts-card-interactive:hover { box-shadow: var(--gts-shadow-overlay); }
+.gts-card-interactive:active { transform: scale(0.99); }
 
 /* SLAB — full-bleed tinted band. The editorial device: used for
    module openers and summary bands. No border, no radius. */
@@ -390,6 +392,7 @@
   position: fixed; inset: 0;
   background: var(--gts-scrim);
   z-index: calc(var(--gts-z-rail) - 1);
+  animation: gts-fade-in var(--gts-dur-base) var(--gts-ease-move) both;
 }
 .gts-mobile-sheet {
   position: fixed; inset-inline: 0;
@@ -403,6 +406,9 @@
   box-shadow: var(--gts-shadow-overlay);
   z-index: var(--gts-z-rail);
   padding-block: var(--gts-space-2);
+  /* A bottom sheet travels from its own edge, iOS-style — a real
+     sheet drawn up from off-screen, not a popover scaling in place. */
+  animation: gts-sheet-in var(--gts-dur-slow) var(--gts-ease-snap) both;
 }
 .gts-mobile-sheet-identity {
   display: flex; align-items: center; gap: var(--gts-space-3);
@@ -711,6 +717,11 @@
   border-radius: var(--gts-radius-sm);
   box-shadow: var(--gts-shadow-overlay);
   overflow: hidden; z-index: 20;
+  /* Opens upward from its trigger: origin sits at the bottom edge,
+     not the popover's own center — it should feel anchored to the
+     user button, not materialize from nowhere. */
+  transform-origin: bottom center;
+  animation: gts-scale-in var(--gts-dur-fast) var(--gts-ease-snap) both;
 }
 .gts-user-sheet-item {
   display: block; inline-size: 100%;

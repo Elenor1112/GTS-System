@@ -1,99 +1,93 @@
 /* ============================================================
-   GTS — COLOR SYSTEM
+   GTS — COLOR SYSTEM · "PAPER"
    ------------------------------------------------------------
    Built in OKLCH so every ramp is perceptually even and the
    dark theme is a lightness inversion, not a hand-tuned fork.
 
-   Foundation is INK: a warm-cooled near-black with a faint
-   indigo cast (H 265) that reads as "expensive print" rather
-   than "default UI".
+   Foundation is PAPER: a warm, slightly yellowed near-white
+   (H 75) with soft charcoal ink — the register of a well-made
+   notebook or a printed statement, not "default UI grey".
 
-   Brand accent is PRUSSIAN BLUE (H 255) — a deep, slightly
-   cool structural blue. It is the STRUCTURE of the product:
-   brand mark, primary action, rail marker, chart primary
-   series, focus ring.
+   Brand accent is EMBER — a warm, confident terracotta/amber
+   (H 45). It is the STRUCTURE of the product: brand mark,
+   primary action, rail marker, chart primary series, focus ring.
+   One accent, used with restraint, carries more authority than
+   five decorative ones.
 
    RED IS NOT A BRAND COLOUR HERE. Red is reserved, wholly and
    without exception, for DANGER — overdue, negative, absent,
    destructive. Nothing decorative may take it, because a red
    figure in this product has to mean "a problem" on sight.
-   That reservation is the whole point of the blue brand: it
-   leaves red free to carry alarm at full strength.
    ============================================================ */
 
 :root {
   /* ---------- INK RAMP (foundation) --------------------- */
-  --gts-ink-00:  oklch(99.2%  0.003 265); /* page, light        */
-  --gts-ink-05:  oklch(97.4%  0.005 265);
-  --gts-ink-10:  oklch(94.6%  0.007 265);
-  --gts-ink-15:  oklch(91.0%  0.009 265); /* hairlines          */
-  --gts-ink-20:  oklch(86.0%  0.011 265);
-  --gts-ink-30:  oklch(74.0%  0.014 265);
-  --gts-ink-40:  oklch(62.0%  0.017 265); /* disabled text      */
-  --gts-ink-50:  oklch(52.0%  0.019 265); /* metadata           */
-  --gts-ink-60:  oklch(43.0%  0.021 265); /* secondary text     */
-  --gts-ink-70:  oklch(34.0%  0.024 265);
-  --gts-ink-80:  oklch(25.5%  0.026 265); /* primary text       */
-  --gts-ink-90:  oklch(18.0%  0.028 265);
-  --gts-ink-95:  oklch(13.5%  0.030 265); /* dark surface       */
-  --gts-ink-100: oklch(9.5%   0.032 265); /* dark page          */
+  --gts-ink-00:  oklch(99.1%  0.004 80);  /* page, light        */
+  --gts-ink-05:  oklch(97.3%  0.006 75);
+  --gts-ink-10:  oklch(94.3%  0.008 70);
+  --gts-ink-15:  oklch(90.5%  0.010 68);  /* hairlines          */
+  --gts-ink-20:  oklch(85.5%  0.012 65);
+  --gts-ink-30:  oklch(73.5%  0.014 60);
+  --gts-ink-40:  oklch(61.5%  0.015 55);  /* disabled text      */
+  --gts-ink-50:  oklch(51.5%  0.016 50);  /* metadata           */
+  --gts-ink-60:  oklch(42.5%  0.017 45);  /* secondary text     */
+  --gts-ink-70:  oklch(33.5%  0.018 42);
+  --gts-ink-80:  oklch(24.5%  0.018 40);  /* primary text       */
+  --gts-ink-90:  oklch(17.5%  0.016 38);
+  --gts-ink-95:  oklch(13.0%  0.014 36);  /* dark surface       */
+  --gts-ink-100: oklch(9.0%   0.012 34);  /* dark page          */
 
-  /* ---------- BRAND: PRUSSIAN BLUE ----------------------
-     H 255 — cooler and more structural than the finance
-     domain indigo (262), so brand and domain never collide.
-     blue-50 carries 5.44:1 against surface with white text, so
-     primary buttons can take it directly. */
-  --gts-blue-05: oklch(96.8% 0.018 255);
-  --gts-blue-10: oklch(92.8% 0.038 255);
-  --gts-blue-20: oklch(86.0% 0.070 255);
-  --gts-blue-30: oklch(74.0% 0.115 255);
-  --gts-blue-40: oklch(62.0% 0.150 255); /* brand on dark        */
-  --gts-blue-50: oklch(52.0% 0.150 255); /* brand primary, light */
-  --gts-blue-60: oklch(44.0% 0.140 255);
-  --gts-blue-70: oklch(38.0% 0.120 255);
-  --gts-blue-80: oklch(30.0% 0.095 255); /* hero figure ink-blue */
-  --gts-blue-90: oklch(22.0% 0.070 255);
+  /* ---------- BRAND: EMBER -------------------------------
+     H 45 — warm terracotta/amber. Confident without being
+     loud; reads as considered rather than corporate. */
+  --gts-blue-05: oklch(96.8% 0.022 55);
+  --gts-blue-10: oklch(92.5% 0.048 52);
+  --gts-blue-20: oklch(85.5% 0.088 50);
+  --gts-blue-30: oklch(76.0% 0.128 48);
+  --gts-blue-40: oklch(66.5% 0.155 46);  /* brand on dark        */
+  --gts-blue-50: oklch(57.5% 0.165 44);  /* brand primary, light */
+  --gts-blue-60: oklch(49.5% 0.155 42);
+  --gts-blue-70: oklch(41.5% 0.135 40);
+  --gts-blue-80: oklch(32.5% 0.105 38);  /* hero figure ink-ember */
+  --gts-blue-90: oklch(24.0% 0.078 36);
 
   /* ---------- SEMANTIC HUES -----------------------------
      Each is a full ramp so states have fg/bg/border variants
      that pass contrast without per-use guessing. */
 
-  /* SUCCESS — deep verdigris green, not "app store green" */
-  --gts-success-05: oklch(96.8% 0.020 165);
-  --gts-success-10: oklch(92.5% 0.042 165);
-  --gts-success-30: oklch(76.0% 0.098 163);
-  --gts-success-50: oklch(58.0% 0.106 161);
-  --gts-success-60: oklch(49.5% 0.096 160);
-  --gts-success-80: oklch(32.0% 0.062 160);
+  /* SUCCESS — deep moss green, warm-leaning to sit with the paper. */
+  --gts-success-05: oklch(96.5% 0.024 148);
+  --gts-success-10: oklch(91.8% 0.048 148);
+  --gts-success-30: oklch(75.0% 0.104 146);
+  --gts-success-50: oklch(56.5% 0.110 145);
+  --gts-success-60: oklch(48.0% 0.100 145);
+  --gts-success-80: oklch(31.0% 0.066 145);
 
-  /* WARNING — amber. With the brand now blue, warning no longer
-     has to fight an ochre brand for identity; it keeps its hue
-     but stays clearly short of danger's red. */
-  --gts-warning-05: oklch(97.2% 0.028 92);
-  --gts-warning-10: oklch(93.8% 0.060 92);
-  --gts-warning-30: oklch(83.0% 0.130 88);
-  --gts-warning-50: oklch(70.0% 0.155 78);
-  --gts-warning-60: oklch(61.0% 0.142 74);
-  --gts-warning-80: oklch(40.0% 0.092 72);
+  /* WARNING — golden amber, kept short of the brand ember by hue. */
+  --gts-warning-05: oklch(97.0% 0.032 95);
+  --gts-warning-10: oklch(93.2% 0.066 93);
+  --gts-warning-30: oklch(82.0% 0.135 88);
+  --gts-warning-50: oklch(69.0% 0.158 78);
+  --gts-warning-60: oklch(59.5% 0.145 74);
+  --gts-warning-80: oklch(39.0% 0.094 72);
 
-  /* DANGER — oxidized red. The ONLY red in the system, and the
-     only hue that is never spent on decoration. Because nothing
-     competes for it, it can stay serious rather than shouting. */
-  --gts-danger-05: oklch(96.8% 0.018 24);
-  --gts-danger-10: oklch(93.0% 0.040 24);
-  --gts-danger-30: oklch(74.0% 0.130 25);
-  --gts-danger-50: oklch(57.0% 0.185 26);
-  --gts-danger-60: oklch(49.0% 0.170 26);
-  --gts-danger-80: oklch(33.0% 0.110 26);
+  /* DANGER — clear red. The ONLY red in the system, and the
+     only hue never spent on decoration. */
+  --gts-danger-05: oklch(96.5% 0.020 22);
+  --gts-danger-10: oklch(92.5% 0.044 22);
+  --gts-danger-30: oklch(73.0% 0.135 24);
+  --gts-danger-50: oklch(56.0% 0.190 25);
+  --gts-danger-60: oklch(48.0% 0.175 25);
+  --gts-danger-80: oklch(32.0% 0.115 25);
 
-  /* INFO — slate-teal. Deliberately NOT the brand color, so
-     informational never competes with primary action. */
-  --gts-info-05: oklch(96.8% 0.016 232);
-  --gts-info-10: oklch(92.6% 0.036 232);
-  --gts-info-30: oklch(75.0% 0.086 230);
-  --gts-info-50: oklch(57.0% 0.098 228);
-  --gts-info-60: oklch(48.5% 0.090 228);
-  --gts-info-80: oklch(32.0% 0.058 228);
+  /* INFO — slate-blue. Deliberately cool, so it never competes
+     with the warm brand for attention. */
+  --gts-info-05: oklch(96.5% 0.014 250);
+  --gts-info-10: oklch(92.2% 0.032 250);
+  --gts-info-30: oklch(74.0% 0.080 248);
+  --gts-info-50: oklch(55.5% 0.098 246);
+  --gts-info-60: oklch(47.0% 0.090 246);
+  --gts-info-80: oklch(31.0% 0.058 246);
 }
 
 /* ============================================================
@@ -108,45 +102,43 @@
    ============================================================ */
 
 :root {
-  /* FINANCE — analytical indigo. Pushed to 262 and deepened so
-     it reads as a DOMAIN rather than as the brand blue (255)
-     sitting next to it in the rail. */
-  --gts-domain-finance:        oklch(46.0% 0.130 262);
-  --gts-domain-finance-bright: oklch(64.0% 0.140 262);
-  --gts-domain-finance-wash:   oklch(96.5% 0.018 262);
+  /* FINANCE — deep teal-slate. Analytical, audited, sober —
+     cool enough to read as a distinct world from the warm brand. */
+  --gts-domain-finance:        oklch(45.0% 0.086 210);
+  --gts-domain-finance-bright: oklch(63.0% 0.100 210);
+  --gts-domain-finance-wash:   oklch(96.3% 0.014 210);
 
-  /* INVENTORY — structural teal, rotated to 200 to keep its
-     distance from the brand blue. Operational, gridded. */
-  --gts-domain-inventory:        oklch(50.0% 0.100 200);
-  --gts-domain-inventory-bright: oklch(66.0% 0.115 200);
-  --gts-domain-inventory-wash:   oklch(96.5% 0.018 200);
+  /* INVENTORY — structural clay-green. Operational, gridded. */
+  --gts-domain-inventory:        oklch(48.0% 0.078 165);
+  --gts-domain-inventory-bright: oklch(65.0% 0.098 165);
+  --gts-domain-inventory-wash:   oklch(96.3% 0.016 165);
 
-  /* PROJECTS — energetic vermilion. Motion, delivery, momentum. */
-  --gts-domain-projects:        oklch(52.5% 0.160 34);
-  --gts-domain-projects-bright: oklch(70.0% 0.155 42);
-  --gts-domain-projects-wash:   oklch(96.8% 0.022 40);
+  /* PROJECTS — energetic vermilion, kept close to the brand's warmth
+     but shifted enough in hue to read as its own domain. */
+  --gts-domain-projects:        oklch(53.0% 0.170 26);
+  --gts-domain-projects-bright: oklch(69.0% 0.165 32);
+  --gts-domain-projects-wash:   oklch(96.5% 0.022 30);
 
-  /* CLIENTS — relationship violet. Human, warm-cool. */
-  --gts-domain-clients:        oklch(53.0% 0.135 310);
-  --gts-domain-clients-bright: oklch(67.0% 0.140 310);
-  --gts-domain-clients-wash:   oklch(96.8% 0.020 310);
+  /* CLIENTS — relationship plum. Human, warm-cool. */
+  --gts-domain-clients:        oklch(50.0% 0.110 335);
+  --gts-domain-clients-bright: oklch(66.0% 0.120 335);
+  --gts-domain-clients-wash:   oklch(96.5% 0.018 335);
 
-  /* VENDORS — supply bronze. The warm counterweight to a cool
-     brand; the only ochre left in the system. */
-  --gts-domain-vendors:        oklch(52.0% 0.090 50);
-  --gts-domain-vendors-bright: oklch(66.0% 0.105 50);
-  --gts-domain-vendors-wash:   oklch(96.5% 0.020 50);
+  /* VENDORS — supply olive-bronze. The mirror of clients, mid-warm. */
+  --gts-domain-vendors:        oklch(50.0% 0.082 95);
+  --gts-domain-vendors-bright: oklch(65.0% 0.100 95);
+  --gts-domain-vendors-wash:   oklch(96.3% 0.020 95);
 
   /* ATTENDANCE — geographic green. Maps, presence, the human layer. */
-  --gts-domain-attendance:        oklch(48.5% 0.110 155);
-  --gts-domain-attendance-bright: oklch(69.0% 0.130 152);
-  --gts-domain-attendance-wash:   oklch(96.5% 0.020 152);
+  --gts-domain-attendance:        oklch(47.0% 0.100 152);
+  --gts-domain-attendance-bright: oklch(67.0% 0.120 150);
+  --gts-domain-attendance-wash:   oklch(96.3% 0.020 150);
 
-  /* ADMIN / SYSTEM — neutral graphite. Intentionally colorless:
-     configuration should feel like machinery, not a feature. */
-  --gts-domain-admin:        oklch(46.0% 0.012 265);
-  --gts-domain-admin-bright: oklch(62.0% 0.014 265);
-  --gts-domain-admin-wash:   oklch(96.5% 0.005 265);
+  /* ADMIN / SYSTEM — neutral warm graphite. Configuration is
+     machinery, not a feature: intentionally near-colorless. */
+  --gts-domain-admin:        oklch(45.0% 0.012 60);
+  --gts-domain-admin-bright: oklch(61.0% 0.014 60);
+  --gts-domain-admin-wash:   oklch(96.3% 0.006 60);
 }
 
 /* Scope a subtree to a domain: <main data-domain="finance">
@@ -181,20 +173,21 @@
 :root {
   color-scheme: light;
 
-  /* Surfaces. Note: NOT all white. The page is a warm off-white
-     and raised surfaces go LIGHTER, so elevation reads without
-     a shadow — this is what keeps the UI from being card soup. */
+  /* Surfaces. Note: NOT all white. The page is warm paper and
+     raised surfaces go LIGHTER, so elevation reads without a
+     shadow — this is what keeps the UI from being card soup. */
   --gts-bg-page:       var(--gts-ink-05);
   --gts-bg-surface:    var(--gts-ink-00);
   --gts-bg-raised:     var(--gts-ink-00);
   --gts-bg-sunken:     var(--gts-ink-10);
   --gts-bg-inset:      var(--gts-ink-10);
-  --gts-bg-hover:      oklch(94.6% 0.007 265 / 0.7);
+  --gts-bg-hover:      oklch(94.3% 0.008 70 / 0.7);
   --gts-bg-active:     var(--gts-ink-15);
   --gts-bg-selected:   var(--gts-accent-wash, var(--gts-ink-10));
+  --gts-bg-recessed:   var(--gts-ink-10);
 
   /* Inverse surface — used for the nav rail and command surfaces.
-     A dark rail against a light workspace is the system's
+     A dark rail against the paper workspace is the system's
      signature structural move. */
   --gts-bg-inverse:       var(--gts-ink-95);
   --gts-bg-inverse-raised:var(--gts-ink-90);
@@ -218,6 +211,7 @@
   --gts-border-default:  var(--gts-ink-20);
   --gts-border-strong:   var(--gts-ink-30);
   --gts-border-inverse:  oklch(100% 0 0 / 0.12);
+  --gts-border-subtle:   var(--gts-ink-15);
 
   /* Semantic foreground/background pairs (WCAG AA on their bg) */
   --gts-success-fg: var(--gts-success-60);
@@ -229,9 +223,11 @@
   --gts-danger-fg:  var(--gts-danger-60);
   --gts-danger-bg:  var(--gts-danger-05);
   --gts-danger-br:  var(--gts-danger-30);
+  --gts-danger-border: var(--gts-danger-br);
   --gts-info-fg:    var(--gts-info-60);
   --gts-info-bg:    var(--gts-info-05);
   --gts-info-br:    var(--gts-info-30);
+  --gts-info-border: var(--gts-info-br);
   --gts-neutral-fg: var(--gts-ink-60);
   --gts-neutral-bg: var(--gts-ink-10);
   --gts-neutral-br: var(--gts-ink-20);
@@ -246,24 +242,23 @@
   --gts-accent-bright: var(--gts-blue-40);
   --gts-accent-wash:   var(--gts-blue-05);
 
-  /* The hero figure reads as deep ink-blue rather than flat black:
+  /* The hero figure reads as deep ink-ember rather than flat black:
      the one place the brand touches a number, because the net
      position IS the thing the product is for. */
   --gts-figure-hero: var(--gts-blue-80);
 
   /* Data-viz categorical sequence — hue-ordered, equal chroma,
-     distinguishable in both themes and for deuteranopia. */
-  /* Series 1 is the brand blue: the primary series in every
-     chart is the same blue as the product's structure. Series 4
-     is bronze, NOT red — red stays reserved for danger, so no
-     chart may spend it on an ordinary category. */
-  --gts-viz-1: oklch(52.0% 0.150 255);
-  --gts-viz-2: oklch(52.5% 0.160 34);
-  --gts-viz-3: oklch(50.0% 0.100 200);
-  --gts-viz-4: oklch(52.0% 0.090 50);
-  --gts-viz-5: oklch(53.0% 0.135 310);
-  --gts-viz-6: oklch(48.5% 0.110 155);
-  --gts-viz-7: oklch(46.0% 0.012 265);
+     distinguishable in both themes and for deuteranopia. Series 1
+     is the brand ember: the primary series in every chart is the
+     same color as the product's structure. No chart may spend
+     red on an ordinary category — red stays reserved for danger. */
+  --gts-viz-1: oklch(57.5% 0.165 44);
+  --gts-viz-2: oklch(45.0% 0.086 210);
+  --gts-viz-3: oklch(48.0% 0.078 165);
+  --gts-viz-4: oklch(50.0% 0.082 95);
+  --gts-viz-5: oklch(50.0% 0.110 335);
+  --gts-viz-6: oklch(47.0% 0.100 152);
+  --gts-viz-7: oklch(45.0% 0.012 60);
   /* Grid + axis: must recede behind data at all times. */
   --gts-viz-grid: var(--gts-ink-15);
   --gts-viz-axis: var(--gts-ink-40);
@@ -285,10 +280,11 @@
     --gts-bg-page:        var(--gts-ink-100);
     --gts-bg-surface:     var(--gts-ink-95);
     --gts-bg-raised:      var(--gts-ink-90);
-    --gts-bg-sunken:      oklch(7.0% 0.030 265);
-    --gts-bg-inset:       oklch(7.0% 0.030 265);
+    --gts-bg-sunken:      oklch(7.2% 0.012 40);
+    --gts-bg-inset:       oklch(7.2% 0.012 40);
     --gts-bg-hover:       oklch(100% 0 0 / 0.05);
     --gts-bg-active:      oklch(100% 0 0 / 0.09);
+    --gts-bg-recessed:    oklch(7.2% 0.012 40);
     --gts-bg-inverse:     var(--gts-ink-90);
     --gts-bg-inverse-raised: var(--gts-ink-80);
     --gts-fg-inverse:     var(--gts-ink-05);
@@ -304,58 +300,57 @@
     --gts-border-default:  oklch(100% 0 0 / 0.14);
     --gts-border-strong:   oklch(100% 0 0 / 0.24);
     --gts-border-inverse:  oklch(100% 0 0 / 0.14);
+    --gts-border-subtle:   oklch(100% 0 0 / 0.08);
 
-    --gts-success-fg: oklch(76.0% 0.090 163);
-    --gts-success-bg: oklch(24.0% 0.048 162);
-    --gts-success-br: oklch(38.0% 0.070 162);
-    --gts-warning-fg: oklch(82.0% 0.115 85);
-    --gts-warning-bg: oklch(26.0% 0.060 80);
-    --gts-warning-br: oklch(40.0% 0.085 80);
-    --gts-danger-fg:  oklch(75.0% 0.125 26);
-    --gts-danger-bg:  oklch(25.0% 0.080 26);
-    --gts-danger-br:  oklch(40.0% 0.110 26);
-    --gts-info-fg:    oklch(76.0% 0.078 230);
-    --gts-info-bg:    oklch(24.0% 0.045 230);
-    --gts-info-br:    oklch(38.0% 0.062 230);
+    --gts-success-fg: oklch(75.0% 0.088 148);
+    --gts-success-bg: oklch(24.0% 0.048 147); --gts-success-br: oklch(38.0% 0.068 147);
+    --gts-warning-fg: oklch(81.0% 0.118 85);
+    --gts-warning-bg: oklch(26.0% 0.060 80); --gts-warning-br: oklch(40.0% 0.086 80);
+    --gts-danger-fg:  oklch(74.0% 0.128 25);
+    --gts-danger-bg:  oklch(25.0% 0.082 25); --gts-danger-br: oklch(40.0% 0.112 25);
+    --gts-danger-border: var(--gts-danger-br);
+    --gts-info-fg:    oklch(75.0% 0.076 248);
+    --gts-info-bg:    oklch(24.0% 0.044 248); --gts-info-br: oklch(38.0% 0.062 248);
+    --gts-info-border: var(--gts-info-br);
     --gts-neutral-fg: var(--gts-ink-30);
     --gts-neutral-bg: oklch(100% 0 0 / 0.06);
     --gts-neutral-br: oklch(100% 0 0 / 0.14);
 
     --gts-brand:      var(--gts-blue-40);
     --gts-brand-fg:   var(--gts-blue-30);
-    --gts-brand-bg:   oklch(26.0% 0.070 255);
+    --gts-brand-bg:   oklch(26.0% 0.078 46);
     --gts-focus-ring: var(--gts-blue-30);
     --gts-accent:        var(--gts-blue-40);
     --gts-accent-bright: var(--gts-blue-30);
-    --gts-accent-wash:   oklch(24.0% 0.055 255);
+    --gts-accent-wash:   oklch(24.0% 0.062 46);
     /* On dark the hero figure lifts rather than deepens. */
     --gts-figure-hero: var(--gts-blue-30);
 
-    --gts-viz-1: oklch(66.0% 0.140 255);
-    --gts-viz-2: oklch(72.0% 0.135 40);
-    --gts-viz-3: oklch(72.0% 0.090 200);
-    --gts-viz-4: oklch(70.0% 0.090 50);
-    --gts-viz-5: oklch(71.0% 0.115 310);
-    --gts-viz-6: oklch(72.0% 0.100 152);
-    --gts-viz-7: oklch(68.0% 0.012 265);
+    --gts-viz-1: oklch(70.0% 0.150 46);
+    --gts-viz-2: oklch(68.0% 0.086 210);
+    --gts-viz-3: oklch(70.0% 0.082 165);
+    --gts-viz-4: oklch(70.0% 0.088 95);
+    --gts-viz-5: oklch(70.0% 0.100 335);
+    --gts-viz-6: oklch(70.0% 0.094 152);
+    --gts-viz-7: oklch(68.0% 0.012 60);
     --gts-viz-grid: oklch(100% 0 0 / 0.08);
     --gts-viz-axis: var(--gts-ink-40);
 
     /* Domain accents brighten on dark to hold their identity. */
-    --gts-domain-finance:    oklch(70.0% 0.115 262);
-    --gts-domain-inventory:  oklch(72.0% 0.090 200);
-    --gts-domain-projects:   oklch(72.0% 0.135 40);
-    --gts-domain-clients:    oklch(71.0% 0.115 310);
-    --gts-domain-vendors:    oklch(70.0% 0.090 50);
-    --gts-domain-attendance: oklch(72.0% 0.100 152);
-    --gts-domain-admin:      oklch(68.0% 0.012 265);
-    --gts-domain-finance-wash:    oklch(24.0% 0.040 262);
-    --gts-domain-inventory-wash:  oklch(24.0% 0.035 200);
-    --gts-domain-projects-wash:   oklch(24.0% 0.048 40);
-    --gts-domain-clients-wash:    oklch(24.0% 0.042 310);
-    --gts-domain-vendors-wash:    oklch(24.0% 0.038 50);
-    --gts-domain-attendance-wash: oklch(24.0% 0.038 152);
-    --gts-domain-admin-wash:      oklch(22.0% 0.008 265);
+    --gts-domain-finance:    oklch(68.0% 0.086 210);
+    --gts-domain-inventory:  oklch(70.0% 0.082 165);
+    --gts-domain-projects:   oklch(70.0% 0.150 30);
+    --gts-domain-clients:    oklch(70.0% 0.098 335);
+    --gts-domain-vendors:    oklch(69.0% 0.086 95);
+    --gts-domain-attendance: oklch(70.0% 0.088 150);
+    --gts-domain-admin:      oklch(67.0% 0.012 60);
+    --gts-domain-finance-wash:    oklch(24.0% 0.030 210);
+    --gts-domain-inventory-wash:  oklch(24.0% 0.028 165);
+    --gts-domain-projects-wash:   oklch(24.0% 0.044 30);
+    --gts-domain-clients-wash:    oklch(24.0% 0.034 335);
+    --gts-domain-vendors-wash:    oklch(24.0% 0.030 95);
+    --gts-domain-attendance-wash: oklch(24.0% 0.032 150);
+    --gts-domain-admin-wash:      oklch(22.0% 0.008 60);
   }
 }
 
@@ -365,10 +360,11 @@
   --gts-bg-page:        var(--gts-ink-100);
   --gts-bg-surface:     var(--gts-ink-95);
   --gts-bg-raised:      var(--gts-ink-90);
-  --gts-bg-sunken:      oklch(7.0% 0.030 265);
-  --gts-bg-inset:       oklch(7.0% 0.030 265);
+  --gts-bg-sunken:      oklch(7.2% 0.012 40);
+  --gts-bg-inset:       oklch(7.2% 0.012 40);
   --gts-bg-hover:       oklch(100% 0 0 / 0.05);
   --gts-bg-active:      oklch(100% 0 0 / 0.09);
+  --gts-bg-recessed:    oklch(7.2% 0.012 40);
   --gts-bg-inverse:     var(--gts-ink-90);
   --gts-bg-inverse-raised: var(--gts-ink-80);
   --gts-fg-inverse:     var(--gts-ink-05);
@@ -384,56 +380,53 @@
   --gts-border-default:  oklch(100% 0 0 / 0.14);
   --gts-border-strong:   oklch(100% 0 0 / 0.24);
   --gts-border-inverse:  oklch(100% 0 0 / 0.14);
+  --gts-border-subtle:   oklch(100% 0 0 / 0.08);
 
-  --gts-success-fg: oklch(76.0% 0.090 163);
-  --gts-success-bg: oklch(24.0% 0.048 162);
-  --gts-success-br: oklch(38.0% 0.070 162);
-  --gts-warning-fg: oklch(82.0% 0.115 85);
-  --gts-warning-bg: oklch(26.0% 0.060 80);
-  --gts-warning-br: oklch(40.0% 0.085 80);
-  --gts-danger-fg:  oklch(75.0% 0.125 26);
-  --gts-danger-bg:  oklch(25.0% 0.080 26);
-  --gts-danger-br:  oklch(40.0% 0.110 26);
-  --gts-info-fg:    oklch(76.0% 0.078 230);
-  --gts-info-bg:    oklch(24.0% 0.045 230);
-  --gts-info-br:    oklch(38.0% 0.062 230);
+  --gts-success-fg: oklch(75.0% 0.088 148);
+  --gts-success-bg: oklch(24.0% 0.048 147); --gts-success-br: oklch(38.0% 0.068 147);
+  --gts-warning-fg: oklch(81.0% 0.118 85);
+  --gts-warning-bg: oklch(26.0% 0.060 80); --gts-warning-br: oklch(40.0% 0.086 80);
+  --gts-danger-fg:  oklch(74.0% 0.128 25);
+  --gts-danger-bg:  oklch(25.0% 0.082 25); --gts-danger-br: oklch(40.0% 0.112 25);
+  --gts-danger-border: var(--gts-danger-br);
+  --gts-info-fg:    oklch(75.0% 0.076 248);
+  --gts-info-bg:    oklch(24.0% 0.044 248); --gts-info-br: oklch(38.0% 0.062 248);
+  --gts-info-border: var(--gts-info-br);
   --gts-neutral-fg: var(--gts-ink-30);
   --gts-neutral-bg: oklch(100% 0 0 / 0.06);
   --gts-neutral-br: oklch(100% 0 0 / 0.14);
 
   --gts-brand:      var(--gts-blue-40);
   --gts-brand-fg:   var(--gts-blue-30);
-  --gts-brand-bg:   oklch(26.0% 0.070 255);
+  --gts-brand-bg:   oklch(26.0% 0.078 46);
   --gts-focus-ring: var(--gts-blue-30);
   --gts-accent:        var(--gts-blue-40);
   --gts-accent-bright: var(--gts-blue-30);
-  --gts-accent-wash:   oklch(24.0% 0.055 255);
-  /* On dark the hero figure lifts rather than deepens. */
+  --gts-accent-wash:   oklch(24.0% 0.062 46);
   --gts-figure-hero: var(--gts-blue-30);
 
-  --gts-viz-1: oklch(66.0% 0.140 255);
-  --gts-viz-2: oklch(72.0% 0.135 40);
-  --gts-viz-3: oklch(72.0% 0.090 200);
-  --gts-viz-4: oklch(70.0% 0.090 50);
-  --gts-viz-5: oklch(71.0% 0.115 310);
-  --gts-viz-6: oklch(72.0% 0.100 152);
-  --gts-viz-7: oklch(68.0% 0.012 265);
+  --gts-viz-1: oklch(70.0% 0.150 46);
+  --gts-viz-2: oklch(68.0% 0.086 210);
+  --gts-viz-3: oklch(70.0% 0.082 165);
+  --gts-viz-4: oklch(70.0% 0.088 95);
+  --gts-viz-5: oklch(70.0% 0.100 335);
+  --gts-viz-6: oklch(70.0% 0.094 152);
+  --gts-viz-7: oklch(68.0% 0.012 60);
   --gts-viz-grid: oklch(100% 0 0 / 0.08);
   --gts-viz-axis: var(--gts-ink-40);
 
-  /* Domain accents brighten on dark to hold their identity. */
-  --gts-domain-finance:    oklch(70.0% 0.115 262);
-  --gts-domain-inventory:  oklch(72.0% 0.090 200);
-  --gts-domain-projects:   oklch(72.0% 0.135 40);
-  --gts-domain-clients:    oklch(71.0% 0.115 310);
-  --gts-domain-vendors:    oklch(70.0% 0.090 50);
-  --gts-domain-attendance: oklch(72.0% 0.100 152);
-  --gts-domain-admin:      oklch(68.0% 0.012 265);
-  --gts-domain-finance-wash:    oklch(24.0% 0.040 262);
-  --gts-domain-inventory-wash:  oklch(24.0% 0.035 200);
-  --gts-domain-projects-wash:   oklch(24.0% 0.048 40);
-  --gts-domain-clients-wash:    oklch(24.0% 0.042 310);
-  --gts-domain-vendors-wash:    oklch(24.0% 0.038 50);
-  --gts-domain-attendance-wash: oklch(24.0% 0.038 152);
-  --gts-domain-admin-wash:      oklch(22.0% 0.008 265);
+  --gts-domain-finance:    oklch(68.0% 0.086 210);
+  --gts-domain-inventory:  oklch(70.0% 0.082 165);
+  --gts-domain-projects:   oklch(70.0% 0.150 30);
+  --gts-domain-clients:    oklch(70.0% 0.098 335);
+  --gts-domain-vendors:    oklch(69.0% 0.086 95);
+  --gts-domain-attendance: oklch(70.0% 0.088 150);
+  --gts-domain-admin:      oklch(67.0% 0.012 60);
+  --gts-domain-finance-wash:    oklch(24.0% 0.030 210);
+  --gts-domain-inventory-wash:  oklch(24.0% 0.028 165);
+  --gts-domain-projects-wash:   oklch(24.0% 0.044 30);
+  --gts-domain-clients-wash:    oklch(24.0% 0.034 335);
+  --gts-domain-vendors-wash:    oklch(24.0% 0.030 95);
+  --gts-domain-attendance-wash: oklch(24.0% 0.032 150);
+  --gts-domain-admin-wash:      oklch(22.0% 0.008 60);
 }

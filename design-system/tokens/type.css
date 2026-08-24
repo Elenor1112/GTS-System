@@ -1,28 +1,31 @@
 /* ============================================================
-   GTS — TYPOGRAPHY TOKENS
+   GTS — TYPOGRAPHY TOKENS · "PAPER"
    Dual-script metric baseline. Neither Latin nor Arabic leads.
    ------------------------------------------------------------
-   Both scripts are normalized to ONE vertical rhythm by
-   correcting for differing x-height / cap-height ratios:
+   Instrument Sans (UI/body) pairs with Fraunces (editorial/
+   display) — a humanist grotesque against a warm, characterful
+   serif with real personality. Both scripts are normalized to
+   ONE vertical rhythm by correcting for differing x-height /
+   cap-height ratios:
 
-     Archivo            cap-height 0.730em   x-height 0.517em
+     Instrument Sans    cap-height 0.716em   x-height 0.520em
      IBM Plex Sans Ar.  cap-height 0.698em   x-height 0.516em
 
-   Arabic runs optically small against Archivo at equal px, so
-   Arabic is scaled +4% (--gts-ar-adjust) to sit on the same
-   baseline rhythm rather than being nudged per-component.
+   Arabic runs optically small against Instrument Sans at equal
+   px, so Arabic is scaled +3% (--gts-ar-adjust) to sit on the
+   same baseline rhythm rather than being nudged per-component.
    ============================================================ */
 
 :root {
   /* --- Families ------------------------------------------- */
-  --gts-font-display: var(--font-archivo), 'Archivo', system-ui, sans-serif;
-  --gts-font-text:    var(--font-archivo), 'Archivo', system-ui, sans-serif;
-  --gts-font-serif:   var(--font-newsreader), 'Newsreader', Georgia, serif;
+  --gts-font-display: var(--font-archivo), 'Instrument Sans', system-ui, sans-serif;
+  --gts-font-text:    var(--font-archivo), 'Instrument Sans', system-ui, sans-serif;
+  --gts-font-serif:   var(--font-newsreader), 'Fraunces', Georgia, serif;
   --gts-font-arabic:  var(--font-plex-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif;
   --gts-font-numeric: var(--font-roboto-flex), 'Roboto Flex', var(--font-archivo), monospace;
 
   /* Cross-script correction factor. Applied only via [lang="ar"]. */
-  --gts-ar-adjust: 1.04;
+  --gts-ar-adjust: 1.03;
 
   /* --- Scale ---------------------------------------------------
      Modular, ratio 1.200 (minor third) from a 14px operational
@@ -45,10 +48,10 @@
 
   /* --- Line heights --------------------------------------- */
   --gts-leading-flush:   0.92; /* huge figures: optical, not metric */
-  --gts-leading-tight:   1.1;  /* display + page titles             */
-  --gts-leading-snug:    1.28; /* headings, card titles             */
-  --gts-leading-normal:  1.5;  /* body copy                         */
-  --gts-leading-relaxed: 1.65; /* long-form / Arabic body           */
+  --gts-leading-tight:   1.08; /* display + page titles             */
+  --gts-leading-snug:    1.26; /* headings, card titles             */
+  --gts-leading-normal:  1.55; /* body copy — a touch more air      */
+  --gts-leading-relaxed: 1.68; /* long-form / Arabic body           */
   --gts-leading-table:   1.35; /* table rows                        */
 
   /* Arabic needs more leading: taller ascenders/descenders and
@@ -58,13 +61,13 @@
   --gts-leading-ar-table:   1.55;
 
   /* --- Tracking ------------------------------------------- */
-  --gts-tracking-tighter: -0.03em; /* 48px+ display              */
-  --gts-tracking-tight:   -0.02em; /* 28–36px titles             */
-  --gts-tracking-snug:    -0.011em;/* 19–23px                    */
+  --gts-tracking-tighter: -0.025em; /* 48px+ display — Fraunces wants less negative tracking */
+  --gts-tracking-tight:   -0.016em; /* 28–36px titles             */
+  --gts-tracking-snug:    -0.009em; /* 19–23px                    */
   --gts-tracking-normal:  0;
   --gts-tracking-wide:    0.02em;
   --gts-tracking-caps:    0.075em; /* the eyebrow/overline voice */
-  --gts-tracking-caps-sm: 0.11em;  /* 11px all-caps labels       */
+  --gts-tracking-caps-sm: 0.10em;  /* 11px all-caps labels       */
 
   /* Arabic must NEVER be letter-spaced — it breaks cursive joins. */
   --gts-tracking-arabic: 0;
@@ -84,14 +87,18 @@
    ============================================================ */
 
 :root {
-  /* Editorial display — the module opener. Used once per screen. */
+  /* Editorial display — the module opener. Used once per screen.
+     Fraunces at a low optical size reads as UI display type, not
+     a body serif blown up — warm, but still structural. */
   --gts-role-display:
-    var(--gts-weight-extrabold) var(--gts-text-4xl)/var(--gts-leading-tight) var(--gts-font-display);
+    var(--gts-weight-semibold) var(--gts-text-4xl)/var(--gts-leading-tight) var(--gts-font-serif);
   --gts-role-display-tracking: var(--gts-tracking-tighter);
 
-  /* Page title — every screen has exactly one. */
+  /* Page title — every screen has exactly one. Serif now carries
+     the page title voice: this is the system's signature move,
+     the thing that makes it read as a considered instrument. */
   --gts-role-page-title:
-    var(--gts-weight-bold) var(--gts-text-2xl)/var(--gts-leading-tight) var(--gts-font-display);
+    var(--gts-weight-medium) var(--gts-text-2xl)/var(--gts-leading-tight) var(--gts-font-serif);
   --gts-role-page-title-tracking: var(--gts-tracking-tight);
 
   /* Section head — structural divider within a screen. */
@@ -99,8 +106,8 @@
     var(--gts-weight-semibold) var(--gts-text-lg)/var(--gts-leading-snug) var(--gts-font-display);
   --gts-role-section-tracking: var(--gts-tracking-snug);
 
-  /* Editorial section — serif. Used for narrative/report openers
-     and printed documents. This is the "not-a-SaaS-template" voice. */
+  /* Editorial section — serif, at full display weight. Used for
+     narrative/report openers and printed documents. */
   --gts-role-editorial:
     var(--gts-weight-regular) var(--gts-text-3xl)/var(--gts-leading-tight) var(--gts-font-serif);
   --gts-role-editorial-tracking: var(--gts-tracking-tight);
@@ -113,6 +120,8 @@
   /* Body + metadata */
   --gts-role-body:
     var(--gts-weight-regular) var(--gts-text-base)/var(--gts-leading-normal) var(--gts-font-text);
+  --gts-role-body-sm:
+    var(--gts-weight-regular) var(--gts-text-sm)/var(--gts-leading-normal) var(--gts-font-text);
   --gts-role-meta:
     var(--gts-weight-regular) var(--gts-text-xs)/var(--gts-leading-normal) var(--gts-font-text);
 
@@ -141,7 +150,7 @@
 }
 
 /* The hero figure — one per view maximum. */
-/* The single hero figure per view. It takes the brand blue
+/* The single hero figure per view. It takes the brand ember
    rather than flat ink: the net position is the one number the
    product exists to show, and it is the only number the brand
    is allowed to touch. */
@@ -215,12 +224,18 @@
 [lang='ar'] .gts-table td,
 [lang^='ar-'] .gts-table td { line-height: var(--gts-leading-ar-table); }
 
-/* Newsreader has no Arabic. The editorial voice in Arabic is
+/* Fraunces has no Arabic. The editorial voice in Arabic is
    carried by weight contrast in Plex Arabic rather than a serif. */
 [lang='ar'] .gts-editorial,
 [lang^='ar-'] .gts-editorial {
   font-family: var(--gts-font-arabic);
   font-weight: var(--gts-weight-light);
+  line-height: var(--gts-leading-ar-tight);
+}
+[lang='ar'] .gts-page-title,
+[lang^='ar-'] .gts-page-title {
+  font-family: var(--gts-font-arabic);
+  font-weight: var(--gts-weight-semibold);
   line-height: var(--gts-leading-ar-tight);
 }
 

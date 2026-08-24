@@ -54,37 +54,38 @@
   --gts-mobile-nav-h:  3.75rem; /* 60  */
 
   /* --- Radius -------------------------------------------
-     Restrained. Large radii read consumer; this product reads
-     as an instrument. Radius signals INTERACTIVITY, not decor:
-     containers are nearly square, controls are softer. */
+     Restrained but slightly warmer than a pure instrument: this
+     product reads as a well-made ledger, not a spreadsheet.
+     Radius signals INTERACTIVITY, not decor: containers are
+     nearly square, controls are a touch softer. */
   --gts-radius-none: 0;
-  --gts-radius-xs:   2px;   /* chips, tags, swatches      */
-  --gts-radius-sm:   3px;   /* inputs, buttons, cells     */
-  --gts-radius-md:   4px;   /* cards, panels              */
-  --gts-radius-lg:   6px;   /* drawers, modals, popovers  */
-  --gts-radius-xl:   10px;  /* mobile sheets only         */
+  --gts-radius-xs:   3px;   /* chips, tags, swatches      */
+  --gts-radius-sm:   5px;   /* inputs, buttons, cells     */
+  --gts-radius-md:   7px;   /* cards, panels              */
+  --gts-radius-lg:   10px;  /* drawers, modals, popovers  */
+  --gts-radius-xl:   14px;  /* mobile sheets only         */
   --gts-radius-full: 999px; /* avatars, pills, status dot */
 
   /* --- Elevation -----------------------------------------
      Shadows are a LAST resort. Hierarchy is built with border,
      surface-lightness and space. Only genuinely floating
-     objects get a shadow, and they are tinted with the ink hue
-     rather than pure black.                                */
+     objects get a shadow, and they are tinted with the warm
+     ink hue rather than pure black.                        */
   --gts-shadow-none: none;
   --gts-shadow-hairline: 0 0 0 1px var(--gts-border-hairline);
   --gts-shadow-raised:
-    0 1px 2px oklch(9.5% 0.032 265 / 0.05),
+    0 1px 2px oklch(9% 0.012 34 / 0.05),
     0 0 0 1px var(--gts-border-hairline);
   --gts-shadow-overlay:
-    0 4px 12px -2px oklch(9.5% 0.032 265 / 0.10),
-    0 2px 4px -1px oklch(9.5% 0.032 265 / 0.06),
+    0 6px 16px -4px oklch(9% 0.012 34 / 0.11),
+    0 2px 6px -2px oklch(9% 0.012 34 / 0.07),
     0 0 0 1px var(--gts-border-hairline);
   --gts-shadow-modal:
-    0 24px 48px -12px oklch(9.5% 0.032 265 / 0.20),
-    0 8px 16px -8px oklch(9.5% 0.032 265 / 0.12),
+    0 28px 56px -14px oklch(9% 0.012 34 / 0.22),
+    0 10px 20px -10px oklch(9% 0.012 34 / 0.13),
     0 0 0 1px var(--gts-border-hairline);
   --gts-shadow-sheet:
-    0 -8px 32px -8px oklch(9.5% 0.032 265 / 0.16);
+    0 -10px 36px -10px oklch(9% 0.012 34 / 0.16);
   /* Focus is a 2-layer ring so it reads on ANY background. */
   --gts-shadow-focus:
     0 0 0 2px var(--gts-bg-surface),
@@ -107,17 +108,17 @@
        increased only for true overlays. */
     --gts-shadow-raised: 0 0 0 1px var(--gts-border-hairline);
     --gts-shadow-overlay:
-      0 8px 24px -4px oklch(0% 0 0 / 0.50), 0 0 0 1px var(--gts-border-hairline);
+      0 10px 28px -4px oklch(0% 0 0 / 0.52), 0 0 0 1px var(--gts-border-hairline);
     --gts-shadow-modal:
-      0 32px 64px -16px oklch(0% 0 0 / 0.70), 0 0 0 1px var(--gts-border-hairline);
+      0 36px 72px -16px oklch(0% 0 0 / 0.72), 0 0 0 1px var(--gts-border-hairline);
   }
 }
 :root[data-theme='dark'] {
   --gts-shadow-raised: 0 0 0 1px var(--gts-border-hairline);
   --gts-shadow-overlay:
-    0 8px 24px -4px oklch(0% 0 0 / 0.50), 0 0 0 1px var(--gts-border-hairline);
+    0 10px 28px -4px oklch(0% 0 0 / 0.52), 0 0 0 1px var(--gts-border-hairline);
   --gts-shadow-modal:
-    0 32px 64px -16px oklch(0% 0 0 / 0.70), 0 0 0 1px var(--gts-border-hairline);
+    0 36px 72px -16px oklch(0% 0 0 / 0.72), 0 0 0 1px var(--gts-border-hairline);
 }
 
 /* ============================================================

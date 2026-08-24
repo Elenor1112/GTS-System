@@ -1,37 +1,47 @@
 /* ============================================================
    GTS — MOTION LANGUAGE
    ------------------------------------------------------------
-   PRINCIPLE: motion reports state. It never decorates.
-   Every value below is short — this is a tool people use for
-   eight hours a day, and animation they must WAIT for becomes
+   PRINCIPLE: motion reports state. It never decorates. Every
+   value below is short — this is a tool people use for eight
+   hours a day, and animation they must WAIT for becomes
    friction by 3pm. Nothing that blocks input exceeds 220ms.
+
+   Curves are deliberately STRONGER than the CSS built-ins.
+   `ease-out` and `ease-in-out` are too weak to feel intentional;
+   the custom beziers below give entrances real snap and give
+   on-screen movement real deceleration.
    ============================================================ */
 
 :root {
   /* --- Duration ------------------------------------------ */
-  --gts-dur-instant: 80ms;   /* hover, pressed, checkbox      */
-  --gts-dur-fast:    130ms;  /* tooltips, dropdown, tab swap  */
+  --gts-dur-instant: 90ms;   /* hover, pressed, checkbox      */
+  --gts-dur-fast:    140ms;  /* tooltips, dropdown, tab swap  */
   --gts-dur-base:    180ms;  /* DEFAULT: panels, popovers     */
-  --gts-dur-slow:    260ms;  /* drawers, sheets, route change */
-  --gts-dur-slower:  400ms;  /* orchestrated multi-part       */
+  --gts-dur-slow:    240ms;  /* drawers, sheets, route change */
+  --gts-dur-slower:  380ms;  /* orchestrated multi-part       */
   --gts-dur-ambient: 1200ms; /* skeleton, pulse, live ticker  */
 
   /* --- Easing --------------------------------------------
-     Named by intent so usage is unambiguous at the call site. */
-  --gts-ease-exit:  cubic-bezier(0.4, 0.0, 1, 1);      /* leaving    */
-  --gts-ease-enter: cubic-bezier(0.0, 0.0, 0.2, 1);    /* arriving   */
-  --gts-ease-move:  cubic-bezier(0.4, 0.0, 0.2, 1);    /* on-screen  */
-  --gts-ease-snap:  cubic-bezier(0.3, 0.0, 0.15, 1);   /* decisive   */
+     Named by intent so usage is unambiguous at the call site.
+     Stronger than the standard library curves on purpose: a
+     dropdown at ease-out(0.23,1,0.32,1) feels instantaneous in
+     a way the built-in `ease-out` never does. */
+  --gts-ease-exit:  cubic-bezier(0.4, 0.0, 1, 1);       /* leaving    */
+  --gts-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);      /* arriving — strong deceleration */
+  --gts-ease-move:  cubic-bezier(0.65, 0, 0.35, 1);     /* on-screen  */
+  --gts-ease-snap:  cubic-bezier(0.22, 1, 0.36, 1);     /* decisive, popovers/drawers */
+  --gts-ease-press: cubic-bezier(0.3, 0.7, 0.4, 1);     /* button press/release */
   /* The single expressive curve. Reserved for CONFIRMATION —
      attendance check-in, payment posted, stock received. It is
      the only overshoot in the system, so it means something. */
-  --gts-ease-confirm: cubic-bezier(0.2, 1.5, 0.35, 1);
+  --gts-ease-confirm: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* --- Composed transitions ------------------------------ */
   --gts-tr-control: color var(--gts-dur-instant) var(--gts-ease-move),
                     background-color var(--gts-dur-instant) var(--gts-ease-move),
                     border-color var(--gts-dur-instant) var(--gts-ease-move),
-                    box-shadow var(--gts-dur-fast) var(--gts-ease-move);
+                    box-shadow var(--gts-dur-fast) var(--gts-ease-move),
+                    transform var(--gts-dur-instant) var(--gts-ease-press);
   --gts-tr-surface: background-color var(--gts-dur-fast) var(--gts-ease-move),
                     border-color var(--gts-dur-fast) var(--gts-ease-move);
   --gts-tr-panel:   transform var(--gts-dur-slow) var(--gts-ease-snap),
@@ -47,8 +57,9 @@
    KEYFRAMES
    ============================================================ */
 
-/* Entrances are SHORT and travel a SMALL distance (4–8px).
-   Long slides read as sluggish in dense operational UI. */
+/* Entrances are SHORT and travel a SMALL distance (4–8px), and
+   never start from scale(0) — nothing in the real world appears
+   from nothing. Long slides read as sluggish in dense operational UI. */
 @keyframes gts-fade-in   { from { opacity: 0 } to { opacity: 1 } }
 @keyframes gts-rise      { from { opacity: 0; transform: translateY(6px) }
                            to   { opacity: 1; transform: none } }
@@ -61,7 +72,9 @@
                            to   { transform: none } }
 @keyframes gts-sheet-in  { from { transform: translateY(100%) }
                            to   { transform: none } }
-@keyframes gts-scale-in  { from { opacity: 0; transform: scale(0.97) }
+/* Popovers/menus scale from 0.96, not 0(!): a barely-visible
+   starting shape reads as "arriving", not "materializing". */
+@keyframes gts-scale-in  { from { opacity: 0; transform: scale(0.96) }
                            to   { opacity: 1; transform: none } }
 
 /* CONFIRMATION — the attendance check-in / payment-posted mark. */
@@ -93,6 +106,25 @@
    Set once, consumed by all keyframes above. */
 :root,[dir='ltr'] { --gts-dir: 1 }
 [dir='rtl']       { --gts-dir: -1 }
+
+/* ============================================================
+   PRESS FEEDBACK — every interactive control feels heard
+   ------------------------------------------------------------
+   A subtle scale-down on :active confirms the interface
+   registered the press before the action even completes. Kept
+   to 0.5–2% so it reads as "responsive", not "bouncy".
+   ============================================================ */
+.gts-focusable:active:not(:disabled),
+.gts-btn:active:not(:disabled),
+.gts-nav-item:active,
+.gts-tab:active,
+.gts-mobile-nav-item:active,
+.gts-user-button:active,
+.gts-check:active {
+  transform: scale(0.98);
+  transition: transform var(--gts-dur-instant) var(--gts-ease-press);
+}
+.gts-checkin:active:not(:disabled) { transform: scale(0.99); }
 
 /* ============================================================
    REDUCED MOTION

@@ -4,19 +4,19 @@
  * next/font self-hosts these at build time: no external request,
  * no CLS, and the CSP in production stays clean.
  */
-import { Archivo, Newsreader, IBM_Plex_Sans_Arabic, Roboto_Flex } from 'next/font/google';
+import { Instrument_Sans, Fraunces, IBM_Plex_Sans_Arabic, Roboto_Flex } from 'next/font/google';
 
-export const archivo = Archivo({
+export const archivo = Instrument_Sans({
   subsets: ['latin', 'latin-ext'],
-  axes: ['wdth'],
   display: 'swap',
   variable: '--font-archivo',
   // Metric-compatible fallback: prevents layout shift before swap.
   adjustFontFallback: true,
 });
 
-export const newsreader = Newsreader({
+export const newsreader = Fraunces({
   subsets: ['latin', 'latin-ext'],
+  axes: ['opsz', 'SOFT', 'WONK'],
   style: ['normal', 'italic'],
   display: 'swap',
   variable: '--font-newsreader',
