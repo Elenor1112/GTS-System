@@ -23,19 +23,21 @@ export default async function NewProductPage() {
 
   return (
     <Shell active="/products" domain="inventory">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={d.new.overline}
           title={d.new.title}
           lede={d.new.lede}
         />
-        <ProductForm
-          mode="create"
-          dict={d.form}
-          categories={categories.map((c) => ({ id: c.id, nameEn: c.nameEn }))}
-          vendors={vendors.map((v) => ({ id: v.id, nameEn: v.nameEn, code: v.code }))}
-          warehouses={warehouses.map((w) => ({ id: w.id, nameEn: w.nameEn, code: w.code }))}
-        />
+        <div className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <ProductForm
+            mode="create"
+            dict={d.form}
+            categories={categories.map((c) => ({ id: c.id, nameEn: c.nameEn }))}
+            vendors={vendors.map((v) => ({ id: v.id, nameEn: v.nameEn, code: v.code }))}
+            warehouses={warehouses.map((w) => ({ id: w.id, nameEn: w.nameEn, code: w.code }))}
+          />
+        </div>
       </main>
     </Shell>
   );

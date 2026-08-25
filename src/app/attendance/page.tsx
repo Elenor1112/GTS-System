@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 
-import { Shell } from '@/components/shell';
-import { Empty } from '@/components/shell';
+import { Shell, PageHead, Empty } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { assignedSites, attendanceFor } from '@/lib/services/attendance';
 import { getSetting } from '@/lib/services/settings';
@@ -37,17 +36,14 @@ export default async function AttendancePage() {
   if (!actor.employeeId) {
     return (
       <Shell active="/attendance" domain="attendance">
-        <main className="gts-page">
-          <header>
-            <p className="gts-overline">{dict.people.attendance.overline}</p>
-            <h1 className="gts-page-title" style={{ marginBlockStart: 'var(--gts-space-2)' }}>
-              {dict.people.attendance.title}
-            </h1>
-          </header>
-          <Empty
-            title={dict.people.attendance.noEmployee.title}
-            body={dict.people.attendance.noEmployee.body}
-          />
+        <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
+          <PageHead overline={dict.people.attendance.overline} title={dict.people.attendance.title} />
+          <div className="bg-surface rounded-lg border border-line shadow-raised">
+            <Empty
+              title={dict.people.attendance.noEmployee.title}
+              body={dict.people.attendance.noEmployee.body}
+            />
+          </div>
         </main>
       </Shell>
     );
@@ -67,23 +63,21 @@ export default async function AttendancePage() {
 
   return (
     <Shell active="/attendance" domain="attendance">
-      <main className="gts-page">
-        <header>
-          <p className="gts-overline">
-            {dict.people.attendance.overline} · {formatSiteDate(new Date().toISOString(), locale)}
-          </p>
-          <h1 className="gts-page-title" style={{ marginBlockStart: 'var(--gts-space-2)' }}>
-            {dict.people.attendance.title}
-          </h1>
-        </header>
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-8">
+        <PageHead
+          overline={`${dict.people.attendance.overline} · ${formatSiteDate(new Date().toISOString(), locale)}`}
+          title={dict.people.attendance.title}
+        />
 
         {sites.length === 0 ? (
-          <Empty
-            title={dict.people.attendance.noSite.title}
-            body={dict.people.attendance.noSite.body}
-          />
+          <div className="bg-surface rounded-lg border border-line shadow-raised">
+            <Empty
+              title={dict.people.attendance.noSite.title}
+              body={dict.people.attendance.noSite.body}
+            />
+          </div>
         ) : (
-          <div className="gts-checkin-stack">
+          <div className="flex flex-col gap-6">
             {sites.map((site) => (
               <CheckInPanel
                 key={site.projectId}
@@ -116,62 +110,66 @@ export default async function AttendancePage() {
           </div>
         )}
 
-        <section className="gts-region">
-          <header className="gts-region-head">
-            <h2 className="gts-region-title">{dict.people.attendance.history.title}</h2>
-            <span className="gts-meta">
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-fg">{dict.people.attendance.history.title}</h2>
+            <span className="text-xs text-fg-muted">
               {dict.people.attendance.history.workingDayNote
                 .replace('{start}', workStart)
                 .replace('{minutes}', String(lateThreshold))}
             </span>
-          </header>
+          </div>
 
           {history.length === 0 ? (
-            <Empty
-              title={dict.people.attendance.history.empty.title}
-              body={dict.people.attendance.history.empty.body}
-            />
+            <div className="bg-surface rounded-lg border border-line shadow-raised">
+              <Empty
+                title={dict.people.attendance.history.empty.title}
+                body={dict.people.attendance.history.empty.body}
+              />
+            </div>
           ) : (
-            <div className="gts-table-scroll">
-              <table className="gts-table gts-table-comfortable">
-                <thead>
-                  <tr>
-                    <th scope="col">{dict.people.attendance.history.dateHeader}</th>
-                    <th scope="col">{dict.people.attendance.history.projectHeader}</th>
-                    <th scope="col">{dict.people.attendance.history.inHeader}</th>
-                    <th scope="col">{dict.people.attendance.history.outHeader}</th>
-                    <th scope="col">{dict.people.attendance.history.statusHeader}</th>
-                    <th scope="col" className="gts-cell-num">{dict.people.attendance.history.distanceHeader}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.map((record) => (
-                    <tr key={record.id}>
-                      <th scope="row">{formatSiteDate(record.workDate.toISOString(), locale)}</th>
-                      <td>{record.project.code}</td>
-                      <td>{formatSiteTime(record.checkInAt.toISOString(), locale)}</td>
-                      <td>
-                        {record.checkOutAt ? (
-                          formatSiteTime(record.checkOutAt.toISOString(), locale)
-                        ) : (
-                          <span className="gts-meta">—</span>
-                        )}
-                      </td>
-                      <td>
-                        <span
-                          className={`gts-status gts-status-${
-                            record.status === 'LATE' ? 'warning' : 'success'
-                          }`}
-                        >
-                          {record.status.toLowerCase()}
-                          {record.minutesLate > 0 && ` · ${record.minutesLate}m`}
-                        </span>
-                      </td>
-                      <td className="gts-cell-num">{record.distanceMetres}m</td>
+            <div className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+              <div className="gts-table-scroll">
+                <table className="gts-table gts-table-comfortable">
+                  <thead>
+                    <tr>
+                      <th scope="col">{dict.people.attendance.history.dateHeader}</th>
+                      <th scope="col">{dict.people.attendance.history.projectHeader}</th>
+                      <th scope="col">{dict.people.attendance.history.inHeader}</th>
+                      <th scope="col">{dict.people.attendance.history.outHeader}</th>
+                      <th scope="col">{dict.people.attendance.history.statusHeader}</th>
+                      <th scope="col" className="gts-cell-num">{dict.people.attendance.history.distanceHeader}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {history.map((record) => (
+                      <tr key={record.id}>
+                        <th scope="row">{formatSiteDate(record.workDate.toISOString(), locale)}</th>
+                        <td>{record.project.code}</td>
+                        <td>{formatSiteTime(record.checkInAt.toISOString(), locale)}</td>
+                        <td>
+                          {record.checkOutAt ? (
+                            formatSiteTime(record.checkOutAt.toISOString(), locale)
+                          ) : (
+                            <span className="gts-meta">—</span>
+                          )}
+                        </td>
+                        <td>
+                          <span
+                            className={`gts-status gts-status-${
+                              record.status === 'LATE' ? 'warning' : 'success'
+                            }`}
+                          >
+                            {record.status.toLowerCase()}
+                            {record.minutesLate > 0 && ` · ${record.minutesLate}m`}
+                          </span>
+                        </td>
+                        <td className="gts-cell-num">{record.distanceMetres}m</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </section>

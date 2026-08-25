@@ -16,13 +16,15 @@ export default async function NewWarehousePage() {
 
   return (
     <Shell active="/storage" domain="inventory">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={d.new.overline}
           title={d.new.title}
           lede={d.new.lede}
         />
-        <WarehouseForm mode="create" dict={d.form} />
+        <div className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <WarehouseForm mode="create" dict={d.form} />
+        </div>
       </main>
     </Shell>
   );

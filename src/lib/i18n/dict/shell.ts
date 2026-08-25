@@ -38,9 +38,9 @@ export interface ShellDict {
     permissions: string;
     audit: string;
     admin: string;
-    financial: string;
-    operations: string;
-    people: string;
+    accounting: string;
+    warehouses: string;
+    humanResources: string;
     system: string;
     more: string;
     home: string;
@@ -110,9 +110,9 @@ export const en: ShellDict = {
     permissions: 'Permissions',
     audit: 'Audit log',
     admin: 'Administration',
-    financial: 'Financial',
-    operations: 'Operations',
-    people: 'People',
+    accounting: 'Accounting',
+    warehouses: 'Warehouses',
+    humanResources: 'Human Resources',
     system: 'System',
     more: 'More',
     home: 'Home',
@@ -182,9 +182,9 @@ export const ar: ShellDict = {
     permissions: 'الصلاحيات',
     audit: 'سجل التدقيق',
     admin: 'الإدارة',
-    financial: 'مالي',
-    operations: 'العمليات',
-    people: 'الأفراد',
+    accounting: 'المحاسبة',
+    warehouses: 'المخازن',
+    humanResources: 'الموارد البشرية',
     system: 'النظام',
     more: 'المزيد',
     home: 'الرئيسية',

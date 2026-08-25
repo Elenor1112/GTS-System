@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 import { Amount, Status } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
+import { Icon } from '@/components/icon';
 import { requirePermission } from '@/lib/auth';
 import { can } from '@/lib/permissions';
 import { listClients } from '@/lib/services/clients';
@@ -44,7 +45,7 @@ export default async function ClientsPage({
 
   return (
     <Shell active="/clients" domain="clients">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={d.overline}
           title={d.title}
@@ -53,7 +54,11 @@ export default async function ClientsPage({
           }`}
           actions={
             can(actor, 'clients.create') ? (
-              <a href="/clients/new" className="gts-btn gts-btn-accent">
+              <a
+                href="/clients/new"
+                className="h-touch px-4 bg-brand text-fg-on-accent rounded-sm inline-flex items-center gap-2 font-medium text-sm hover:opacity-90 transition-opacity"
+              >
+                <Icon name="add" />
                 {d.newClient}
               </a>
             ) : undefined
@@ -62,125 +67,141 @@ export default async function ClientsPage({
 
         {/* Search and filter post as a GET form, so a filtered view is a
             real URL somebody can bookmark or send to a colleague. */}
-        <form method="get" className="gts-filter-bar" role="search">
-          <div className="gts-field" style={{ flex: '1 1 18rem' }}>
+        <form method="get" className="bg-surface rounded-lg border border-line shadow-raised p-4 flex flex-wrap items-center gap-3" role="search">
+          <div className="flex-1 min-w-[16rem]">
             <label className="gts-sr" htmlFor="q">
               {d.searchLabel}
             </label>
-            <input
-              id="q"
-              name="q"
-              type="search"
-              defaultValue={params.q ?? ''}
-              placeholder={d.searchPlaceholder}
-              className="gts-input"
-            />
+            <div className="relative">
+              <span className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none text-fg-muted">
+                <Icon name="search" size={20} />
+              </span>
+              <input
+                id="q"
+                name="q"
+                type="search"
+                defaultValue={params.q ?? ''}
+                placeholder={d.searchPlaceholder}
+                className="w-full h-touch ps-10 pe-3 rounded-sm border border-line bg-surface text-sm text-fg placeholder:text-fg-muted focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none transition-colors"
+              />
+            </div>
           </div>
-          <label className="gts-check">
-            <input type="checkbox" name="archived" value="1" defaultChecked={includeArchived} />
+          <label className="inline-flex items-center gap-2 text-sm text-fg-secondary h-touch">
+            <input type="checkbox" name="archived" value="1" defaultChecked={includeArchived} className="accent-brand" />
             {d.includeArchived}
           </label>
-          <button type="submit" className="gts-btn gts-btn-secondary">
+          <button
+            type="submit"
+            className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors"
+          >
             {d.search}
           </button>
           {(params.q || includeArchived) && (
-            <a href="/clients" className="gts-btn gts-btn-ghost">
+            <a href="/clients" className="h-touch px-4 inline-flex items-center text-sm font-medium text-fg-secondary hover:text-fg transition-colors">
               {d.clear}
             </a>
           )}
         </form>
 
         {clients.length === 0 ? (
-          <Empty
-            title={params.q ? d.emptyNoMatchTitle : d.emptyNoneTitle}
-            body={params.q ? d.emptyNoMatchBody : d.emptyNoneBody}
-            filtered={Boolean(params.q)}
-            action={
-              can(actor, 'clients.create') && !params.q ? (
-                <a href="/clients/new" className="gts-btn gts-btn-accent">
-                  {d.newClient}
-                </a>
-              ) : undefined
-            }
-          />
+          <div className="bg-surface rounded-lg border border-line shadow-raised">
+            <Empty
+              title={params.q ? d.emptyNoMatchTitle : d.emptyNoneTitle}
+              body={params.q ? d.emptyNoMatchBody : d.emptyNoneBody}
+              filtered={Boolean(params.q)}
+              action={
+                can(actor, 'clients.create') && !params.q ? (
+                  <a
+                    href="/clients/new"
+                    className="h-touch px-4 bg-brand text-fg-on-accent rounded-sm inline-flex items-center gap-2 font-medium text-sm hover:opacity-90 transition-opacity"
+                  >
+                    <Icon name="add" />
+                    {d.newClient}
+                  </a>
+                ) : undefined
+              }
+            />
+          </div>
         ) : (
-          <div className="gts-table-scroll">
-            <table className="gts-table gts-table-comfortable">
-              <caption className="gts-sr">
-                {d.caption}
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">{d.colClient}</th>
-                  <th scope="col">{d.colTaxNumber}</th>
-                  <th scope="col">{d.colGovernorate}</th>
-                  <th scope="col" className="gts-cell-num">{d.colProjects}</th>
-                  <th scope="col" className="gts-cell-num">{d.colOutstanding}</th>
-                  <th scope="col" className="gts-cell-num">{d.colOverdue}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {clients.map((client) => (
-                  <tr key={client.id}>
-                    <th scope="row">
-                      <a href={`/clients/${client.id}`} className="gts-cell-link">
-                        {client.nameEn}
-                      </a>
-                      <span className="gts-meta gts-cell-sub">
-                        {client.code}
-                        {!client.isActive && ` · ${d.archived}`}
-                      </span>
-                    </th>
-                    <td>
-                      {/* Latin digits stay LTR-isolated so the number keeps
-                          its reading order when the page flips to Arabic. */}
-                      <bdi className="gts-num gts-num-sm">
-                        {client.trn ? TRN.format(client.trn) : '—'}
-                      </bdi>
-                    </td>
-                    <td>{governorate(client.governorateCode)}</td>
-                    <td className="gts-cell-num">
-                      <span className="gts-num gts-num-sm">{client.projectCount}</span>
-                    </td>
-                    <td className="gts-cell-num">
-                      {client.outstanding.isZero() ? (
-                        <span className="gts-meta">—</span>
-                      ) : (
-                        <Amount value={client.outstanding.toNumber()} size="sm" currency={null} locale={locale} />
-                      )}
-                    </td>
-                    <td className="gts-cell-num">
-                      {client.overdue.isZero() ? (
-                        <span className="gts-meta">—</span>
-                      ) : (
-                        <Status tone="danger">
-                          <Amount value={client.overdue.toNumber()} size="sm" currency={null} locale={locale} />
-                        </Status>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              {totalOutstanding > 0 && (
-                <tfoot>
+          <div className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+            <div className="gts-table-scroll">
+              <table className="gts-table gts-table-comfortable">
+                <caption className="gts-sr">
+                  {d.caption}
+                </caption>
+                <thead>
                   <tr>
-                    <th scope="row" colSpan={4}>
-                      {d.total}
-                    </th>
-                    <td className="gts-cell-num">
-                      <Amount value={totalOutstanding} size="sm" currency={null} locale={locale} />
-                    </td>
-                    <td className="gts-cell-num">
-                      {totalOverdue > 0 ? (
-                        <Amount value={totalOverdue} size="sm" currency={null} locale={locale} />
-                      ) : (
-                        <span className="gts-meta">—</span>
-                      )}
-                    </td>
+                    <th scope="col">{d.colClient}</th>
+                    <th scope="col">{d.colTaxNumber}</th>
+                    <th scope="col">{d.colGovernorate}</th>
+                    <th scope="col" className="gts-cell-num">{d.colProjects}</th>
+                    <th scope="col" className="gts-cell-num">{d.colOutstanding}</th>
+                    <th scope="col" className="gts-cell-num">{d.colOverdue}</th>
                   </tr>
-                </tfoot>
-              )}
-            </table>
+                </thead>
+                <tbody>
+                  {clients.map((client) => (
+                    <tr key={client.id}>
+                      <th scope="row">
+                        <a href={`/clients/${client.id}`} className="gts-cell-link">
+                          {client.nameEn}
+                        </a>
+                        <span className="gts-meta gts-cell-sub">
+                          {client.code}
+                          {!client.isActive && ` · ${d.archived}`}
+                        </span>
+                      </th>
+                      <td>
+                        {/* Latin digits stay LTR-isolated so the number keeps
+                            its reading order when the page flips to Arabic. */}
+                        <bdi className="gts-num gts-num-sm">
+                          {client.trn ? TRN.format(client.trn) : '—'}
+                        </bdi>
+                      </td>
+                      <td>{governorate(client.governorateCode)}</td>
+                      <td className="gts-cell-num">
+                        <span className="gts-num gts-num-sm">{client.projectCount}</span>
+                      </td>
+                      <td className="gts-cell-num">
+                        {client.outstanding.isZero() ? (
+                          <span className="gts-meta">—</span>
+                        ) : (
+                          <Amount value={client.outstanding.toNumber()} size="sm" currency={null} locale={locale} />
+                        )}
+                      </td>
+                      <td className="gts-cell-num">
+                        {client.overdue.isZero() ? (
+                          <span className="gts-meta">—</span>
+                        ) : (
+                          <Status tone="danger">
+                            <Amount value={client.overdue.toNumber()} size="sm" currency={null} locale={locale} />
+                          </Status>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                {totalOutstanding > 0 && (
+                  <tfoot>
+                    <tr>
+                      <th scope="row" colSpan={4}>
+                        {d.total}
+                      </th>
+                      <td className="gts-cell-num">
+                        <Amount value={totalOutstanding} size="sm" currency={null} locale={locale} />
+                      </td>
+                      <td className="gts-cell-num">
+                        {totalOverdue > 0 ? (
+                          <Amount value={totalOverdue} size="sm" currency={null} locale={locale} />
+                        ) : (
+                          <span className="gts-meta">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  </tfoot>
+                )}
+              </table>
+            </div>
           </div>
         )}
       </main>

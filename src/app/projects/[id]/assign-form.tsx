@@ -3,6 +3,7 @@
 import { useActionState } from 'react';
 
 import { FormError, Submit, errorFor } from '@/components/form';
+import { Icon } from '@/components/icon';
 import type { OperationsDict } from '@/lib/i18n/dict/operations';
 
 import { submitAssignEmployee, submitReleaseEmployee } from '../actions';
@@ -39,10 +40,17 @@ export function AssignForm({
   }
 
   return (
-    <form action={formAction} className="gts-assign-form">
+    <form action={formAction} className="gts-assign-form mb-4">
       <FormError state={state} />
       {state?.ok && (
-        <p className={hasLocation ? 'gts-form-success' : 'gts-form-error'} role="status">
+        <p
+          className={
+            hasLocation
+              ? 'w-full px-4 py-3 rounded-sm bg-success-bg border border-success-br text-success text-sm'
+              : 'w-full px-4 py-3 rounded-sm bg-danger-bg border border-danger-br text-danger text-sm'
+          }
+          role="status"
+        >
           {hasLocation ? dict.assignedWithLocation : dict.assignedWithoutLocation}
         </p>
       )}
@@ -109,9 +117,10 @@ export function ReleaseButton({
       <input type="hidden" name="projectId" value={projectId} />
       <button
         type="submit"
-        className="gts-btn gts-btn-ghost gts-btn-xs"
+        className="h-touch px-2 inline-flex items-center text-xs font-medium text-fg-secondary hover:text-fg transition-colors"
         aria-label={dict.releaseAria.replace('{name}', name)}
       >
+        <Icon name="person_remove" size={16} />
         {dict.release}
       </button>
       {state && !state.ok && (

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 
-import { Amount, Region, Status } from '@/components/primitives';
+import { Amount, Status } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
+import { Icon } from '@/components/icon';
 import { requirePermission } from '@/lib/auth';
 import { t, type Dictionary } from '@/lib/i18n';
 import { getLocale, type Locale } from '@/lib/preferences';
@@ -40,7 +41,7 @@ export default async function AccountsPage() {
 
   return (
     <Shell active="/accounts" domain="finance">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-8">
         <PageHead
           overline={d.overline}
           title={d.title}
@@ -48,20 +49,20 @@ export default async function AccountsPage() {
         />
 
         {/* ---------- The net position ---------- */}
-        <header className="gts-grid-editorial" style={{ alignItems: 'end' }}>
-          <div>
-            <p className="gts-overline">{d.netPosition}</p>
-            <div style={{ marginBlockStart: 'var(--gts-space-4)' }}>
+        <section className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6 items-stretch">
+          <div className="bg-surface rounded-lg border border-line shadow-raised p-6 flex flex-col justify-center">
+            <p className="text-xs text-fg-muted uppercase tracking-wide">{d.netPosition}</p>
+            <div className="mt-3">
               <Amount value={ledger.netPosition.toNumber()} size="hero" locale={locale} />
             </div>
-            <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-3)' }}>
+            <p className="text-xs text-fg-secondary mt-2">
               {ledger.netPosition.isNegative()
                 ? d.netPositionNegative
                 : d.netPositionPositive}
             </p>
           </div>
 
-          <div className="gts-stat-row">
+          <div className="grid grid-cols-2 gap-4">
             <Figure
               label={d.receivable}
               value={ledger.receivable.outstanding.toNumber()}
@@ -97,10 +98,14 @@ export default async function AccountsPage() {
               locale={locale}
             />
           </div>
-        </header>
+        </section>
 
         {/* ---------- Receivables ---------- */}
-        <Region title={`${d.owedToUs} (${clients.length})`}>
+        <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+          <div className="flex items-center gap-2 px-6 pt-6">
+            <Icon name="trending_up" className="text-accent" />
+            <h2 className="text-lg font-semibold text-fg">{d.owedToUs} ({clients.length})</h2>
+          </div>
           {clients.length === 0 ? (
             <Empty
               title={d.nothingOutstandingTitle}
@@ -121,10 +126,14 @@ export default async function AccountsPage() {
               locale={locale}
             />
           )}
-        </Region>
+        </section>
 
         {/* ---------- Payables ---------- */}
-        <Region title={`${d.owedByUs} (${vendors.length})`}>
+        <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+          <div className="flex items-center gap-2 px-6 pt-6">
+            <Icon name="trending_down" className="text-warning" />
+            <h2 className="text-lg font-semibold text-fg">{d.owedByUs} ({vendors.length})</h2>
+          </div>
           {vendors.length === 0 ? (
             <Empty title={d.nothingOutstandingTitle} body={d.nothingOutstandingPayableBody} />
           ) : (
@@ -141,7 +150,7 @@ export default async function AccountsPage() {
               locale={locale}
             />
           )}
-        </Region>
+        </section>
       </main>
     </Shell>
   );
@@ -174,7 +183,7 @@ function AgeingTable({
     );
 
   return (
-    <div className="gts-table-scroll">
+    <div className="gts-table-scroll mt-4">
       <table className="gts-table gts-table-comfortable">
         <caption className="gts-sr">{d.caption}</caption>
         <thead>
@@ -277,12 +286,12 @@ function Figure({
   locale: Locale;
 }) {
   return (
-    <div className="gts-stat">
-      <p className="gts-overline">{label}</p>
-      <p className={tone ? `gts-stat-value gts-stat-${tone}` : 'gts-stat-value'}>
+    <div className="bg-surface rounded-lg border border-line shadow-raised p-5">
+      <p className="text-xs text-fg-muted uppercase tracking-wide">{label}</p>
+      <p className={`mt-2 ${tone === 'danger' ? 'text-danger' : tone === 'warning' ? 'text-warning' : ''}`}>
         <Amount value={value} size="md" locale={locale} />
       </p>
-      <p className="gts-meta">{detail}</p>
+      <p className="text-xs text-fg-secondary mt-1">{detail}</p>
     </div>
   );
 }

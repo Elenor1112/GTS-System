@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 import { Amount, Status } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
+import { Icon } from '@/components/icon';
 import { requirePermission } from '@/lib/auth';
 import { can } from '@/lib/permissions';
 import { listProjects } from '@/lib/services/projects';
@@ -42,7 +43,7 @@ export default async function ProjectsPage({
 
   return (
     <Shell active="/projects" domain="projects">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={d.overline}
           title={d.title}
@@ -51,32 +52,41 @@ export default async function ProjectsPage({
           }`}
           actions={
             can(actor, 'projects.create') ? (
-              <a href="/projects/new" className="gts-btn gts-btn-accent">
+              <a
+                href="/projects/new"
+                className="h-touch px-4 bg-brand text-fg-on-accent rounded-sm inline-flex items-center gap-2 font-medium text-sm hover:opacity-90 transition-opacity"
+              >
+                <Icon name="add" />
                 {d.newProject}
               </a>
             ) : undefined
           }
         />
 
-        <form method="get" className="gts-filter-bar" role="search">
-          <div className="gts-field" style={{ flex: '1 1 16rem' }}>
+        <form method="get" className="bg-surface rounded-lg border border-line shadow-raised p-4 flex flex-wrap items-center gap-3" role="search">
+          <div className="flex-1 min-w-[14rem]">
             <label className="gts-sr" htmlFor="q">
               {d.searchLabel}
             </label>
-            <input
-              id="q"
-              name="q"
-              type="search"
-              defaultValue={params.q ?? ''}
-              placeholder={d.searchPlaceholder}
-              className="gts-input"
-            />
+            <div className="relative">
+              <span className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none text-fg-muted">
+                <Icon name="search" size={20} />
+              </span>
+              <input
+                id="q"
+                name="q"
+                type="search"
+                defaultValue={params.q ?? ''}
+                placeholder={d.searchPlaceholder}
+                className="w-full h-touch ps-10 pe-3 rounded-sm border border-line bg-surface text-sm text-fg placeholder:text-fg-muted focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none transition-colors"
+              />
+            </div>
           </div>
-          <div className="gts-field">
+          <div>
             <label className="gts-sr" htmlFor="status">
               {d.statusLabel}
             </label>
-            <select id="status" name="status" defaultValue={status ?? ''} className="gts-input gts-select">
+            <select id="status" name="status" defaultValue={status ?? ''} className="h-touch px-3 rounded-sm border border-line bg-surface text-sm text-fg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none">
               <option value="">{d.anyStatus}</option>
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
@@ -85,30 +95,40 @@ export default async function ProjectsPage({
               ))}
             </select>
           </div>
-          <button type="submit" className="gts-btn gts-btn-secondary">
+          <button
+            type="submit"
+            className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors"
+          >
             {d.filter}
           </button>
           {(params.q || status) && (
-            <a href="/projects" className="gts-btn gts-btn-ghost">
+            <a href="/projects" className="h-touch px-4 inline-flex items-center text-sm font-medium text-fg-secondary hover:text-fg transition-colors">
               {d.clear}
             </a>
           )}
         </form>
 
         {projects.length === 0 ? (
-          <Empty
-            title={params.q || status ? d.emptyNoMatchTitle : d.emptyNoneTitle}
-            body={params.q || status ? d.emptyNoMatchBody : d.emptyNoneBody}
-            filtered={Boolean(params.q || status)}
-            action={
-              can(actor, 'projects.create') && !params.q && !status ? (
-                <a href="/projects/new" className="gts-btn gts-btn-accent">
-                  {d.newProject}
-                </a>
-              ) : undefined
-            }
-          />
+          <div className="bg-surface rounded-lg border border-line shadow-raised">
+            <Empty
+              title={params.q || status ? d.emptyNoMatchTitle : d.emptyNoneTitle}
+              body={params.q || status ? d.emptyNoMatchBody : d.emptyNoneBody}
+              filtered={Boolean(params.q || status)}
+              action={
+                can(actor, 'projects.create') && !params.q && !status ? (
+                  <a
+                    href="/projects/new"
+                    className="h-touch px-4 bg-brand text-fg-on-accent rounded-sm inline-flex items-center gap-2 font-medium text-sm hover:opacity-90 transition-opacity"
+                  >
+                    <Icon name="add" />
+                    {d.newProject}
+                  </a>
+                ) : undefined
+              }
+            />
+          </div>
         ) : (
+          <div className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
           <div className="gts-table-scroll">
             <table className="gts-table gts-table-comfortable">
               <caption className="gts-sr">{d.caption}</caption>
@@ -191,6 +211,7 @@ export default async function ProjectsPage({
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
         )}
       </main>

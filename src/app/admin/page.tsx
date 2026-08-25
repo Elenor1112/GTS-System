@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { Region, Status } from '@/components/primitives';
+import { Status } from '@/components/primitives';
 import { Shell, PageHead } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { db } from '@/lib/db';
@@ -46,7 +46,7 @@ export default async function AdminPage() {
 
   return (
     <Shell active="/admin" domain="admin">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={dict.admin.settings.overline}
           title={dict.admin.settings.title}
@@ -54,11 +54,12 @@ export default async function AdminPage() {
         />
 
         {!orgTrn && (
-          <p className="gts-form-error" role="status">
+          <p className="px-4 py-3 rounded-sm bg-danger-bg border border-danger-br text-danger text-sm" role="status">
             {dict.admin.settings.noTrnWarning}
           </p>
         )}
 
+        <div className="bg-surface rounded-lg border border-line shadow-raised p-6">
         <SettingsForm
           values={{
             'org.nameEn': String(settings['org.nameEn'] ?? ''),
@@ -85,12 +86,14 @@ export default async function AdminPage() {
           governorates={GOVERNORATES.map((g) => ({ value: g.code, label: `${g.en} — ${g.ar}` }))}
           dict={dict.admin.settings}
         />
+        </div>
 
         {/* ---------- The market profile ----------
             Read-only: these are statutory, not preferences. Showing them
             is how somebody confirms the system is configured for Egypt
             rather than the market it was originally built for. */}
-        <Region title={dict.admin.settings.market.title}>
+        <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <h2 className="text-lg font-semibold text-fg mb-4">{dict.admin.settings.market.title}</h2>
           <div className="gts-stat-row">
             <Fact label={dict.admin.settings.market.currency} value={`${CURRENCY.code} — ${CURRENCY.nameEn}`} />
             <Fact label={dict.admin.settings.market.standardVat} value={`${VAT_STANDARD}%`} />
@@ -99,38 +102,37 @@ export default async function AdminPage() {
             <Fact label={dict.admin.settings.market.timezone} value="Africa/Cairo" />
             <Fact label={dict.admin.settings.market.governorates} value={String(GOVERNORATES.length)} />
           </div>
-          <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
+          <p className="text-xs text-fg-secondary mt-4">
             {dict.admin.settings.market.note}
           </p>
-        </Region>
+        </section>
 
         {/* ---------- ETA ---------- */}
-        <Region title={dict.admin.settings.eta.title}>
+        <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <h2 className="text-lg font-semibold text-fg mb-4">{dict.admin.settings.eta.title}</h2>
           <div className="gts-stat-row">
-            <div className="gts-stat">
-              <p className="gts-overline">{dict.admin.settings.eta.documentFormat}</p>
-              <p className="gts-stat-value">
+            <div>
+              <p className="text-xs text-fg-muted uppercase tracking-wide">{dict.admin.settings.eta.documentFormat}</p>
+              <p className="mt-2">
                 <Status tone="success">{dict.admin.settings.eta.implemented}</Status>
               </p>
             </div>
-            <div className="gts-stat">
-              <p className="gts-overline">{dict.admin.settings.eta.transmission}</p>
-              <p className="gts-stat-value">
+            <div>
+              <p className="text-xs text-fg-muted uppercase tracking-wide">{dict.admin.settings.eta.transmission}</p>
+              <p className="mt-2">
                 <Status tone="neutral">{dict.admin.settings.eta.notConfigured}</Status>
               </p>
             </div>
           </div>
 
-          <p
-            className="gts-meta"
-            style={{ marginBlockStart: 'var(--gts-space-4)', maxInlineSize: 'var(--gts-prose-max)' }}
-          >
+          <p className="text-xs text-fg-secondary mt-4 max-w-prose">
             {dict.admin.settings.eta.body}
           </p>
-        </Region>
+        </section>
 
         {/* ---------- What the system holds ---------- */}
-        <Region title={dict.admin.settings.system.title}>
+        <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <h2 className="text-lg font-semibold text-fg mb-4">{dict.admin.settings.system.title}</h2>
           <div className="gts-stat-row">
             <Fact label={dict.admin.settings.system.activeUsers} value={users.toLocaleString('en-US')} />
             <Fact label={dict.admin.settings.system.employees} value={employees.toLocaleString('en-US')} />
@@ -139,10 +141,10 @@ export default async function AdminPage() {
             <Fact label={dict.admin.settings.system.stockMovements} value={movements.toLocaleString('en-US')} />
             <Fact label={dict.admin.settings.system.auditEntries} value={auditEntries.toLocaleString('en-US')} />
           </div>
-          <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
+          <p className="text-xs text-fg-secondary mt-4">
             {dict.admin.settings.system.signedInAs} {actor.nameEn} · {actor.roleNameEn}
           </p>
-        </Region>
+        </section>
       </main>
     </Shell>
   );
@@ -150,9 +152,9 @@ export default async function AdminPage() {
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="gts-stat">
-      <p className="gts-overline">{label}</p>
-      <p className="gts-stat-value">{value}</p>
+    <div>
+      <p className="text-xs text-fg-muted uppercase tracking-wide">{label}</p>
+      <p className="text-fg mt-2">{value}</p>
     </div>
   );
 }

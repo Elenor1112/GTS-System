@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { Shell, PageHead, Empty } from '@/components/shell';
+import { Icon } from '@/components/icon';
 import { requirePermission } from '@/lib/auth';
 import { listEmployees, employeeFilterOptions } from '@/lib/services/people';
 import { formatDate } from '@/lib/format';
@@ -45,7 +46,7 @@ export default async function EmployeesPage({
 
   return (
     <Shell active="/employees" domain="attendance">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={dict.people.employees.overline}
           title={dict.people.employees.title}
@@ -54,25 +55,30 @@ export default async function EmployeesPage({
             .replace('{plural}', employees.length === 1 ? '' : 's')}
         />
 
-        <form method="get" className="gts-filter-bar" role="search">
-          <div className="gts-field" style={{ flex: '1 1 16rem' }}>
+        <form method="get" className="bg-surface rounded-lg border border-line shadow-raised p-4 flex flex-wrap items-center gap-3" role="search">
+          <div className="flex-1 min-w-[14rem]">
             <label className="gts-sr" htmlFor="q">
               {dict.people.employees.filters.searchLabel}
             </label>
-            <input
-              id="q"
-              name="q"
-              type="search"
-              defaultValue={params.q ?? ''}
-              placeholder={dict.people.employees.filters.searchPlaceholder}
-              className="gts-input"
-            />
+            <div className="relative">
+              <span className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none text-fg-muted">
+                <Icon name="search" size={20} />
+              </span>
+              <input
+                id="q"
+                name="q"
+                type="search"
+                defaultValue={params.q ?? ''}
+                placeholder={dict.people.employees.filters.searchPlaceholder}
+                className="w-full h-touch ps-10 pe-3 rounded-sm border border-line bg-surface text-sm text-fg placeholder:text-fg-muted focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none transition-colors"
+              />
+            </div>
           </div>
-          <div className="gts-field">
+          <div>
             <label className="gts-sr" htmlFor="position">
               {dict.people.employees.filters.positionLabel}
             </label>
-            <select id="position" name="position" defaultValue={params.position ?? ''} className="gts-input gts-select">
+            <select id="position" name="position" defaultValue={params.position ?? ''} className="h-touch px-3 rounded-sm border border-line bg-surface text-sm text-fg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none">
               <option value="">{dict.people.employees.filters.anyPosition}</option>
               {filterOptions.jobTitles.map((title) => (
                 <option key={title} value={title}>
@@ -81,11 +87,11 @@ export default async function EmployeesPage({
               ))}
             </select>
           </div>
-          <div className="gts-field">
+          <div>
             <label className="gts-sr" htmlFor="department">
               {dict.people.employees.filters.departmentLabel}
             </label>
-            <select id="department" name="department" defaultValue={params.department ?? ''} className="gts-input gts-select">
+            <select id="department" name="department" defaultValue={params.department ?? ''} className="h-touch px-3 rounded-sm border border-line bg-surface text-sm text-fg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none">
               <option value="">{dict.people.employees.filters.anyDepartment}</option>
               {filterOptions.departments.map((dept) => (
                 <option key={dept} value={dept}>
@@ -94,11 +100,11 @@ export default async function EmployeesPage({
               ))}
             </select>
           </div>
-          <div className="gts-field">
+          <div>
             <label className="gts-sr" htmlFor="project">
               {dict.people.employees.filters.projectLabel}
             </label>
-            <select id="project" name="project" defaultValue={params.project ?? ''} className="gts-input gts-select">
+            <select id="project" name="project" defaultValue={params.project ?? ''} className="h-touch px-3 rounded-sm border border-line bg-surface text-sm text-fg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none">
               <option value="">{dict.people.employees.filters.anyProject}</option>
               {filterOptions.projects.map((project) => (
                 <option key={project.id} value={project.id}>
@@ -107,31 +113,37 @@ export default async function EmployeesPage({
               ))}
             </select>
           </div>
-          <label className="gts-check">
-            <input type="checkbox" name="inactive" value="1" defaultChecked={includeInactive} />
+          <label className="inline-flex items-center gap-2 text-sm text-fg-secondary h-touch">
+            <input type="checkbox" name="inactive" value="1" defaultChecked={includeInactive} className="accent-brand" />
             {dict.people.employees.filters.includeInactive}
           </label>
-          <button type="submit" className="gts-btn gts-btn-secondary">
+          <button
+            type="submit"
+            className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors"
+          >
             {dict.people.employees.filters.filter}
           </button>
           {(filtered || includeInactive) && (
-            <a href="/employees" className="gts-btn gts-btn-ghost">
+            <a href="/employees" className="h-touch px-4 inline-flex items-center text-sm font-medium text-fg-secondary hover:text-fg transition-colors">
               {dict.people.employees.filters.clear}
             </a>
           )}
         </form>
 
         {employees.length === 0 ? (
-          <Empty
-            title={filtered ? dict.people.employees.empty.noMatchTitle : dict.people.employees.empty.noneYetTitle}
-            body={
-              filtered
-                ? dict.people.employees.empty.filteredBody
-                : dict.people.employees.empty.emptyBody
-            }
-            filtered={filtered}
-          />
+          <div className="bg-surface rounded-lg border border-line shadow-raised">
+            <Empty
+              title={filtered ? dict.people.employees.empty.noMatchTitle : dict.people.employees.empty.noneYetTitle}
+              body={
+                filtered
+                  ? dict.people.employees.empty.filteredBody
+                  : dict.people.employees.empty.emptyBody
+              }
+              filtered={filtered}
+            />
+          </div>
         ) : (
+          <div className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
           <div className="gts-table-scroll">
             <table className="gts-table gts-table-comfortable">
               <caption className="gts-sr">{dict.people.employees.list.caption}</caption>
@@ -174,6 +186,7 @@ export default async function EmployeesPage({
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
         )}
       </main>

@@ -48,48 +48,50 @@ export default async function AccountPage() {
 
   return (
     <Shell active="/account" domain="admin">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={dict.admin.account.overline}
           title={user.nameEn}
           lede={[user.role.nameEn, user.employee?.jobTitleEn].filter(Boolean).join(' · ')}
         />
 
-        <div className="gts-stat-row">
-          <div className="gts-stat">
-            <p className="gts-overline">{dict.admin.account.email}</p>
-            <p className="gts-stat-value">{user.email}</p>
-          </div>
-          <div className="gts-stat">
-            <p className="gts-overline">{dict.admin.account.role}</p>
-            <p className="gts-stat-value">{user.role.nameEn}</p>
-          </div>
-          {user.employee && (
-            <div className="gts-stat">
-              <p className="gts-overline">{dict.admin.account.employee}</p>
-              <p className="gts-stat-value">{user.employee.code}</p>
+        <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <div className="gts-stat-row">
+            <div>
+              <p className="text-xs text-fg-muted uppercase tracking-wide">{dict.admin.account.email}</p>
+              <p className="text-fg mt-2">{user.email}</p>
             </div>
-          )}
-          <div className="gts-stat">
-            <p className="gts-overline">{dict.admin.account.lastSignedIn}</p>
-            <p className="gts-stat-value">
-              {user.lastLoginAt ? formatDate(user.lastLoginAt.toISOString(), locale) : '—'}
-            </p>
+            <div>
+              <p className="text-xs text-fg-muted uppercase tracking-wide">{dict.admin.account.role}</p>
+              <p className="text-fg mt-2">{user.role.nameEn}</p>
+            </div>
+            {user.employee && (
+              <div>
+                <p className="text-xs text-fg-muted uppercase tracking-wide">{dict.admin.account.employee}</p>
+                <p className="text-fg mt-2">{user.employee.code}</p>
+              </div>
+            )}
+            <div>
+              <p className="text-xs text-fg-muted uppercase tracking-wide">{dict.admin.account.lastSignedIn}</p>
+              <p className="text-fg mt-2">
+                {user.lastLoginAt ? formatDate(user.lastLoginAt.toISOString(), locale) : '—'}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-fg-muted uppercase tracking-wide">{dict.admin.account.activeSessions}</p>
+              <p className="text-fg mt-2">
+                <span className="gts-num gts-num-md">{sessionCount}</span>
+              </p>
+            </div>
           </div>
-          <div className="gts-stat">
-            <p className="gts-overline">{dict.admin.account.activeSessions}</p>
-            <p className="gts-stat-value">
-              <span className="gts-num gts-num-md">{sessionCount}</span>
-            </p>
-          </div>
-        </div>
 
-        <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
-          {dict.admin.account.administeredNote}
-        </p>
+          <p className="text-xs text-fg-secondary mt-4">
+            {dict.admin.account.administeredNote}
+          </p>
+        </section>
 
-        <section style={{ marginBlockStart: 'var(--gts-space-7)' }}>
-          <h2 className="gts-overline">{dict.admin.account.passwordSectionTitle}</h2>
+        <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <h2 className="text-lg font-semibold text-fg mb-4">{dict.admin.account.passwordSectionTitle}</h2>
           <PasswordForm dict={dict.admin.account.passwordForm} />
         </section>
       </main>

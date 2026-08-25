@@ -4,6 +4,7 @@ import { useActionState } from 'react';
 
 import { signIn } from '../actions';
 import type { Dictionary } from '@/lib/i18n';
+import { Icon } from '@/components/icon';
 
 /**
  * The sign-in form.
@@ -33,7 +34,7 @@ export function SignInForm({
     state && !state.ok && !state.fieldErrors ? state.message : undefined;
 
   return (
-    <form action={formAction} className="gts-auth-form" noValidate>
+    <form action={formAction} className="flex flex-col gap-4" noValidate>
       {/* Where to land after signing in. Carried through the form so the
           server does the redirecting; it is re-validated there, since
           anything reaching the server from a form is user input. */}
@@ -43,49 +44,63 @@ export function SignInForm({
         // `data-testid` because Next renders its own empty
         // role="alert" route announcer, which an alert-role query would
         // match ahead of this one.
-        <div className="gts-auth-error" role="alert" data-testid="sign-in-error">
+        <div
+          className="px-4 py-3 rounded-sm bg-danger-bg border border-danger-br text-danger text-sm"
+          role="alert"
+          data-testid="sign-in-error"
+        >
           {formError}
         </div>
       )}
 
-      <div className="gts-field">
-        <label className="gts-label" htmlFor="email">
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium text-fg" htmlFor="email">
           {dict.emailLabel}
         </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="username"
-          required
-          autoFocus
-          className="gts-input"
-          aria-invalid={fieldError('email') ? true : undefined}
-          aria-describedby={fieldError('email') ? 'email-error' : undefined}
-        />
+        <div className="relative">
+          <span className="absolute inset-y-0 start-0 ps-4 flex items-center pointer-events-none text-fg-muted">
+            <Icon name="person" />
+          </span>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="username"
+            required
+            autoFocus
+            className="w-full h-touch ps-12 pe-4 rounded-sm border border-line bg-surface text-fg placeholder:text-fg-muted focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none transition-colors"
+            aria-invalid={fieldError('email') ? true : undefined}
+            aria-describedby={fieldError('email') ? 'email-error' : undefined}
+          />
+        </div>
         {fieldError('email') && (
-          <p className="gts-help gts-help-error" id="email-error">
+          <p className="text-xs text-danger" id="email-error">
             {fieldError('email')}
           </p>
         )}
       </div>
 
-      <div className="gts-field">
-        <label className="gts-label" htmlFor="password">
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium text-fg" htmlFor="password">
           {dict.passwordLabel}
         </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          className="gts-input"
-          aria-invalid={fieldError('password') ? true : undefined}
-          aria-describedby={fieldError('password') ? 'password-error' : undefined}
-        />
+        <div className="relative">
+          <span className="absolute inset-y-0 start-0 ps-4 flex items-center pointer-events-none text-fg-muted">
+            <Icon name="lock" />
+          </span>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            className="w-full h-touch ps-12 pe-4 rounded-sm border border-line bg-surface text-fg placeholder:text-fg-muted focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none transition-colors"
+            aria-invalid={fieldError('password') ? true : undefined}
+            aria-describedby={fieldError('password') ? 'password-error' : undefined}
+          />
+        </div>
         {fieldError('password') && (
-          <p className="gts-help gts-help-error" id="password-error">
+          <p className="text-xs text-danger" id="password-error">
             {fieldError('password')}
           </p>
         )}
@@ -93,9 +108,10 @@ export function SignInForm({
 
       <button
         type="submit"
-        className="gts-btn gts-btn-primary gts-btn-lg gts-btn-block"
+        className="mt-2 w-full h-touch bg-brand text-fg-on-accent font-medium rounded-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity active:scale-[0.98] disabled:opacity-50"
         disabled={pending}
       >
+        <Icon name="login" filled />
         {pending ? dict.signingIn : dict.signIn}
       </button>
     </form>

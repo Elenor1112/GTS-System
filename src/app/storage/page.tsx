@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 
-import { Amount, Status } from '@/components/primitives';
+import { Status } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
+import { Icon } from '@/components/icon';
 import { requirePermission } from '@/lib/auth';
 import { can } from '@/lib/permissions';
 import { listWarehouses } from '@/lib/services/catalogue';
@@ -31,7 +32,7 @@ export default async function StoragePage() {
 
   return (
     <Shell active="/storage" domain="inventory">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={d.overline}
           title={d.title}
@@ -40,7 +41,11 @@ export default async function StoragePage() {
           }`}
           actions={
             can(actor, 'warehouses.manage') ? (
-              <a href="/storage/new" className="gts-btn gts-btn-accent">
+              <a
+                href="/storage/new"
+                className="h-touch px-4 bg-brand text-fg-on-accent rounded-sm inline-flex items-center gap-2 font-medium text-sm hover:opacity-90 transition-opacity"
+              >
+                <Icon name="add" />
                 {d.newWarehouse}
               </a>
             ) : undefined
@@ -48,54 +53,54 @@ export default async function StoragePage() {
         />
 
         {warehouses.length === 0 ? (
-          <Empty
-            title={d.emptyTitle}
-            body={d.emptyBody}
-            action={
-              can(actor, 'warehouses.manage') ? (
-                <a href="/storage/new" className="gts-btn gts-btn-accent">
-                  {d.newWarehouse}
-                </a>
-              ) : undefined
-            }
-          />
+          <div className="bg-surface rounded-lg border border-line shadow-raised">
+            <Empty
+              title={d.emptyTitle}
+              body={d.emptyBody}
+              action={
+                can(actor, 'warehouses.manage') ? (
+                  <a
+                    href="/storage/new"
+                    className="h-touch px-4 bg-brand text-fg-on-accent rounded-sm inline-flex items-center gap-2 font-medium text-sm hover:opacity-90 transition-opacity"
+                  >
+                    <Icon name="add" />
+                    {d.newWarehouse}
+                  </a>
+                ) : undefined
+              }
+            />
+          </div>
         ) : (
-          <div className="gts-grid-triptych">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {warehouses.map((warehouse) => (
-              <article key={warehouse.id} className="gts-panel">
-                <div className="gts-panel-head">
-                  <span className="gts-overline">{warehouse.code}</span>
+              <article key={warehouse.id} className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden flex flex-col">
+                <div className="flex items-center justify-between px-6 pt-6">
+                  <span className="text-xs text-fg-muted uppercase tracking-wide">{warehouse.code}</span>
                   {!warehouse.isActive && <Status tone="neutral">{dict.common.inactive}</Status>}
                 </div>
-                <div className="gts-panel-body">
-                  <a href={`/storage/${warehouse.id}`} className="gts-list-title">
+                <div className="p-6 flex-1 flex flex-col">
+                  <a href={`/storage/${warehouse.id}`} className="text-lg font-semibold text-fg hover:text-brand-fg transition-colors">
                     {warehouse.nameEn}
                   </a>
-                  <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-2)' }}>
+                  <p className="text-sm text-fg-secondary mt-2">
                     {[governorate(warehouse.governorateCode), warehouse.addressLine]
                       .filter(Boolean)
                       .join(' · ') || d.noAddress}
                   </p>
 
-                  <div className="gts-stat-row" style={{ marginBlockStart: 'var(--gts-space-5)' }}>
-                    <div className="gts-stat">
-                      <p className="gts-overline">{d.colProducts}</p>
-                      <p className="gts-stat-value">
-                        <span className="gts-num gts-num-md">{warehouse.distinctProducts}</span>
-                      </p>
+                  <div className="grid grid-cols-2 gap-4 mt-5">
+                    <div>
+                      <p className="text-xs text-fg-muted uppercase tracking-wide">{d.colProducts}</p>
+                      <p className="text-xl font-semibold text-fg mt-1">{warehouse.distinctProducts}</p>
                     </div>
-                    <div className="gts-stat">
-                      <p className="gts-overline">{d.colUnits}</p>
-                      <p className="gts-stat-value">
-                        <span className="gts-num gts-num-md">
-                          {warehouse.totalUnits.toString()}
-                        </span>
-                      </p>
+                    <div>
+                      <p className="text-xs text-fg-muted uppercase tracking-wide">{d.colUnits}</p>
+                      <p className="text-xl font-semibold text-fg mt-1">{warehouse.totalUnits.toString()}</p>
                     </div>
                   </div>
 
                   {warehouse.reservedUnits.greaterThan(0) && (
-                    <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-3)' }}>
+                    <p className="text-xs text-fg-secondary mt-3">
                       {warehouse.reservedUnits.toString()} {d.reservedForProjects}
                     </p>
                   )}
@@ -105,9 +110,9 @@ export default async function StoragePage() {
                       href={`https://www.google.com/maps/@${warehouse.latitude},${warehouse.longitude},17z`}
                       target="_blank"
                       rel="noreferrer"
-                      className="gts-btn gts-btn-ghost gts-btn-sm"
-                      style={{ marginBlockStart: 'var(--gts-space-4)' }}
+                      className="mt-auto pt-4 inline-flex items-center gap-2 text-sm font-medium text-brand-fg hover:underline"
                     >
+                      <Icon name="map" size={18} />
                       {d.openInMaps}
                     </a>
                   )}

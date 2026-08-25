@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useTransition } from 'react';
 
 import { evaluate, navigationUrl, type GeofenceResult } from '@/lib/geofence';
 import { formatDistance, formatSiteTime } from '@/lib/format';
+import { Icon } from '@/components/icon';
 
 import { submitCheckIn, submitCheckOut } from './actions';
 
@@ -224,145 +225,169 @@ export function CheckInPanel({
   const submitting = phase === 'SUBMITTING';
   const canCheckIn = phase === 'LOCATED' && verdict?.accepted === true;
 
+  const stateColor =
+    state === 'inside' || state === 'attended'
+      ? 'text-success'
+      : state === 'approaching'
+        ? 'text-warning'
+        : 'text-fg-muted';
+
   return (
-    <section className={`gts-geo gts-geo-${state}`} aria-labelledby={`site-${site.projectId}`}>
-      <div className="gts-grid-editorial" style={{ alignItems: 'stretch' }}>
-        {/* ---- Left: distance and the action ---- */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--gts-space-5)' }}>
-          <div>
-            <p className="gts-overline">{site.projectCode}</p>
-            <h2
-              id={`site-${site.projectId}`}
-              className="gts-region-title"
-              style={{ marginBlockStart: 'var(--gts-space-2)' }}
-            >
-              {site.projectName}
-            </h2>
-            <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-2)' }}>
-              {site.clientName} · {site.addressLine}
-            </p>
-          </div>
+    <section
+      className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch"
+      aria-labelledby={`site-${site.projectId}`}
+    >
+      {/* ---- Left: the big check-in action ---- */}
+      <div className="bg-surface rounded-lg border border-line shadow-raised p-6 flex flex-col items-center text-center gap-4">
+        <p className="text-xs text-fg-muted uppercase tracking-wide">{site.projectCode}</p>
+        <h2 id={`site-${site.projectId}`} className="text-xl font-semibold text-fg">
+          {site.projectName}
+        </h2>
+        <p className="text-sm text-fg-secondary">
+          {site.clientName} · {site.addressLine}
+        </p>
 
-          {today ? (
-            <div>
-              <p className="gts-overline">{dict.checkedIn}</p>
-              <p className="gts-num gts-num-lg" style={{ marginBlockStart: 'var(--gts-space-2)' }}>
-                {formatSiteTime(today.checkInAt)}
-              </p>
-              <p className="gts-meta">
-                {dict.distanceFromSite.replace('{distance}', String(today.distanceMetres))}
-                {today.minutesLate > 0 &&
-                  ` · ${dict.minutesLate.replace('{minutes}', String(today.minutesLate))}`}
-              </p>
-              {today.checkOutAt && (
-                <p className="gts-meta">
-                  {dict.checkedOut.replace('{time}', formatSiteTime(today.checkOutAt))}
-                </p>
-              )}
-            </div>
-          ) : distance ? (
-            <div>
-              <p className="gts-overline">{dict.distanceToSite}</p>
-              <p style={{ marginBlockStart: 'var(--gts-space-2)' }}>
-                <span className="gts-num gts-num-hero">{distance.value}</span>
-                <span className="gts-num-currency">{distance.unit}</span>
-              </p>
-              <p className="gts-meta">
-                {dict.opensWithin.replace('{radius}', String(site.radiusMetres))}
-                {fix &&
-                  ` · ${dict.fixAccurate.replace('{accuracy}', String(Math.round(fix.accuracy)))}`}
-              </p>
-            </div>
-          ) : (
-            <p className="gts-meta">
-              {dict.opensWithinBody.replace('{radius}', String(site.radiusMetres))}
-            </p>
-          )}
+        {message && (
+          <p className="w-full px-4 py-3 rounded-sm bg-danger-bg border border-danger-br text-danger text-sm" role="alert" data-testid="check-in-error">
+            {message}
+          </p>
+        )}
 
-          {message && (
-            <p className="gts-form-error" role="alert" data-testid="check-in-error">
-              {message}
+        {/* ---- The action ---- */}
+        {today ? (
+          <>
+            <p className="text-xs text-fg-muted uppercase tracking-wide mt-2">{dict.checkedIn}</p>
+            <p className="text-3xl font-bold text-fg">{formatSiteTime(today.checkInAt)}</p>
+            <p className="text-xs text-fg-secondary">
+              {dict.distanceFromSite.replace('{distance}', String(today.distanceMetres))}
+              {today.minutesLate > 0 &&
+                ` · ${dict.minutesLate.replace('{minutes}', String(today.minutesLate))}`}
             </p>
-          )}
-
-          {/* ---- The action ---- */}
-          {today ? (
-            today.checkOutAt ? (
-              <p className="gts-status gts-status-success">{dict.dayRecorded}</p>
+            {today.checkOutAt && (
+              <p className="text-xs text-fg-secondary">
+                {dict.checkedOut.replace('{time}', formatSiteTime(today.checkOutAt))}
+              </p>
+            )}
+            {today.checkOutAt ? (
+              <span className="inline-flex items-center gap-1.5 text-success text-sm font-medium">
+                <Icon name="check_circle" filled />
+                {dict.dayRecorded}
+              </span>
             ) : (
               <button
                 type="button"
-                className="gts-btn gts-btn-secondary gts-btn-lg"
+                className="h-touch px-6 rounded-sm border border-line text-fg font-medium text-sm hover:bg-hover transition-colors disabled:opacity-50"
                 onClick={checkOut}
                 disabled={phase === 'SUBMITTING'}
               >
                 {phase === 'SUBMITTING' ? dict.recording : dict.checkOut}
               </button>
-            )
-          ) : phase === 'IDLE' ? (
-            <button type="button" className="gts-checkin" onClick={locate}>
-              {dict.attend}
-              <span className="gts-meta">{dict.attendHint}</span>
-            </button>
-          ) : phase === 'REQUESTING' ? (
-            <button type="button" className="gts-checkin" disabled>
-              {dict.findingYou}
-              <span className="gts-meta">{dict.findingYouHint}</span>
-            </button>
-          ) : phase === 'DENIED' || phase === 'UNAVAILABLE' ? (
-            <button type="button" className="gts-btn gts-btn-secondary gts-btn-lg" onClick={locate}>
-              {dict.tryAgain}
-            </button>
-          ) : (
-            /* LOCATED, or SUBMITTING after this button was pressed. */
-            <button
-              type="button"
-              className="gts-checkin"
-              onClick={submit}
-              // Disabled while submitting too, so a double tap cannot
-              // post a second check-in before the first has answered.
-              disabled={!canCheckIn || submitting}
-            >
-              {submitting
-                ? dict.recording
-                : canCheckIn
-                  ? dict.checkInLabel
-                  : state === 'approaching'
-                    ? dict.almostThere
-                    : dict.tooFar}
-              <span className="gts-meta">
-                {canCheckIn ? dict.onSiteHint : dict.offSiteHint}
-              </span>
-              {canCheckIn && !submitting && <span className="gts-pulse-ring" />}
-            </button>
-          )}
+            )}
+          </>
+        ) : (
+          <>
+            {distance ? (
+              <>
+                <p className="text-xs text-fg-muted uppercase tracking-wide mt-2">{dict.distanceToSite}</p>
+                <p className="text-4xl font-bold text-fg">
+                  {distance.value}
+                  <span className="text-base font-medium opacity-60 ms-1">{distance.unit}</span>
+                </p>
+                <p className="text-xs text-fg-secondary">
+                  {dict.opensWithin.replace('{radius}', String(site.radiusMetres))}
+                  {fix &&
+                    ` · ${dict.fixAccurate.replace('{accuracy}', String(Math.round(fix.accuracy)))}`}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-fg-secondary">
+                {dict.opensWithinBody.replace('{radius}', String(site.radiusMetres))}
+              </p>
+            )}
+
+            {phase === 'IDLE' ? (
+              <button
+                type="button"
+                className={`relative w-40 h-40 rounded-full border-2 border-line bg-inset flex flex-col items-center justify-center gap-1 font-semibold ${stateColor} hover:bg-hover transition-colors`}
+                onClick={locate}
+              >
+                <Icon name="fingerprint" size={40} />
+                {dict.attend}
+                <span className="text-2xs font-normal text-fg-muted">{dict.attendHint}</span>
+              </button>
+            ) : phase === 'REQUESTING' ? (
+              <button
+                type="button"
+                className="w-40 h-40 rounded-full border-2 border-line bg-inset flex flex-col items-center justify-center gap-1 font-semibold text-fg-muted"
+                disabled
+              >
+                {dict.findingYou}
+                <span className="text-2xs font-normal">{dict.findingYouHint}</span>
+              </button>
+            ) : phase === 'DENIED' || phase === 'UNAVAILABLE' ? (
+              <button
+                type="button"
+                className="h-touch px-6 rounded-sm border border-line text-fg font-medium text-sm hover:bg-hover transition-colors"
+                onClick={locate}
+              >
+                {dict.tryAgain}
+              </button>
+            ) : (
+              /* LOCATED, or SUBMITTING after this button was pressed. */
+              <button
+                type="button"
+                className={`relative w-40 h-40 rounded-full border-2 flex flex-col items-center justify-center gap-1 font-semibold transition-colors ${
+                  canCheckIn
+                    ? 'border-success bg-success-bg text-success hover:opacity-90'
+                    : `border-line bg-inset ${stateColor}`
+                }`}
+                onClick={submit}
+                // Disabled while submitting too, so a double tap cannot
+                // post a second check-in before the first has answered.
+                disabled={!canCheckIn || submitting}
+              >
+                <Icon name="fingerprint" size={40} />
+                {submitting
+                  ? dict.recording
+                  : canCheckIn
+                    ? dict.checkInLabel
+                    : state === 'approaching'
+                      ? dict.almostThere
+                      : dict.tooFar}
+                <span className="text-2xs font-normal opacity-80">
+                  {canCheckIn ? dict.onSiteHint : dict.offSiteHint}
+                </span>
+              </button>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* ---- Right: the site, and how to get to it ---- */}
+      <div className="bg-surface rounded-lg border border-line shadow-raised p-6 flex flex-col gap-4">
+        <div>
+          <p className="text-xs text-fg-muted uppercase tracking-wide">{dict.siteBoundary}</p>
+          <p className="text-sm text-fg-secondary mt-2">
+            {dict.siteBoundaryBody
+              .replace('{radius}', String(site.radiusMetres))
+              .replace('{maxAccuracy}', String(maxAccuracyMetres))}
+          </p>
         </div>
 
-        {/* ---- Right: the site, and how to get to it ---- */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--gts-space-4)' }}>
-          <div>
-            <p className="gts-overline">{dict.siteBoundary}</p>
-            <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-2)' }}>
-              {dict.siteBoundaryBody
-                .replace('{radius}', String(site.radiusMetres))
-                .replace('{maxAccuracy}', String(maxAccuracyMetres))}
-            </p>
-          </div>
-
-          {/*
-            Navigation uses the PROJECT's saved coordinates. The employee
-            never types a destination, so they cannot navigate themselves
-            somewhere else and check in against it.
-          */}
-          <a
-            href={navigationUrl({ lat: site.latitude, lng: site.longitude }, site.projectName)}
-            target="_blank"
-            rel="noreferrer"
-            className="gts-btn gts-btn-secondary"
-          >
-            {dict.openInMaps}
-          </a>
-        </div>
+        {/*
+          Navigation uses the PROJECT's saved coordinates. The employee
+          never types a destination, so they cannot navigate themselves
+          somewhere else and check in against it.
+        */}
+        <a
+          href={navigationUrl({ lat: site.latitude, lng: site.longitude }, site.projectName)}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-auto h-touch px-4 rounded-sm border border-line text-fg font-medium text-sm inline-flex items-center justify-center gap-2 hover:bg-hover transition-colors"
+        >
+          <Icon name="map" />
+          {dict.openInMaps}
+        </a>
       </div>
     </section>
   );

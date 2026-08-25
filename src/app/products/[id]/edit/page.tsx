@@ -30,35 +30,37 @@ export default async function EditProductPage({
 
   return (
     <Shell active="/products" domain="inventory">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={`Product · ${product.sku}`}
           title={d.edit.title}
           lede={d.edit.lede}
         />
-        <ProductForm
-          mode="edit"
-          dict={d.form}
-          categories={categories.map((c) => ({ id: c.id, nameEn: c.nameEn }))}
-          vendors={vendors.map((v) => ({ id: v.id, nameEn: v.nameEn, code: v.code }))}
-          values={{
-            id: product.id,
-            sku: product.sku,
-            nameEn: product.nameEn,
-            nameAr: product.nameAr,
-            categoryId: product.categoryId,
-            vendorId: product.vendorId,
-            brand: product.brand,
-            unit: product.unit,
-            gpcCode: product.gpcCode,
-            // Decimal → string, not → number: routing a price through a
-            // JS float is how 10.10 becomes 10.099999999999999.
-            costPrice: product.costPrice.toString(),
-            salePrice: product.salePrice.toString(),
-            vatRate: product.vatRate.toString(),
-            reorderLevel: product.reorderLevel?.toString() ?? '0',
-          }}
-        />
+        <div className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <ProductForm
+            mode="edit"
+            dict={d.form}
+            categories={categories.map((c) => ({ id: c.id, nameEn: c.nameEn }))}
+            vendors={vendors.map((v) => ({ id: v.id, nameEn: v.nameEn, code: v.code }))}
+            values={{
+              id: product.id,
+              sku: product.sku,
+              nameEn: product.nameEn,
+              nameAr: product.nameAr,
+              categoryId: product.categoryId,
+              vendorId: product.vendorId,
+              brand: product.brand,
+              unit: product.unit,
+              gpcCode: product.gpcCode,
+              // Decimal → string, not → number: routing a price through a
+              // JS float is how 10.10 becomes 10.099999999999999.
+              costPrice: product.costPrice.toString(),
+              salePrice: product.salePrice.toString(),
+              vatRate: product.vatRate.toString(),
+              reorderLevel: product.reorderLevel?.toString() ?? '0',
+            }}
+          />
+        </div>
       </main>
     </Shell>
   );

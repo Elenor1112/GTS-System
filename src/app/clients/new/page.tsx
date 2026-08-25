@@ -16,7 +16,7 @@ export default async function NewClientPage() {
 
   return (
     <Shell active="/clients" domain="clients">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={d.overline}
           title={d.title}

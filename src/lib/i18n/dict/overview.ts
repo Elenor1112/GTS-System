@@ -42,6 +42,23 @@ export interface OverviewDict {
     notIn: string;
     expectedOnSite: string;
     workingDayNotStarted: string;
+    today: string;
+    moneyComingIn: string;
+    moneyGoingOut: string;
+    collectedThisMonth: string;
+    yourWork: string;
+    moreAlerts: string;
+    severityUrgent: string;
+    severityAttention: string;
+    severityInfo: string;
+    seeMore: string;
+    yourNetPosition: string;
+    isOverdue: string;
+    noBudgetSetShort: string;
+    percentBilledSuffix: string;
+    notInYet: string;
+    peopleExpected: string;
+    nothingNeedsYouTitle: string;
   };
   notifications: {
     yourWorkspace: string;
@@ -167,6 +184,23 @@ export const en: OverviewDict = {
     notIn: 'Not in',
     expectedOnSite: 'expected on site today',
     workingDayNotStarted: 'the working day has not started yet',
+    today: 'Today',
+    moneyComingIn: 'Money coming in',
+    moneyGoingOut: 'Money going out',
+    collectedThisMonth: 'Collected this month',
+    yourWork: 'Your work',
+    moreAlerts: 'more',
+    severityUrgent: 'Urgent',
+    severityAttention: 'Attention',
+    severityInfo: 'For your info',
+    seeMore: 'See {count} more',
+    yourNetPosition: 'Your net position',
+    isOverdue: 'is overdue',
+    noBudgetSetShort: 'No budget set',
+    percentBilledSuffix: 'billed',
+    notInYet: 'Not in yet',
+    peopleExpected: 'people expected on site today',
+    nothingNeedsYouTitle: 'Nothing needs you right now.',
   },
   notifications: {
     yourWorkspace: 'Your workspace',
@@ -292,6 +326,23 @@ export const ar: OverviewDict = {
     notIn: 'غير حاضر',
     expectedOnSite: 'متوقَّع حضورهم في الموقع اليوم',
     workingDayNotStarted: 'لم يبدأ يوم العمل بعد',
+    today: 'اليوم',
+    moneyComingIn: 'أموال واردة',
+    moneyGoingOut: 'أموال صادرة',
+    collectedThisMonth: 'المحصّل هذا الشهر',
+    yourWork: 'أعمالك',
+    moreAlerts: 'أخرى',
+    severityUrgent: 'عاجل',
+    severityAttention: 'انتباه',
+    severityInfo: 'للعلم',
+    seeMore: 'عرض {count} أخرى',
+    yourNetPosition: 'صافي مركزك المالي',
+    isOverdue: 'متأخر السداد',
+    noBudgetSetShort: 'لم تُحدَّد ميزانية',
+    percentBilledSuffix: 'مفوتر',
+    notInYet: 'لم يحضر بعد',
+    peopleExpected: 'شخصًا متوقَّع حضورهم في الموقع اليوم',
+    nothingNeedsYouTitle: 'لا شيء يحتاج إليك الآن.',
   },
   notifications: {
     yourWorkspace: 'مساحة عملك',

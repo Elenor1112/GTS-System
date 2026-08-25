@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { Amount, Region, Panel, Status } from '@/components/primitives';
+import { Amount, Status } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
+import { Icon } from '@/components/icon';
 import { requirePermission } from '@/lib/auth';
 import { can } from '@/lib/permissions';
 import { clientDetail } from '@/lib/services/clients';
@@ -54,7 +55,7 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
 
   return (
     <Shell active="/clients" domain="clients">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={`Client · ${client.code}`}
           title={client.nameEn}
@@ -70,22 +71,38 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
           actions={
             <>
               {can(actor, 'projects.create') && (
-                <a href={`/projects/new?clientId=${client.id}`} className="gts-btn gts-btn-secondary">
+                <a
+                  href={`/projects/new?clientId=${client.id}`}
+                  className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors inline-flex items-center gap-2"
+                >
+                  <Icon name="add" />
                   {d.newProject}
                 </a>
               )}
               {can(actor, 'bills.create') && (
-                <a href={`/bills/new?clientId=${client.id}`} className="gts-btn gts-btn-secondary">
+                <a
+                  href={`/bills/new?clientId=${client.id}`}
+                  className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors inline-flex items-center gap-2"
+                >
+                  <Icon name="add" />
                   {d.newBill}
                 </a>
               )}
               {can(actor, 'clients.edit') && (
-                <a href={`/clients/${client.id}/edit`} className="gts-btn gts-btn-primary">
+                <a
+                  href={`/clients/${client.id}/edit`}
+                  className="h-touch px-4 bg-brand text-fg-on-accent rounded-sm inline-flex items-center gap-2 font-medium text-sm hover:opacity-90 transition-opacity"
+                >
+                  <Icon name="edit" />
                   {d.edit}
                 </a>
               )}
               {seesMoney && (
-                <a href={`/clients/${client.id}/print`} className="gts-btn gts-btn-secondary">
+                <a
+                  href={`/clients/${client.id}/print`}
+                  className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors inline-flex items-center gap-2"
+                >
+                  <Icon name="print" />
                   {d.printStatement}
                 </a>
               )}
@@ -95,7 +112,8 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
 
         {/* ---------- The account position ---------- */}
         {seesMoney && (
-          <Region title={d.accountTitle}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+            <h2 className="text-lg font-semibold text-fg mb-4">{d.accountTitle}</h2>
             <div className="gts-stat-row">
               <Figure label={d.figureBilledToDate} value={summary.billed.toNumber()} locale={locale} />
               <Figure label={d.figureCollected} value={summary.paid.toNumber()} locale={locale} />
@@ -154,18 +172,23 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
                 {' · '}{d.paymentTerms} {client.paymentTermsDays} days
               </p>
             )}
-          </Region>
+          </section>
         )}
 
         {/* ---------- Projects ---------- */}
-        <Region title={`${d.projectsTitle} (${client.projects.length})`}>
+        <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+          <h2 className="text-lg font-semibold text-fg px-6 pt-6 pb-4">{`${d.projectsTitle} (${client.projects.length})`}</h2>
           {client.projects.length === 0 ? (
             <Empty
               title={d.emptyProjectsTitle}
               body={d.emptyProjectsBody}
               action={
                 can(actor, 'projects.create') ? (
-                  <a href={`/projects/new?clientId=${client.id}`} className="gts-btn gts-btn-accent">
+                  <a
+                    href={`/projects/new?clientId=${client.id}`}
+                    className="h-touch px-4 bg-brand text-fg-on-accent rounded-sm inline-flex items-center gap-2 font-medium text-sm hover:opacity-90 transition-opacity"
+                  >
+                    <Icon name="add" />
                     {d.newProject}
                   </a>
                 ) : undefined
@@ -227,11 +250,12 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
               </table>
             </div>
           )}
-        </Region>
+        </section>
 
         {/* ---------- Goods ---------- */}
         {can(actor, 'inventory.view') && client.productPositions.length > 0 && (
-          <Region title={d.goodsTitle}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+            <h2 className="text-lg font-semibold text-fg px-6 pt-6 pb-4">{d.goodsTitle}</h2>
             <div className="gts-table-scroll">
               <table className="gts-table gts-table-comfortable">
                 <caption className="gts-sr">
@@ -276,12 +300,13 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
                 </tbody>
               </table>
             </div>
-          </Region>
+          </section>
         )}
 
         {/* ---------- Bills ---------- */}
         {can(actor, 'bills.view') && (
-          <Region title={`${d.billsTitle} (${client.bills.length})`}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+            <h2 className="text-lg font-semibold text-fg px-6 pt-6 pb-4">{`${d.billsTitle} (${client.bills.length})`}</h2>
             {client.bills.length === 0 ? (
               <Empty title={d.emptyBillsTitle} body={d.emptyBillsBody} />
             ) : (
@@ -342,11 +367,12 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
                 </table>
               </div>
             )}
-          </Region>
+          </section>
         )}
 
         {/* ---------- Activity ---------- */}
-        <Region title={d.activityTitle}>
+        <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <h2 className="text-lg font-semibold text-fg mb-4">{d.activityTitle}</h2>
           {activity.length === 0 ? (
             <Empty
               title={d.emptyActivityTitle}
@@ -379,7 +405,7 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
               ))}
             </ol>
           )}
-        </Region>
+        </section>
       </main>
     </Shell>
   );
@@ -398,8 +424,8 @@ function Figure({
 }) {
   return (
     <div className="gts-stat">
-      <p className="gts-overline">{label}</p>
-      <p className={tone ? `gts-stat-value gts-stat-${tone}` : 'gts-stat-value'}>
+      <p className="text-xs text-fg-muted uppercase tracking-wide">{label}</p>
+      <p className={`mt-2 ${tone === 'danger' ? 'text-danger' : tone === 'warning' ? 'text-warning' : ''}`}>
         <Amount value={value} size="md" locale={locale} />
       </p>
     </div>

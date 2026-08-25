@@ -138,10 +138,13 @@ export function WarehouseForm({
       </FieldGrid>
 
       <FormActions>
-        <a className="gts-btn gts-btn-ghost" href={values?.id ? `/storage/${values.id}` : '/storage'}>
+        <Submit>{mode === 'create' ? dict.createWarehouse : dict.saveChanges}</Submit>
+        <a
+          href={values?.id ? `/storage/${values.id}` : '/storage'}
+          className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors inline-flex items-center"
+        >
           {dict.cancel}
         </a>
-        <Submit>{mode === 'create' ? dict.createWarehouse : dict.saveChanges}</Submit>
       </FormActions>
     </form>
   );

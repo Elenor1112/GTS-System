@@ -16,13 +16,15 @@ export default async function NewVendorPage() {
 
   return (
     <Shell active="/vendors" domain="vendors">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={d.new.overline}
           title={d.new.title}
           lede={d.new.lede}
         />
-        <VendorForm mode="create" dict={d.form} />
+        <div className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <VendorForm mode="create" dict={d.form} />
+        </div>
       </main>
     </Shell>
   );

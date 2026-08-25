@@ -1,78 +1,69 @@
 /* ============================================================
-   GTS — TYPOGRAPHY TOKENS · "PAPER"
-   Dual-script metric baseline. Neither Latin nor Arabic leads.
+   GTS — TYPOGRAPHY TOKENS · "GTS EGYPT BUSINESS OS"
    ------------------------------------------------------------
-   Instrument Sans (UI/body) pairs with Fraunces (editorial/
-   display) — a humanist grotesque against a warm, characterful
-   serif with real personality. Both scripts are normalized to
-   ONE vertical rhythm by correcting for differing x-height /
-   cap-height ratios:
-
-     Instrument Sans    cap-height 0.716em   x-height 0.520em
-     IBM Plex Sans Ar.  cap-height 0.698em   x-height 0.516em
-
-   Arabic runs optically small against Instrument Sans at equal
-   px, so Arabic is scaled +3% (--gts-ar-adjust) to sit on the
-   same baseline rhythm rather than being nudged per-component.
+   Inter, single family for both scripts. Stitch's own type scale
+   is Latin-only (display-lg/headline-lg/headline-md/body-lg/
+   body-md/label-md/caption); Arabic keeps using the existing
+   IBM Plex Sans Arabic pairing so [lang="ar"] content stays
+   legible, but no longer gets a bespoke optical-size correction —
+   Inter and Plex Arabic read close enough in weight that the
+   dual-script normalization the old serif system needed does not
+   apply here.
    ============================================================ */
 
 :root {
   /* --- Families ------------------------------------------- */
-  --gts-font-display: var(--font-archivo), 'Instrument Sans', system-ui, sans-serif;
-  --gts-font-text:    var(--font-archivo), 'Instrument Sans', system-ui, sans-serif;
-  --gts-font-serif:   var(--font-newsreader), 'Fraunces', Georgia, serif;
+  --gts-font-display: var(--font-inter), Inter, system-ui, sans-serif;
+  --gts-font-text:    var(--font-inter), Inter, system-ui, sans-serif;
+  --gts-font-serif:   var(--font-inter), Inter, system-ui, sans-serif;
   --gts-font-arabic:  var(--font-plex-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif;
-  --gts-font-numeric: var(--font-roboto-flex), 'Roboto Flex', var(--font-archivo), monospace;
+  --gts-font-numeric: var(--font-inter), Inter, system-ui, monospace;
+  --gts-font-icon:    'Material Symbols Outlined';
 
-  /* Cross-script correction factor. Applied only via [lang="ar"]. */
-  --gts-ar-adjust: 1.03;
+  --gts-ar-adjust: 1;
 
-  /* --- Scale ---------------------------------------------------
-     Modular, ratio 1.200 (minor third) from a 14px operational
-     base. Enterprise density: the base is SMALL on purpose so
-     tables stay legible at high row counts, and contrast comes
-     from the top of the scale, not from padding.
-     -------------------------------------------------------- */
+  /* --- Scale — Stitch's literal design-system values -------
+     Kept as the canonical named roles below; the numbered scale
+     exists only so components that still reference --gts-text-*
+     directly (tables, badges) have a value to resolve to. */
   --gts-text-2xs:  0.6875rem; /* 11px — dense table meta, chips   */
-  --gts-text-xs:   0.75rem;   /* 12px — metadata, labels, captions*/
+  --gts-text-xs:   0.75rem;   /* 12px — caption                   */
   --gts-text-sm:   0.8125rem; /* 13px — table body, secondary     */
-  --gts-text-base: 0.875rem;  /* 14px — body, inputs, default     */
-  --gts-text-md:   1rem;      /* 16px — emphasized body           */
-  --gts-text-lg:   1.1875rem; /* 19px — card / section titles     */
-  --gts-text-xl:   1.4375rem; /* 23px — subsection heads          */
-  --gts-text-2xl:  1.75rem;   /* 28px — page titles               */
-  --gts-text-3xl:  2.25rem;   /* 36px — module titles             */
-  --gts-text-4xl:  3rem;      /* 48px — display / hero figures    */
-  --gts-text-5xl:  4rem;      /* 64px — the single hero number    */
-  --gts-text-6xl:  5.5rem;    /* 88px — editorial statement only  */
+  --gts-text-base: 1rem;      /* 16px — body-md                   */
+  --gts-text-md:   1.125rem;  /* 18px — body-lg                   */
+  --gts-text-lg:   1.25rem;   /* 20px — card / section titles     */
+  --gts-text-xl:   1.5rem;    /* 24px — headline-md                */
+  --gts-text-2xl:  2rem;      /* 32px — headline-lg                */
+  --gts-text-3xl:  2.25rem;   /* 36px                              */
+  --gts-text-4xl:  3rem;      /* 48px — display-lg                 */
+  --gts-text-5xl:  3.5rem;    /* 56px — hero figures                */
+  --gts-text-6xl:  4.5rem;    /* 72px — editorial statement only    */
 
-  /* --- Line heights --------------------------------------- */
-  --gts-leading-flush:   0.92; /* huge figures: optical, not metric */
-  --gts-leading-tight:   1.08; /* display + page titles             */
-  --gts-leading-snug:    1.26; /* headings, card titles             */
-  --gts-leading-normal:  1.55; /* body copy — a touch more air      */
-  --gts-leading-relaxed: 1.68; /* long-form / Arabic body           */
-  --gts-leading-table:   1.35; /* table rows                        */
+  /* --- Line heights ----------------------------------------- */
+  --gts-leading-flush:   1;
+  --gts-leading-tight:   1.15; /* headline-lg / display-lg (60/48)  */
+  --gts-leading-snug:    1.3;  /* headline-md (32/24)               */
+  --gts-leading-normal:  1.5;  /* body-md (24/16)                   */
+  --gts-leading-relaxed: 1.56; /* body-lg (28/18)                   */
+  --gts-leading-table:   1.4;
 
-  /* Arabic needs more leading: taller ascenders/descenders and
-     dot stacking collide at Latin line-heights. */
   --gts-leading-ar-normal:  1.7;
   --gts-leading-ar-tight:   1.35;
   --gts-leading-ar-table:   1.55;
 
-  /* --- Tracking ------------------------------------------- */
-  --gts-tracking-tighter: -0.025em; /* 48px+ display — Fraunces wants less negative tracking */
-  --gts-tracking-tight:   -0.016em; /* 28–36px titles             */
-  --gts-tracking-snug:    -0.009em; /* 19–23px                    */
+  /* --- Tracking ----------------------------------------------
+     Stitch specifies letter-spacing only on display-lg
+     (-0.02em) and label-md (+0.01em); everything else is 0. */
+  --gts-tracking-tighter: -0.02em;
+  --gts-tracking-tight:   -0.01em;
+  --gts-tracking-snug:    0;
   --gts-tracking-normal:  0;
-  --gts-tracking-wide:    0.02em;
-  --gts-tracking-caps:    0.075em; /* the eyebrow/overline voice */
-  --gts-tracking-caps-sm: 0.10em;  /* 11px all-caps labels       */
-
-  /* Arabic must NEVER be letter-spaced — it breaks cursive joins. */
+  --gts-tracking-wide:    0.01em;
+  --gts-tracking-caps:    0.06em;
+  --gts-tracking-caps-sm: 0.08em;
   --gts-tracking-arabic: 0;
 
-  /* --- Weights -------------------------------------------- */
+  /* --- Weights ------------------------------------------------ */
   --gts-weight-light:     300;
   --gts-weight-regular:   400;
   --gts-weight-medium:    500;
@@ -82,118 +73,119 @@
 }
 
 /* ============================================================
-   SEMANTIC TYPE ROLES
-   Components reference THESE, never raw scale values.
+   SEMANTIC TYPE ROLES — named exactly after Stitch's own scale
    ============================================================ */
-
 :root {
-  /* Editorial display — the module opener. Used once per screen.
-     Fraunces at a low optical size reads as UI display type, not
-     a body serif blown up — warm, but still structural. */
+  /* display-lg — 48/60, 700, -0.02em */
   --gts-role-display:
-    var(--gts-weight-semibold) var(--gts-text-4xl)/var(--gts-leading-tight) var(--gts-font-serif);
+    var(--gts-weight-bold) var(--gts-text-4xl)/var(--gts-leading-tight) var(--gts-font-display);
   --gts-role-display-tracking: var(--gts-tracking-tighter);
 
-  /* Page title — every screen has exactly one. Serif now carries
-     the page title voice: this is the system's signature move,
-     the thing that makes it read as a considered instrument. */
+  /* headline-lg used as the page-title role — 32/40, 600 */
   --gts-role-page-title:
-    var(--gts-weight-medium) var(--gts-text-2xl)/var(--gts-leading-tight) var(--gts-font-serif);
-  --gts-role-page-title-tracking: var(--gts-tracking-tight);
+    var(--gts-weight-semibold) var(--gts-text-2xl)/var(--gts-leading-tight) var(--gts-font-display);
+  --gts-role-page-title-tracking: 0;
 
-  /* Section head — structural divider within a screen. */
+  /* headline-md — 24/32, 600 — section heads */
   --gts-role-section:
-    var(--gts-weight-semibold) var(--gts-text-lg)/var(--gts-leading-snug) var(--gts-font-display);
-  --gts-role-section-tracking: var(--gts-tracking-snug);
+    var(--gts-weight-semibold) var(--gts-text-xl)/var(--gts-leading-snug) var(--gts-font-display);
+  --gts-role-section-tracking: 0;
 
-  /* Editorial section — serif, at full display weight. Used for
-     narrative/report openers and printed documents. */
+  /* headline-lg-mobile — 28/36, 600 */
   --gts-role-editorial:
-    var(--gts-weight-regular) var(--gts-text-3xl)/var(--gts-leading-tight) var(--gts-font-serif);
-  --gts-role-editorial-tracking: var(--gts-tracking-tight);
+    var(--gts-weight-semibold) 1.75rem/2.25rem var(--gts-font-display);
+  --gts-role-editorial-tracking: 0;
 
-  /* Overline / eyebrow — the system's signature label voice. */
+  /* label-md used as the overline/eyebrow voice — 14/20, 500, +0.01em */
   --gts-role-overline:
-    var(--gts-weight-semibold) var(--gts-text-2xs)/1.2 var(--gts-font-display);
-  --gts-role-overline-tracking: var(--gts-tracking-caps-sm);
+    var(--gts-weight-medium) 0.875rem/1.25rem var(--gts-font-display);
+  --gts-role-overline-tracking: var(--gts-tracking-wide);
 
-  /* Body + metadata */
+  /* body-md — 16/24, 400 */
   --gts-role-body:
     var(--gts-weight-regular) var(--gts-text-base)/var(--gts-leading-normal) var(--gts-font-text);
+  /* body-lg — 18/28, 400 */
   --gts-role-body-sm:
     var(--gts-weight-regular) var(--gts-text-sm)/var(--gts-leading-normal) var(--gts-font-text);
+  /* caption — 12/16, 400 */
   --gts-role-meta:
     var(--gts-weight-regular) var(--gts-text-xs)/var(--gts-leading-normal) var(--gts-font-text);
 
-  /* Table cells */
   --gts-role-table:
     var(--gts-weight-regular) var(--gts-text-sm)/var(--gts-leading-table) var(--gts-font-text);
   --gts-role-table-head:
-    var(--gts-weight-semibold) var(--gts-text-2xs)/1.2 var(--gts-font-display);
+    var(--gts-weight-medium) var(--gts-text-2xs)/1.2 var(--gts-font-display);
   --gts-role-table-head-tracking: var(--gts-tracking-caps-sm);
 }
 
 /* ============================================================
-   FINANCIAL NUMERALS
-   Money is the most important content in this product and is
-   typeset as its own voice — never as "bold body text".
+   FINANCIAL NUMERALS — tabular figures, EGP-formatted
    ============================================================ */
-
 .gts-num {
   font-family: var(--gts-font-numeric);
-  /* tnum: columns align. zero: slashed zero. ss01: flat-top digits. */
-  font-feature-settings: 'tnum' 1, 'zero' 1, 'ss01' 1;
+  font-feature-settings: 'tnum' 1, 'zero' 1;
   font-variant-numeric: tabular-nums slashed-zero;
   letter-spacing: var(--gts-tracking-tight);
-  /* Roboto Flex axes: grade + optical size tuned for figures. */
-  font-variation-settings: 'opsz' 24, 'GRAD' 0;
 }
 
-/* The hero figure — one per view maximum. */
-/* The single hero figure per view. It takes the brand ember
-   rather than flat ink: the net position is the one number the
-   product exists to show, and it is the only number the brand
-   is allowed to touch. */
 .gts-num-hero {
   font-size: var(--gts-text-5xl);
-  font-weight: var(--gts-weight-semibold);
+  font-weight: var(--gts-weight-bold);
   line-height: var(--gts-leading-flush);
   letter-spacing: var(--gts-tracking-tighter);
-  font-variation-settings: 'opsz' 144, 'GRAD' -50;
   color: var(--gts-figure-hero);
 }
-/* A negative net position is a danger figure first, brand second. */
 .gts-num-hero.gts-num-negative { color: var(--gts-danger-fg); }
 
-.gts-num-lg  { font-size: var(--gts-text-3xl); font-weight: var(--gts-weight-semibold);
+.gts-num-lg  { font-size: var(--gts-text-3xl); font-weight: var(--gts-weight-bold);
                line-height: var(--gts-leading-flush); letter-spacing: var(--gts-tracking-tight); }
-.gts-num-md  { font-size: var(--gts-text-xl);  font-weight: var(--gts-weight-medium); }
+.gts-num-md  { font-size: var(--gts-text-xl);  font-weight: var(--gts-weight-semibold); }
 .gts-num-sm  { font-size: var(--gts-text-sm);  font-weight: var(--gts-weight-medium); }
 
-/* Currency mark: subordinate to the figure, never equal to it. */
 .gts-num-currency {
   font-size: 0.52em;
   font-weight: var(--gts-weight-medium);
   letter-spacing: var(--gts-tracking-wide);
-  opacity: 0.62;
+  opacity: 0.7;
   vertical-align: 0.42em;
   margin-inline-end: 0.18em;
 }
 
-/* Decimals de-emphasized so the integer reads first at a glance. */
-.gts-num-fraction { opacity: 0.55; font-weight: var(--gts-weight-regular); }
+.gts-num-fraction {
+  opacity: 0.6;
+  font-weight: var(--gts-weight-regular);
+  /* A figure that's still too wide for its box breaks here rather
+     than spilling past the edge — the integer is the fact that
+     matters, so it holds the line and the cents give way first. */
+  white-space: normal;
+}
 
-/* Negative / deficit figures carry the sign in the glyph color. */
+/* Figure cards (budget/billed/etc.) size their number to the box:
+   a value that doesn't fit at the normal weight shrinks first, and
+   only wraps the fraction onto its own line if it still doesn't fit. */
+.gts-num-fit {
+  container-type: inline-size;
+  min-inline-size: 0;
+}
+.gts-num-fit .gts-num {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  max-inline-size: 100%;
+}
+@container (max-width: 150px) {
+  .gts-num-fit .gts-num-md { font-size: var(--gts-text-lg); }
+}
+@container (max-width: 120px) {
+  .gts-num-fit .gts-num-md { font-size: var(--gts-text-base); }
+}
+
 .gts-num-negative { color: var(--gts-danger-fg); }
 .gts-num-positive { color: var(--gts-success-fg); }
 
 /* ============================================================
    SCRIPT RULES — dual-script, not a flip
    ============================================================ */
-
-/* Arabic swaps the family AND corrects optical size, leading and
-   tracking. Applied by [lang], NOT by [dir] — a page can be RTL
-   while containing Latin runs, and vice versa. */
 [lang='ar'],
 [lang^='ar-'] {
   font-family: var(--gts-font-arabic);
@@ -202,8 +194,6 @@
   letter-spacing: var(--gts-tracking-arabic);
 }
 
-/* Arabic has no uppercase. Faking it with text-transform does
-   nothing; the overline voice becomes weight + color instead. */
 [lang='ar'] .gts-overline,
 [lang^='ar-'] .gts-overline {
   text-transform: none;
@@ -212,8 +202,6 @@
   font-size: var(--gts-text-xs);
 }
 
-/* Arabic display type: extrabold Plex Arabic is too dense at
-   large sizes — step down one weight and open the leading. */
 [lang='ar'] .gts-display,
 [lang^='ar-'] .gts-display {
   font-weight: var(--gts-weight-bold);
@@ -224,12 +212,10 @@
 [lang='ar'] .gts-table td,
 [lang^='ar-'] .gts-table td { line-height: var(--gts-leading-ar-table); }
 
-/* Fraunces has no Arabic. The editorial voice in Arabic is
-   carried by weight contrast in Plex Arabic rather than a serif. */
 [lang='ar'] .gts-editorial,
 [lang^='ar-'] .gts-editorial {
   font-family: var(--gts-font-arabic);
-  font-weight: var(--gts-weight-light);
+  font-weight: var(--gts-weight-medium);
   line-height: var(--gts-leading-ar-tight);
 }
 [lang='ar'] .gts-page-title,
@@ -239,43 +225,51 @@
   line-height: var(--gts-leading-ar-tight);
 }
 
-/* --- Mixed-content handling -------------------------------
-   Latin runs inside Arabic text (SKU codes, client names,
-   "Invoice #", emails) must keep the Latin face and NOT inherit
-   the Arabic size correction. */
 [lang='ar'] :is(.gts-latin, code, samp, kbd, [lang='en']),
 [lang^='ar-'] :is(.gts-latin, code, samp, kbd, [lang='en']) {
   font-family: var(--gts-font-text);
   font-size: calc(1em / var(--gts-ar-adjust));
   letter-spacing: var(--gts-tracking-normal);
-  /* Isolate so bidi reordering cannot leak into neighbors. */
   unicode-bidi: isolate;
 }
 
-/* --- Numerals in RTL --------------------------------------
-   Arabic-script locales in this market read WESTERN digits in
-   financial contexts. Numerals stay LTR-isolated in both
-   directions so "1,250.00-" never renders as "-00.052,1".
-   Digit shape is a per-tenant setting, not a layout default. */
 .gts-num {
   direction: ltr;
   unicode-bidi: isolate;
 }
-
-/* Opt-in Eastern Arabic numerals (١٢٣) for tenants who want them. */
 [data-numerals='arab'] .gts-num { font-feature-settings: 'tnum' 1; }
 [data-numerals='arab'] .gts-num-value { font-variant-numeric: normal; }
 
-/* Dates and identifiers are also LTR-isolated atoms. */
 .gts-date, .gts-id, .gts-tel { direction: ltr; unicode-bidi: isolate; }
 
-/* --- Logical properties enforcement -----------------------
-   Every directional value in this system uses logical props
-   (margin-inline, padding-inline, border-inline, inset-inline)
-   so RTL is structural, not a stylesheet fork. Icons that encode
-   direction (arrows, chevrons, progress) mirror explicitly: */
+/* Logical properties enforcement — RTL stays structural. */
 [dir='rtl'] .gts-icon-directional { transform: scaleX(-1); }
-
-/* Icons that must NOT mirror: clocks, charts, logos, checkmarks,
-   media controls, and anything containing digits. */
 [dir='rtl'] .gts-icon-fixed { transform: none; }
+
+/* ============================================================
+   MATERIAL SYMBOLS — Stitch's icon system
+   ------------------------------------------------------------
+   Ligature-font icons: the element's TEXT content is the icon
+   name (e.g. "dashboard"), rendered as a glyph by the variable
+   font loaded in design-system/fonts.ts. `FILL 0` by default,
+   `.gts-icon-filled` opts into the solid variant Stitch uses on
+   a handful of emphasis icons (primary buttons, active states).
+   ============================================================ */
+.material-symbols-outlined {
+  font-family: var(--gts-font-icon);
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.gts-icon-filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+[dir='rtl'] .material-symbols-outlined.gts-icon-directional { transform: scaleX(-1); }

@@ -202,13 +202,13 @@ export function ProductForm({
       </FieldGrid>
 
       <FormActions>
+        <Submit variant="accent">{mode === 'create' ? dict.createProduct : dict.saveChanges}</Submit>
         <a
-          className="gts-btn gts-btn-ghost"
           href={values?.id ? `/products/${values.id}` : '/products'}
+          className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors inline-flex items-center"
         >
           {dict.cancel}
         </a>
-        <Submit>{mode === 'create' ? dict.createProduct : dict.saveChanges}</Submit>
       </FormActions>
     </form>
   );

@@ -1,8 +1,11 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 
+import { Amount } from '@/components/primitives';
 import { FormError, Submit, errorFor } from '@/components/form';
+import { Icon } from '@/components/icon';
+import type { Locale } from '@/lib/format';
 import type { OperationsDict } from '@/lib/i18n/dict/operations';
 
 import {
@@ -66,10 +69,10 @@ export function AllocateForm({
   }
 
   return (
-    <form action={formAction} className="gts-assign-form">
+    <form action={formAction} className="gts-assign-form mb-4">
       <FormError state={state} />
       {state?.ok && (
-        <p className="gts-form-success" role="status">
+        <p className="w-full px-4 py-3 rounded-sm bg-success-bg border border-success-br text-success text-sm" role="status">
           {dict.allocatedMessage}
         </p>
       )}
@@ -162,6 +165,108 @@ export function AllocateForm({
 }
 
 /**
+ * The on-site total for one product — what `onSite × unit price` is
+ * currently sitting at the site. Clicking it opens a modal carrying the
+ * same deliver/return actions as the row, so adjusting a product's
+ * position doesn't require scrolling back to a wide table on mobile.
+ */
+export function TotalOnSitePrice({
+  projectId,
+  productId,
+  productName,
+  unit,
+  totalPrice,
+  inTransit,
+  onSite,
+  warehouses,
+  canMoveStock,
+  locale,
+  dict,
+}: {
+  projectId: string;
+  productId: string;
+  productName: string;
+  unit: string;
+  totalPrice: number;
+  inTransit: string;
+  onSite: string;
+  warehouses: { id: string; code: string; nameEn: string }[];
+  canMoveStock: boolean;
+  locale: Locale;
+  dict: MaterialsFormDict;
+}) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [open]);
+
+  if (!canMoveStock) {
+    return <Amount value={totalPrice} size="sm" locale={locale} />;
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        className="gts-cell-link"
+        style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
+        onClick={() => setOpen(true)}
+      >
+        <Amount value={totalPrice} size="sm" locale={locale} />
+      </button>
+
+      {open && (
+        <div
+          className="gts-modal-backdrop"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setOpen(false);
+          }}
+        >
+          <div className="gts-modal" role="dialog" aria-modal="true" aria-labelledby={`total-modal-${productId}`}>
+            <div className="gts-modal-head">
+              <div>
+                <p className="text-xs text-fg-muted uppercase tracking-wide">{dict.totalPriceModalTitle}</p>
+                <h3 id={`total-modal-${productId}`} className="text-lg font-semibold text-fg mt-1">
+                  {productName}
+                </h3>
+                <p className="gts-meta mt-1">
+                  {dict.onSiteLabel}: {onSite} {unit}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="gts-modal-close"
+                aria-label={dict.close}
+                onClick={() => setOpen(false)}
+              >
+                <Icon name="close" size={20} />
+              </button>
+            </div>
+
+            <RowActions
+              projectId={projectId}
+              productId={productId}
+              productName={productName}
+              unit={unit}
+              inTransit={inTransit}
+              onSite={onSite}
+              warehouses={warehouses}
+              dict={dict}
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+/**
  * The per-row actions: deliver what is in transit, send back what is on
  * site. Each is rendered only when its arithmetic permits it, so the
  * table never offers a button whose only outcome is a rejection.
@@ -193,7 +298,7 @@ export function RowActions({
   const canReturn = Number(onSite) > 0 && warehouses.length > 0;
 
   if (!canDeliver && !canReturn) {
-    return <span className="gts-meta">—</span>;
+    return <span className="gts-meta">{dict.noActionsAvailable}</span>;
   }
 
   return (
@@ -202,20 +307,22 @@ export function RowActions({
         {canDeliver && (
           <button
             type="button"
-            className="gts-btn gts-btn-secondary gts-btn-xs"
+            className="h-touch px-3 rounded-sm border border-line bg-surface text-xs font-medium text-fg hover:bg-hover transition-colors inline-flex items-center gap-1.5"
             aria-expanded={open === 'deliver'}
             onClick={() => setOpen(open === 'deliver' ? null : 'deliver')}
           >
+            <Icon name="local_shipping" size={16} />
             {dict.deliver}
           </button>
         )}
         {canReturn && (
           <button
             type="button"
-            className="gts-btn gts-btn-ghost gts-btn-xs"
+            className="h-touch px-3 inline-flex items-center gap-1.5 text-xs font-medium text-fg-secondary hover:text-fg transition-colors"
             aria-expanded={open === 'return'}
             onClick={() => setOpen(open === 'return' ? null : 'return')}
           >
+            <Icon name="undo" size={16} />
             {dict.return}
           </button>
         )}
@@ -269,10 +376,10 @@ function DeliverForm({
   const [state, formAction] = useActionState(submitDeliverToProject, null);
 
   return (
-    <form action={formAction} className="gts-assign-form">
+    <form action={formAction} className="gts-assign-form mt-3">
       <FormError state={state} />
       {state?.ok && (
-        <p className="gts-form-success" role="status">
+        <p className="w-full px-4 py-3 rounded-sm bg-success-bg border border-success-br text-success text-sm" role="status">
           {dict.deliveredMessage}
         </p>
       )}
@@ -317,7 +424,11 @@ function DeliverForm({
       <Submit variant="primary" pendingLabel={dict.recording}>
         {dict.recordDelivery}
       </Submit>
-      <button type="button" className="gts-btn gts-btn-ghost gts-btn-sm" onClick={onDone}>
+      <button
+        type="button"
+        className="h-touch px-3 inline-flex items-center text-sm font-medium text-fg-secondary hover:text-fg transition-colors"
+        onClick={onDone}
+      >
         {dict.cancel}
       </button>
     </form>
@@ -347,10 +458,10 @@ function ReturnForm({
   const [damaged, setDamaged] = useState(false);
 
   return (
-    <form action={formAction} className="gts-assign-form">
+    <form action={formAction} className="gts-assign-form mt-3">
       <FormError state={state} />
       {state?.ok && (
-        <p className="gts-form-success" role="status">
+        <p className="w-full px-4 py-3 rounded-sm bg-success-bg border border-success-br text-success text-sm" role="status">
           {damaged ? dict.writtenOffMessage : dict.returnedMessage}
         </p>
       )}
@@ -427,7 +538,11 @@ function ReturnForm({
       <Submit variant="primary" pendingLabel={dict.recording}>
         {damaged ? dict.writeOff : dict.returnToStock}
       </Submit>
-      <button type="button" className="gts-btn gts-btn-ghost gts-btn-sm" onClick={onDone}>
+      <button
+        type="button"
+        className="h-touch px-3 inline-flex items-center text-sm font-medium text-fg-secondary hover:text-fg transition-colors"
+        onClick={onDone}
+      >
         {dict.cancel}
       </button>
     </form>

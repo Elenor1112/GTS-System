@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { Region, Status } from '@/components/primitives';
+import { Status } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { can } from '@/lib/permissions';
@@ -69,7 +69,7 @@ export default async function LeavePage() {
 
   return (
     <Shell active="/leave" domain="attendance">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-8">
         <PageHead
           overline={dict.people.leave.overline}
           title={dict.people.leave.title}
@@ -84,20 +84,23 @@ export default async function LeavePage() {
 
         {/* ---------- Your balances ---------- */}
         {actor.employeeId ? (
-          <Region title={dict.people.leave.balances.title.replace('{year}', String(year))}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+            <h2 className="text-lg font-semibold text-fg mb-4">
+              {dict.people.leave.balances.title.replace('{year}', String(year))}
+            </h2>
             {balances.length === 0 ? (
               <Empty
                 title={dict.people.leave.balances.empty.title}
                 body={dict.people.leave.balances.empty.body}
               />
             ) : (
-              <div className="gts-balance-grid">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {balances.map((balance) => (
-                  <div key={balance.leaveTypeId} className="gts-balance">
-                    <p className="gts-overline">{balance.nameEn}</p>
-                    <p className="gts-balance-figure">
-                      <span className="gts-num gts-num-lg">{balance.available.toString()}</span>
-                      <span className="gts-meta">
+                  <div key={balance.leaveTypeId} className="bg-inset rounded-sm border border-line p-4">
+                    <p className="text-xs text-fg-muted uppercase tracking-wide">{balance.nameEn}</p>
+                    <p className="mt-2">
+                      <span className="text-3xl font-bold text-fg">{balance.available.toString()}</span>
+                      <span className="text-xs text-fg-secondary">
                         {' '}
                         {dict.people.leave.balances.ofDays.replace(
                           '{entitled}',
@@ -105,7 +108,7 @@ export default async function LeavePage() {
                         )}
                       </span>
                     </p>
-                    <p className="gts-meta">
+                    <p className="text-xs text-fg-secondary mt-1">
                       {dict.people.leave.balances.taken.replace('{taken}', balance.taken.toString())}
                       {balance.pending.greaterThan(0) &&
                         dict.people.leave.balances.reservedPending.replace(
@@ -117,12 +120,12 @@ export default async function LeavePage() {
                         approval — that is what stops two requests
                         spending the same remaining day. */}
                     <div
-                      className="gts-progress"
+                      className="mt-3 h-1.5 rounded-full bg-line overflow-hidden"
                       role="img"
                       aria-label={`${balance.available} of ${balance.entitled} days available`}
                     >
                       <div
-                        className="gts-progress-bar"
+                        className="h-full rounded-full bg-accent"
                         style={{
                           inlineSize: balance.entitled.greaterThan(0)
                             ? `${Math.min(
@@ -139,17 +142,20 @@ export default async function LeavePage() {
                 ))}
               </div>
             )}
-          </Region>
+          </section>
         ) : (
-          <Empty
-            title={dict.people.leave.noEmployee.title}
-            body={dict.people.leave.noEmployee.body}
-          />
+          <div className="bg-surface rounded-lg border border-line shadow-raised">
+            <Empty
+              title={dict.people.leave.noEmployee.title}
+              body={dict.people.leave.noEmployee.body}
+            />
+          </div>
         )}
 
         {/* ---------- Request leave ---------- */}
         {actor.employeeId && leaveTypes.length > 0 && (
-          <Region title={dict.people.leave.request.title}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+            <h2 className="text-lg font-semibold text-fg mb-4">{dict.people.leave.request.title}</h2>
             <RequestLeaveForm
               leaveTypes={leaveTypes.map((lt) => ({
                 id: lt.id,
@@ -159,19 +165,22 @@ export default async function LeavePage() {
               }))}
               dict={dict.people.leave.request}
             />
-          </Region>
+          </section>
         )}
 
         {/* ---------- The approval queue ---------- */}
         {mayApprove && (
-          <Region title={dict.people.leave.queue.title.replace('{count}', String(queue.length))}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+            <h2 className="text-lg font-semibold text-fg px-6 pt-6">
+              {dict.people.leave.queue.title.replace('{count}', String(queue.length))}
+            </h2>
             {queue.length === 0 ? (
               <Empty
                 title={dict.people.leave.queue.empty.title}
                 body={dict.people.leave.queue.empty.body}
               />
             ) : (
-              <div className="gts-table-scroll">
+              <div className="gts-table-scroll mt-4">
                 <table className="gts-table gts-table-comfortable">
                   <thead>
                     <tr>
@@ -230,19 +239,20 @@ export default async function LeavePage() {
                 </table>
               </div>
             )}
-          </Region>
+          </section>
         )}
 
         {/* ---------- Your own requests ---------- */}
         {actor.employeeId && (
-          <Region title={dict.people.leave.myRequests.title}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+            <h2 className="text-lg font-semibold text-fg px-6 pt-6">{dict.people.leave.myRequests.title}</h2>
             {myRequests.length === 0 ? (
               <Empty
                 title={dict.people.leave.myRequests.empty.title}
                 body={dict.people.leave.myRequests.empty.body}
               />
             ) : (
-              <div className="gts-table-scroll">
+              <div className="gts-table-scroll mt-4">
                 <table className="gts-table gts-table-comfortable">
                   <thead>
                     <tr>
@@ -291,12 +301,13 @@ export default async function LeavePage() {
                 </table>
               </div>
             )}
-          </Region>
+          </section>
         )}
 
         {/* ---------- Coverage ---------- */}
         {mayViewOthers && (
-          <Region title={dict.people.leave.away.title}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+            <h2 className="text-lg font-semibold text-fg mb-2">{dict.people.leave.away.title}</h2>
             {awayToday.length === 0 ? (
               <Empty title={dict.people.leave.away.empty.title} body={dict.people.leave.away.empty.body} />
             ) : (
@@ -323,7 +334,7 @@ export default async function LeavePage() {
                 ))}
               </ul>
             )}
-          </Region>
+          </section>
         )}
       </main>
     </Shell>

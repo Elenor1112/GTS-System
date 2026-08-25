@@ -1,9 +1,11 @@
 /* ============================================================
-   GTS — SPACE, GRID, RADIUS, ELEVATION
+   GTS — SPACE, GRID, RADIUS, ELEVATION · "GTS EGYPT BUSINESS OS"
    ------------------------------------------------------------
-   4px base unit. Enterprise density: the small end of the scale
-   is where most of the work happens. Generous space is spent
-   deliberately on editorial moments, not sprayed everywhere.
+   8px base unit, matching Stitch's spacing.unit exactly. The
+   named Stitch tokens (container-margin, gutter, touch-target,
+   stack-sm/md/lg) are kept as their own variables so component
+   CSS can reference them by the same names Stitch's own Tailwind
+   config uses.
    ============================================================ */
 
 :root {
@@ -23,29 +25,41 @@
   --gts-space-24:  6rem;     /* 96 */
   --gts-space-32:  8rem;     /* 128 */
 
+  /* --- Stitch's own named spacing tokens ------------------- */
+  --gts-unit:            0.5rem;  /* 8px  */
+  --gts-container-margin: 1.5rem; /* 24px */
+  --gts-gutter:          1rem;    /* 16px */
+  --gts-touch-target:    3rem;    /* 48px */
+  --gts-stack-sm:        0.5rem;  /* 8px  */
+  --gts-stack-md:        1rem;    /* 16px */
+  --gts-stack-lg:        2rem;    /* 32px */
+
   /* --- Semantic spacing ---------------------------------- */
-  --gts-gutter-page:    var(--gts-space-8);   /* desktop page inset  */
-  --gts-gutter-page-sm: var(--gts-space-4);   /* mobile page inset   */
-  --gts-gutter-section: var(--gts-space-12);  /* between sections    */
-  --gts-gutter-block:   var(--gts-space-6);   /* between blocks      */
-  --gts-gutter-grid:    var(--gts-space-6);   /* column gap          */
-  --gts-pad-card:       var(--gts-space-5);
+  --gts-gutter-page:    var(--gts-container-margin); /* desktop page inset  */
+  --gts-gutter-page-sm: var(--gts-space-4);          /* mobile page inset   */
+  --gts-gutter-section: var(--gts-stack-lg);         /* between sections    */
+  --gts-gutter-block:   var(--gts-space-6);          /* between blocks      */
+  --gts-gutter-grid:    var(--gts-space-6);          /* column gap          */
+  --gts-pad-card:       var(--gts-space-6);          /* Stitch: 24px card padding */
   --gts-pad-cell-x:     var(--gts-space-4);
   --gts-pad-cell-y:     var(--gts-space-3);
   --gts-pad-cell-y-compact: var(--gts-space-2);
 
-  /* --- Control heights (one rhythm for all interactives) -- */
-  --gts-control-xs: 1.5rem;    /* 24 — inline table actions */
-  --gts-control-sm: 1.75rem;   /* 28 — dense toolbars       */
-  --gts-control-md: 2.125rem;  /* 34 — DEFAULT              */
-  --gts-control-lg: 2.5rem;    /* 40 — primary forms        */
-  --gts-control-xl: 3rem;      /* 48 — mobile / hero CTA    */
-  --gts-touch-min:  2.75rem;   /* 44 — iOS touch minimum    */
+  /* --- Control heights (one rhythm for all interactives) --
+     Stitch's touch-target (48px) is the DEFAULT control height —
+     this system runs noticeably roomier than the previous 34px
+     default, matching the mockups' generous button/input sizing. */
+  --gts-control-xs: 1.75rem;   /* 28 — inline table actions */
+  --gts-control-sm: 2rem;      /* 32 — dense toolbars       */
+  --gts-control-md: 2.5rem;    /* 40 — compact forms        */
+  --gts-control-lg: var(--gts-touch-target); /* 48 — DEFAULT / primary forms */
+  --gts-control-xl: 3.5rem;    /* 56 — hero CTA             */
+  --gts-touch-min:  var(--gts-touch-target); /* 48 */
 
   /* --- Layout frame ------------------------------------- */
-  --gts-rail-expanded: 15.5rem; /* 248 */
-  --gts-rail-compact:  3.5rem;  /* 56  */
-  --gts-topbar-h:      3.25rem; /* 52  */
+  --gts-rail-expanded: 16rem;   /* 256 — Stitch's w-64 sidebar */
+  --gts-rail-compact:  4rem;    /* 64  */
+  --gts-topbar-h:      4rem;    /* 64  — Stitch's h-16 top bar  */
   --gts-subbar-h:      2.75rem; /* 44  */
   --gts-drawer-w:      28rem;   /* 448 */
   --gts-drawer-w-wide: 40rem;   /* 640 */
@@ -53,39 +67,34 @@
   --gts-prose-max:     42rem;   /* readable measure ~72ch    */
   --gts-mobile-nav-h:  3.75rem; /* 60  */
 
-  /* --- Radius -------------------------------------------
-     Restrained but slightly warmer than a pure instrument: this
-     product reads as a well-made ledger, not a spreadsheet.
-     Radius signals INTERACTIVITY, not decor: containers are
-     nearly square, controls are a touch softer. */
+  /* --- Radius — Stitch's literal scale -------------------- */
   --gts-radius-none: 0;
-  --gts-radius-xs:   3px;   /* chips, tags, swatches      */
-  --gts-radius-sm:   5px;   /* inputs, buttons, cells     */
-  --gts-radius-md:   7px;   /* cards, panels              */
-  --gts-radius-lg:   10px;  /* drawers, modals, popovers  */
-  --gts-radius-xl:   14px;  /* mobile sheets only         */
-  --gts-radius-full: 999px; /* avatars, pills, status dot */
+  --gts-radius-xs:   0.25rem; /* 4px  — chips, tags, swatches */
+  --gts-radius-sm:   0.5rem;  /* 8px  — inputs, buttons, cells (Stitch DEFAULT) */
+  --gts-radius-md:   0.75rem; /* 12px — cards, panels (Stitch md) */
+  --gts-radius-lg:   1rem;    /* 16px — drawers, modals, large widgets (Stitch lg) */
+  --gts-radius-xl:   1.5rem;  /* 24px — mobile sheets (Stitch xl) */
+  --gts-radius-full: 9999px;  /* avatars, pills, status dot */
 
   /* --- Elevation -----------------------------------------
-     Shadows are a LAST resort. Hierarchy is built with border,
-     surface-lightness and space. Only genuinely floating
-     objects get a shadow, and they are tinted with the warm
-     ink hue rather than pure black.                        */
+     Stitch's "Elevation & Depth": Level 1 (cards/surfaces) is
+     white + 1px border with only a whisper of shadow; Level 2
+     (popovers/modals) is a soft diffused shadow — 12% opacity,
+     16px blur — the one place the mockups actually lean on
+     shadow rather than tonal layering. */
   --gts-shadow-none: none;
   --gts-shadow-hairline: 0 0 0 1px var(--gts-border-hairline);
   --gts-shadow-raised:
-    0 1px 2px oklch(9% 0.012 34 / 0.05),
+    0 1px 2px rgb(0 0 0 / 0.04),
     0 0 0 1px var(--gts-border-hairline);
   --gts-shadow-overlay:
-    0 6px 16px -4px oklch(9% 0.012 34 / 0.11),
-    0 2px 6px -2px oklch(9% 0.012 34 / 0.07),
+    0 4px 16px rgb(0 0 0 / 0.12),
     0 0 0 1px var(--gts-border-hairline);
   --gts-shadow-modal:
-    0 28px 56px -14px oklch(9% 0.012 34 / 0.22),
-    0 10px 20px -10px oklch(9% 0.012 34 / 0.13),
+    0 8px 24px rgb(0 0 0 / 0.16),
     0 0 0 1px var(--gts-border-hairline);
   --gts-shadow-sheet:
-    0 -10px 36px -10px oklch(9% 0.012 34 / 0.16);
+    0 -8px 24px rgb(0 0 0 / 0.14);
   /* Focus is a 2-layer ring so it reads on ANY background. */
   --gts-shadow-focus:
     0 0 0 2px var(--gts-bg-surface),
@@ -108,17 +117,17 @@
        increased only for true overlays. */
     --gts-shadow-raised: 0 0 0 1px var(--gts-border-hairline);
     --gts-shadow-overlay:
-      0 10px 28px -4px oklch(0% 0 0 / 0.52), 0 0 0 1px var(--gts-border-hairline);
+      0 8px 24px rgb(0 0 0 / 0.4), 0 0 0 1px var(--gts-border-hairline);
     --gts-shadow-modal:
-      0 36px 72px -16px oklch(0% 0 0 / 0.72), 0 0 0 1px var(--gts-border-hairline);
+      0 16px 40px rgb(0 0 0 / 0.5), 0 0 0 1px var(--gts-border-hairline);
   }
 }
 :root[data-theme='dark'] {
   --gts-shadow-raised: 0 0 0 1px var(--gts-border-hairline);
   --gts-shadow-overlay:
-    0 10px 28px -4px oklch(0% 0 0 / 0.52), 0 0 0 1px var(--gts-border-hairline);
+    0 8px 24px rgb(0 0 0 / 0.4), 0 0 0 1px var(--gts-border-hairline);
   --gts-shadow-modal:
-    0 36px 72px -16px oklch(0% 0 0 / 0.72), 0 0 0 1px var(--gts-border-hairline);
+    0 16px 40px rgb(0 0 0 / 0.5), 0 0 0 1px var(--gts-border-hairline);
 }
 
 /* ============================================================

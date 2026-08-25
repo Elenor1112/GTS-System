@@ -5,6 +5,7 @@ import { useActionState, useState } from 'react';
 import {
   FormError, FormActions, FieldGrid, TextField, SelectField, Submit, errorFor,
 } from '@/components/form';
+import { Icon } from '@/components/icon';
 import { GOVERNORATES } from '@/lib/egypt';
 import { DEFAULT_RADIUS, mapUrl } from '@/lib/geofence';
 import type { OperationsDict } from '@/lib/i18n/dict/operations';
@@ -67,7 +68,7 @@ export function LocationForm({
     <form action={formAction} className="gts-form">
       <FormError state={state} />
       {state?.ok && (
-        <p className="gts-form-success" role="status">
+        <p className="w-full px-4 py-3 rounded-sm bg-success-bg border border-success-br text-success text-sm" role="status">
           {dict.successMessage}
         </p>
       )}
@@ -161,7 +162,12 @@ export function LocationForm({
       </FieldGrid>
 
       <div className="gts-location-tools">
-        <button type="button" className="gts-btn gts-btn-secondary" onClick={useMyPosition}>
+        <button
+          type="button"
+          className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors inline-flex items-center gap-2"
+          onClick={useMyPosition}
+        >
+          <Icon name="my_location" size={18} />
           {locating ? dict.findingYou : dict.useMyPosition}
         </button>
         {lat && lng && (
@@ -169,8 +175,9 @@ export function LocationForm({
             href={mapUrl({ lat: Number(lat), lng: Number(lng) })}
             target="_blank"
             rel="noreferrer"
-            className="gts-btn gts-btn-ghost"
+            className="h-touch px-4 inline-flex items-center gap-2 text-sm font-medium text-fg-secondary hover:text-fg transition-colors"
           >
+            <Icon name="map" size={18} />
             {dict.checkPinOnMap}
           </a>
         )}

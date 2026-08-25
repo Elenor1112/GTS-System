@@ -32,27 +32,29 @@ export default async function EditVendorPage({ params }: { params: Promise<{ id:
 
   return (
     <Shell active="/vendors" domain="vendors">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead overline={`Vendor · ${vendor.code}`} title={`${d.edit.editPrefix} ${vendor.nameEn}`} />
-        <VendorForm
-          mode="edit"
-          dict={d.form}
-          values={{
-            id: vendor.id,
-            code: vendor.code,
-            nameEn: vendor.nameEn,
-            nameAr: vendor.nameAr,
-            trn: vendor.trn,
-            commercialRegNo: vendor.commercialRegNo,
-            governorateCode: vendor.governorateCode,
-            addressLine: vendor.addressLine,
-            contactName: vendor.contactName,
-            contactPhone: vendor.contactPhone,
-            contactEmail: vendor.contactEmail,
-            paymentTermsDays: vendor.paymentTermsDays,
-            notes: vendor.notes,
-          }}
-        />
+        <div className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <VendorForm
+            mode="edit"
+            dict={d.form}
+            values={{
+              id: vendor.id,
+              code: vendor.code,
+              nameEn: vendor.nameEn,
+              nameAr: vendor.nameAr,
+              trn: vendor.trn,
+              commercialRegNo: vendor.commercialRegNo,
+              governorateCode: vendor.governorateCode,
+              addressLine: vendor.addressLine,
+              contactName: vendor.contactName,
+              contactPhone: vendor.contactPhone,
+              contactEmail: vendor.contactEmail,
+              paymentTermsDays: vendor.paymentTermsDays,
+              notes: vendor.notes,
+            }}
+          />
+        </div>
       </main>
     </Shell>
   );

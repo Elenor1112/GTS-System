@@ -205,6 +205,13 @@ export function TextArea({
  * the parent having to thread a pending flag down. Disabling is what
  * prevents a double-click from posting a second bill.
  */
+const SUBMIT_VARIANT_CLASS: Record<'primary' | 'accent' | 'secondary' | 'danger', string> = {
+  primary: 'bg-brand text-fg-on-accent hover:opacity-90',
+  accent: 'bg-brand text-fg-on-accent hover:opacity-90',
+  secondary: 'border border-line bg-surface text-fg hover:bg-hover',
+  danger: 'bg-danger text-fg-on-accent hover:opacity-90',
+};
+
 export function Submit({
   children = 'Save',
   pendingLabel,
@@ -219,7 +226,7 @@ export function Submit({
   return (
     <button
       type="submit"
-      className={`gts-btn gts-btn-${variant}`}
+      className={`h-touch px-4 rounded-sm text-sm font-medium transition-colors disabled:opacity-50 ${SUBMIT_VARIANT_CLASS[variant]}`}
       disabled={pending}
       aria-busy={pending || undefined}
     >

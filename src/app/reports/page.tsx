@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { Amount, Region, Status, Sparkline } from '@/components/primitives';
+import { Amount, Status, Sparkline } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
 import { PrintPageButton } from '@/components/print-page-button';
 import { requirePermission } from '@/lib/auth';
@@ -61,7 +61,7 @@ export default async function ReportsPage({
 
   return (
     <Shell active="/reports" domain="admin">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={dict.overview.reports.system}
           title={dict.overview.reports.title}
@@ -69,13 +69,17 @@ export default async function ReportsPage({
           actions={<PrintPageButton />}
         />
 
-        <nav className="gts-tabs" aria-label="Report">
+        <nav className="flex gap-1 border-b border-line" aria-label="Report">
           {TABS.map((name) => (
             <a
               key={name}
               href={tabHref(name)}
-              className="gts-tab"
               aria-current={tab === name ? 'page' : undefined}
+              className={`px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                tab === name
+                  ? 'border-brand text-brand-fg'
+                  : 'border-transparent text-fg-secondary hover:text-fg'
+              }`}
             >
               {dict.overview.reports.tabs[name]}
             </a>
@@ -85,21 +89,24 @@ export default async function ReportsPage({
         {/* The range does not apply to the project report, which is a
             position rather than a period. */}
         {tab !== 'projects' && (
-          <form method="get" className="gts-filter-bar">
+          <form method="get" className="bg-surface rounded-lg border border-line shadow-raised p-4 flex flex-wrap items-end gap-3">
             <input type="hidden" name="tab" value={tab} />
-            <div className="gts-field">
-              <label className="gts-label" htmlFor="from">
+            <div>
+              <label className="block text-xs font-medium text-fg-secondary mb-1" htmlFor="from">
                 {dict.overview.reports.from}
               </label>
-              <input id="from" name="from" type="date" defaultValue={iso(range.from)} className="gts-input" />
+              <input id="from" name="from" type="date" defaultValue={iso(range.from)} className="h-touch px-3 rounded-sm border border-line bg-surface text-sm text-fg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none" />
             </div>
-            <div className="gts-field">
-              <label className="gts-label" htmlFor="to">
+            <div>
+              <label className="block text-xs font-medium text-fg-secondary mb-1" htmlFor="to">
                 {dict.overview.reports.to}
               </label>
-              <input id="to" name="to" type="date" defaultValue={iso(range.to)} className="gts-input" />
+              <input id="to" name="to" type="date" defaultValue={iso(range.to)} className="h-touch px-3 rounded-sm border border-line bg-surface text-sm text-fg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none" />
             </div>
-            <button type="submit" className="gts-btn gts-btn-secondary">
+            <button
+              type="submit"
+              className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors"
+            >
               {dict.overview.reports.apply}
             </button>
           </form>
@@ -117,7 +124,8 @@ export default async function ReportsPage({
               invites the reader to subtract figures that do not describe
               the same transactions.
             */}
-            <Region title={dict.overview.reports.invoicedInPeriod}>
+            <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+              <h2 className="text-lg font-semibold text-fg mb-4">{dict.overview.reports.invoicedInPeriod}</h2>
               <div className="gts-stat-row">
                 <Figure label={dict.overview.reports.billedOut} value={financial.billed.toNumber()} />
                 <Figure label={dict.overview.reports.purchased} value={financial.purchased.toNumber()} />
@@ -127,13 +135,14 @@ export default async function ReportsPage({
                   tone={financial.grossMargin.isNegative() ? 'danger' : undefined}
                 />
               </div>
-              <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
+              <p className="text-xs text-fg-secondary mt-4">
                 {dict.overview.reports.invoicedNote}{' '}
                 <strong>{dict.overview.reports.invoicedNoteStrong}</strong> profit, carrying no labour, rent or overhead.
               </p>
-            </Region>
+            </section>
 
-            <Region title={dict.overview.reports.cashMovedInPeriod}>
+            <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+              <h2 className="text-lg font-semibold text-fg mb-4">{dict.overview.reports.cashMovedInPeriod}</h2>
               <div className="gts-stat-row">
                 <Figure label={dict.overview.reports.collected} value={financial.collected.toNumber()} />
                 <Figure label={dict.overview.reports.paidOut} value={financial.paid.toNumber()} />
@@ -143,14 +152,15 @@ export default async function ReportsPage({
                   tone={financial.collected.minus(financial.paid).isNegative() ? 'warning' : undefined}
                 />
               </div>
-              <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
+              <p className="text-xs text-fg-secondary mt-4">
                 {dict.overview.reports.cashNote}{' '}
                 <em>{dict.overview.reports.cashNoteEm}</em>. They are not comparable with the invoiced figures
                 above and should not be subtracted from them.
               </p>
-            </Region>
+            </section>
 
-            <Region title={`${dict.overview.reports.vatStandardRate} ${VAT_STANDARD}%`}>
+            <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+              <h2 className="text-lg font-semibold text-fg mb-4">{`${dict.overview.reports.vatStandardRate} ${VAT_STANDARD}%`}</h2>
               <div className="gts-stat-row">
                 <Figure label={dict.overview.reports.vatCharged} value={financial.vatCharged.toNumber()} />
                 <Figure label={dict.overview.reports.vatPaidOnPurchases} value={financial.vatPaid.toNumber()} />
@@ -161,17 +171,18 @@ export default async function ReportsPage({
                 />
                 <Figure label={dict.overview.reports.withheldAtSource} value={financial.withheld.toNumber()} />
               </div>
-              <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
+              <p className="text-xs text-fg-secondary mt-4">
                 {dict.overview.reports.vatNote}
               </p>
-            </Region>
+            </section>
 
             {financial.byMonth.length > 1 && (
-              <Region title={dict.overview.reports.byMonth}>
+              <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+                <h2 className="text-lg font-semibold text-fg mb-4">{dict.overview.reports.byMonth}</h2>
                 <div style={{ color: 'var(--gts-domain-finance)' }}>
                   <Sparkline data={financial.byMonth.map((m) => m.billed)} width={640} height={72} />
                 </div>
-                <div className="gts-table-scroll" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
+                <div className="gts-table-scroll mt-4">
                   <table className="gts-table gts-table-compact">
                     <thead>
                       <tr>
@@ -195,14 +206,15 @@ export default async function ReportsPage({
                     </tbody>
                   </table>
                 </div>
-              </Region>
+              </section>
             )}
           </>
         )}
 
         {/* ---------- Inventory ---------- */}
         {inventory && (
-          <Region title={dict.overview.reports.productMovement}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+            <h2 className="text-lg font-semibold text-fg px-6 pt-6 pb-4">{dict.overview.reports.productMovement}</h2>
             {inventory.length === 0 ? (
               <Empty title={dict.overview.reports.noProducts} body={dict.overview.reports.nothingToReport} />
             ) : (
@@ -263,12 +275,13 @@ export default async function ReportsPage({
                 </table>
               </div>
             )}
-          </Region>
+          </section>
         )}
 
         {/* ---------- Projects ---------- */}
         {projects && (
-          <Region title={dict.overview.reports.projectPosition}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+            <h2 className="text-lg font-semibold text-fg px-6 pt-6 pb-4">{dict.overview.reports.projectPosition}</h2>
             {projects.length === 0 ? (
               <Empty title={dict.overview.reports.noProjects} body={dict.overview.reports.nothingToReport} />
             ) : (
@@ -343,12 +356,13 @@ export default async function ReportsPage({
                 </table>
               </div>
             )}
-          </Region>
+          </section>
         )}
 
         {/* ---------- Attendance ---------- */}
         {attendance && (
-          <Region title={dict.overview.reports.attendance}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+            <h2 className="text-lg font-semibold text-fg px-6 pt-6 pb-4">{dict.overview.reports.attendance}</h2>
             {attendance.length === 0 ? (
               <Empty title={dict.overview.reports.noEmployees} body={dict.overview.reports.nothingToReport} />
             ) : (
@@ -403,7 +417,7 @@ export default async function ReportsPage({
                 </table>
               </div>
             )}
-          </Region>
+          </section>
         )}
       </main>
     </Shell>
@@ -424,9 +438,9 @@ function Figure({
   tone?: 'danger' | 'warning';
 }) {
   return (
-    <div className="gts-stat">
-      <p className="gts-overline">{label}</p>
-      <p className={tone ? `gts-stat-value gts-stat-${tone}` : 'gts-stat-value'}>
+    <div>
+      <p className="text-xs text-fg-muted uppercase tracking-wide">{label}</p>
+      <p className={`mt-2 ${tone === 'danger' ? 'text-danger' : tone === 'warning' ? 'text-warning' : ''}`}>
         <Amount value={value} size="md" />
       </p>
     </div>

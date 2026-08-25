@@ -25,30 +25,32 @@ export default async function EditWarehousePage({
 
   return (
     <Shell active="/storage" domain="inventory">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={`Warehouse · ${warehouse.code}`}
           title={d.edit.title}
           lede={d.edit.lede}
         />
-        <WarehouseForm
-          mode="edit"
-          dict={d.form}
-          values={{
-            id: warehouse.id,
-            code: warehouse.code,
-            nameEn: warehouse.nameEn,
-            nameAr: warehouse.nameAr,
-            governorateCode: warehouse.governorateCode,
-            addressLine: warehouse.addressLine,
-            // Decimal, not number: passing these through `toString()`
-            // keeps the stored precision instead of rounding a
-            // coordinate on its way into the form.
-            latitude: warehouse.latitude?.toString() ?? null,
-            longitude: warehouse.longitude?.toString() ?? null,
-            capacityM3: warehouse.capacityM3?.toString() ?? null,
-          }}
-        />
+        <div className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <WarehouseForm
+            mode="edit"
+            dict={d.form}
+            values={{
+              id: warehouse.id,
+              code: warehouse.code,
+              nameEn: warehouse.nameEn,
+              nameAr: warehouse.nameAr,
+              governorateCode: warehouse.governorateCode,
+              addressLine: warehouse.addressLine,
+              // Decimal, not number: passing these through `toString()`
+              // keeps the stored precision instead of rounding a
+              // coordinate on its way into the form.
+              latitude: warehouse.latitude?.toString() ?? null,
+              longitude: warehouse.longitude?.toString() ?? null,
+              capacityM3: warehouse.capacityM3?.toString() ?? null,
+            }}
+          />
+        </div>
       </main>
     </Shell>
   );

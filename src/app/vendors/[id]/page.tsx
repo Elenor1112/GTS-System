@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { Amount, Region, Status } from '@/components/primitives';
+import { Amount, Status } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
+import { Icon } from '@/components/icon';
 import { requirePermission } from '@/lib/auth';
 import { can } from '@/lib/permissions';
 import { vendorDetail } from '@/lib/services/vendors';
@@ -55,7 +56,7 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
 
   return (
     <Shell active="/vendors" domain="vendors">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={`Vendor · ${vendor.code}`}
           title={vendor.nameEn}
@@ -71,17 +72,29 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
           actions={
             <>
               {can(actor, 'bills.create') && (
-                <a href={`/bills/new?vendorId=${vendor.id}`} className="gts-btn gts-btn-secondary">
+                <a
+                  href={`/bills/new?vendorId=${vendor.id}`}
+                  className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors inline-flex items-center gap-2"
+                >
+                  <Icon name="receipt_long" />
                   {d.recordBill}
                 </a>
               )}
               {can(actor, 'vendors.edit') && (
-                <a href={`/vendors/${vendor.id}/edit`} className="gts-btn gts-btn-primary">
+                <a
+                  href={`/vendors/${vendor.id}/edit`}
+                  className="h-touch px-4 bg-brand text-fg-on-accent rounded-sm inline-flex items-center gap-2 font-medium text-sm hover:opacity-90 transition-opacity"
+                >
+                  <Icon name="edit" />
                   {d.edit}
                 </a>
               )}
               {seesMoney && (
-                <a href={`/vendors/${vendor.id}/print`} className="gts-btn gts-btn-secondary">
+                <a
+                  href={`/vendors/${vendor.id}/print`}
+                  className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors inline-flex items-center gap-2"
+                >
+                  <Icon name="print" />
                   {d.printStatement}
                 </a>
               )}
@@ -90,8 +103,9 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
         />
 
         {seesMoney && (
-          <Region title={d.account}>
-            <div className="gts-stat-row">
+          <section>
+            <h2 className="text-lg font-semibold text-fg mb-4">{d.account}</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Figure label={d.billedByThem} value={summary.billed.toNumber()} locale={locale} />
               <Figure label={d.paid} value={summary.paid.toNumber()} locale={locale} />
               <Figure
@@ -107,15 +121,16 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
                 locale={locale}
               />
             </div>
-            <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
+            <p className="gts-meta mt-4">
               {d.paymentTerms} {vendor.paymentTermsDays} {d.daysSuffix}
             </p>
-          </Region>
+          </section>
         )}
 
         {/* ---------- What they have supplied ---------- */}
         {can(actor, 'inventory.view') && vendor.supplied.length > 0 && (
-          <Region title={d.supplied}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+            <h2 className="text-lg font-semibold text-fg px-6 pt-6 pb-4">{d.supplied}</h2>
             <div className="gts-table-scroll">
               <table className="gts-table gts-table-comfortable">
                 <caption className="gts-sr">Goods received from this vendor, and returns</caption>
@@ -154,12 +169,13 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
                 </tbody>
               </table>
             </div>
-          </Region>
+          </section>
         )}
 
         {/* ---------- Their catalogue, and what we hold ---------- */}
         {can(actor, 'products.view') && vendor.catalogue.length > 0 && (
-          <Region title={`${d.catalogue} (${vendor.catalogue.length})`}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+            <h2 className="text-lg font-semibold text-fg px-6 pt-6 pb-4">{`${d.catalogue} (${vendor.catalogue.length})`}</h2>
             <div className="gts-table-scroll">
               <table className="gts-table gts-table-comfortable">
                 <thead>
@@ -212,14 +228,17 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
                 </tbody>
               </table>
             </div>
-          </Region>
+          </section>
         )}
 
         {/* ---------- Bills ---------- */}
         {can(actor, 'bills.view') && (
-          <Region title={`${d.bills} (${vendor.bills.length})`}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+            <h2 className="text-lg font-semibold text-fg px-6 pt-6 pb-4">{`${d.bills} (${vendor.bills.length})`}</h2>
             {vendor.bills.length === 0 ? (
-              <Empty title={d.emptyBillsTitle} body={d.emptyBillsBody} />
+              <div className="px-6 pb-6">
+                <Empty title={d.emptyBillsTitle} body={d.emptyBillsBody} />
+              </div>
             ) : (
               <div className="gts-table-scroll">
                 <table className="gts-table gts-table-comfortable">
@@ -273,11 +292,12 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
                 </table>
               </div>
             )}
-          </Region>
+          </section>
         )}
 
         {/* ---------- Activity ---------- */}
-        <Region title={d.activity}>
+        <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <h2 className="text-lg font-semibold text-fg mb-4">{d.activity}</h2>
           {activity.length === 0 ? (
             <Empty
               title={d.emptyActivityTitle}
@@ -310,7 +330,7 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
               ))}
             </ol>
           )}
-        </Region>
+        </section>
       </main>
     </Shell>
   );
@@ -328,9 +348,9 @@ function Figure({
   locale?: 'en' | 'ar';
 }) {
   return (
-    <div className="gts-stat">
-      <p className="gts-overline">{label}</p>
-      <p className={tone ? `gts-stat-value gts-stat-${tone}` : 'gts-stat-value'}>
+    <div className="bg-surface rounded-lg border border-line shadow-raised p-5">
+      <p className="text-xs text-fg-muted uppercase tracking-wide">{label}</p>
+      <p className={`mt-2 ${tone === 'danger' ? 'text-danger' : tone === 'warning' ? 'text-warning' : ''}`}>
         <Amount value={value} size="md" locale={locale} />
       </p>
     </div>

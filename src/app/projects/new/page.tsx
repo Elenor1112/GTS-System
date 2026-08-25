@@ -17,17 +17,19 @@ export default async function NewProjectPage() {
 
   return (
     <Shell active="/projects" domain="projects">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={d.overline}
           title={d.title}
           lede={d.lede}
         />
-        <ProjectForm
-          mode="create"
-          clients={clients.map((c) => ({ id: c.id, code: c.code, nameEn: c.nameEn }))}
-          dict={dict.operations.projects.form}
-        />
+        <div className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <ProjectForm
+            mode="create"
+            clients={clients.map((c) => ({ id: c.id, code: c.code, nameEn: c.nameEn }))}
+            dict={dict.operations.projects.form}
+          />
+        </div>
       </main>
     </Shell>
   );

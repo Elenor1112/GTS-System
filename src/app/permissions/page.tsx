@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Fragment } from 'react';
 
-import { Region, Status } from '@/components/primitives';
+import { Status } from '@/components/primitives';
 import { Shell, PageHead } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { can, PERMISSIONS_BY_MODULE, ADMIN_ROLE } from '@/lib/permissions';
@@ -35,7 +35,7 @@ export default async function PermissionsPage() {
 
   return (
     <Shell active="/permissions" domain="admin">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={dict.admin.permissions.overline}
           title={dict.admin.permissions.title}
@@ -43,7 +43,8 @@ export default async function PermissionsPage() {
         />
 
         {/* ---------- The matrix ---------- */}
-        <Region title={dict.admin.permissions.matrix.title}>
+        <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+          <h2 className="text-lg font-semibold text-fg px-6 pt-6 pb-4">{dict.admin.permissions.matrix.title}</h2>
           <div className="gts-table-scroll">
             <table className="gts-table gts-table-compact">
               <caption className="gts-sr">
@@ -104,13 +105,14 @@ export default async function PermissionsPage() {
               </tbody>
             </table>
           </div>
-        </Region>
+        </section>
 
         {/* ---------- Editing, role by role ---------- */}
         {mayEdit &&
           roles.map((role) => (
-            <Region key={role.id} title={role.nameEn}>
-              <p className="gts-meta" style={{ marginBlockEnd: 'var(--gts-space-4)' }}>
+            <section key={role.id} className="bg-surface rounded-lg border border-line shadow-raised p-6">
+              <h2 className="text-lg font-semibold text-fg mb-2">{role.nameEn}</h2>
+              <p className="text-sm text-fg-secondary mb-4">
                 {role.description}
                 {' · '}
                 {role._count.users} {role._count.users === 1 ? dict.admin.permissions.userCount : dict.admin.permissions.userCountPlural}
@@ -123,7 +125,7 @@ export default async function PermissionsPage() {
               </p>
 
               {role.key === ADMIN_ROLE ? (
-                <p className="gts-form-error" role="status">
+                <p className="px-4 py-3 rounded-sm bg-danger-bg border border-danger-br text-danger text-sm" role="status">
                   {dict.admin.permissions.adminLocked}
                 </p>
               ) : (
@@ -141,7 +143,7 @@ export default async function PermissionsPage() {
                   dict={dict.admin.permissions.form}
                 />
               )}
-            </Region>
+            </section>
           ))}
       </main>
     </Shell>

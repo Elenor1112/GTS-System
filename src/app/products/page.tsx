@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 import { Amount, Status } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
+import { Icon } from '@/components/icon';
 import { requirePermission } from '@/lib/auth';
 import { can } from '@/lib/permissions';
 import { listProducts, listCategories, listWarehouses } from '@/lib/services/catalogue';
@@ -45,7 +46,7 @@ export default async function ProductsPage({
 
   return (
     <Shell active="/products" domain="inventory">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={d.overline}
           title={d.title}
@@ -54,28 +55,37 @@ export default async function ProductsPage({
           }`}
           actions={
             can(actor, 'products.create') ? (
-              <a href="/products/new" className="gts-btn gts-btn-accent">
+              <a
+                href="/products/new"
+                className="h-touch px-4 bg-brand text-fg-on-accent rounded-sm inline-flex items-center gap-2 font-medium text-sm hover:opacity-90 transition-opacity"
+              >
+                <Icon name="add" />
                 {d.newProduct}
               </a>
             ) : undefined
           }
         />
 
-        <form method="get" className="gts-filter-bar" role="search">
-          <div className="gts-field" style={{ flex: '1 1 16rem' }}>
+        <form method="get" className="bg-surface rounded-lg border border-line shadow-raised p-4 flex flex-wrap items-center gap-3" role="search">
+          <div className="flex-1 min-w-[14rem]">
             <label className="gts-sr" htmlFor="q">
               {d.searchLabel}
             </label>
-            <input
-              id="q"
-              name="q"
-              type="search"
-              defaultValue={params.q ?? ''}
-              placeholder={d.searchPlaceholder}
-              className="gts-input"
-            />
+            <div className="relative">
+              <span className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none text-fg-muted">
+                <Icon name="search" size={20} />
+              </span>
+              <input
+                id="q"
+                name="q"
+                type="search"
+                defaultValue={params.q ?? ''}
+                placeholder={d.searchPlaceholder}
+                className="w-full h-touch ps-10 pe-3 rounded-sm border border-line bg-surface text-sm text-fg placeholder:text-fg-muted focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none transition-colors"
+              />
+            </div>
           </div>
-          <div className="gts-field">
+          <div>
             <label className="gts-sr" htmlFor="category">
               {d.categoryLabel}
             </label>
@@ -83,7 +93,7 @@ export default async function ProductsPage({
               id="category"
               name="category"
               defaultValue={params.category ?? ''}
-              className="gts-input gts-select"
+              className="h-touch px-3 rounded-sm border border-line bg-surface text-sm text-fg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none"
             >
               <option value="">{d.anyCategory}</option>
               {categories.map((c) => (
@@ -93,7 +103,7 @@ export default async function ProductsPage({
               ))}
             </select>
           </div>
-          <div className="gts-field">
+          <div>
             <label className="gts-sr" htmlFor="warehouse">
               {d.warehouseLabel}
             </label>
@@ -101,7 +111,7 @@ export default async function ProductsPage({
               id="warehouse"
               name="warehouse"
               defaultValue={params.warehouse ?? ''}
-              className="gts-input gts-select"
+              className="h-touch px-3 rounded-sm border border-line bg-surface text-sm text-fg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none"
             >
               <option value="">{d.anyWarehouse}</option>
               {warehouses.map((w) => (
@@ -111,46 +121,56 @@ export default async function ProductsPage({
               ))}
             </select>
           </div>
-          <label className="gts-check">
-            <input type="checkbox" name="low" value="1" defaultChecked={lowOnly} />
+          <label className="inline-flex items-center gap-2 text-sm text-fg-secondary h-touch">
+            <input type="checkbox" name="low" value="1" defaultChecked={lowOnly} className="accent-brand" />
             {d.onlyLowStock}
           </label>
-          <button type="submit" className="gts-btn gts-btn-secondary">
+          <button
+            type="submit"
+            className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors"
+          >
             {d.filter}
           </button>
           {(params.q || params.category || params.warehouse || lowOnly) && (
-            <a href="/products" className="gts-btn gts-btn-ghost">
+            <a href="/products" className="h-touch px-4 inline-flex items-center text-sm font-medium text-fg-secondary hover:text-fg transition-colors">
               {d.clear}
             </a>
           )}
         </form>
 
         {products.length === 0 ? (
-          <Empty
-            title={
-              lowOnly
-                ? d.emptyLowTitle
-                : params.q || params.category || params.warehouse
-                  ? d.emptyFilteredTitle
-                  : d.emptyTitle
-            }
-            body={
-              lowOnly
-                ? d.emptyLowBody
-                : params.q || params.category || params.warehouse
-                  ? d.emptyFilteredBody
-                  : d.emptyBody
-            }
-            filtered={Boolean(params.q || params.category || params.warehouse || lowOnly)}
-            action={
-              can(actor, 'products.create') && !params.q && !lowOnly ? (
-                <a href="/products/new" className="gts-btn gts-btn-accent">
-                  {d.newProduct}
-                </a>
-              ) : undefined
-            }
-          />
+          <div className="bg-surface rounded-lg border border-line shadow-raised">
+            <Empty
+              title={
+                lowOnly
+                  ? d.emptyLowTitle
+                  : params.q || params.category || params.warehouse
+                    ? d.emptyFilteredTitle
+                    : d.emptyTitle
+              }
+              body={
+                lowOnly
+                  ? d.emptyLowBody
+                  : params.q || params.category || params.warehouse
+                    ? d.emptyFilteredBody
+                    : d.emptyBody
+              }
+              filtered={Boolean(params.q || params.category || params.warehouse || lowOnly)}
+              action={
+                can(actor, 'products.create') && !params.q && !lowOnly ? (
+                  <a
+                    href="/products/new"
+                    className="h-touch px-4 bg-brand text-fg-on-accent rounded-sm inline-flex items-center gap-2 font-medium text-sm hover:opacity-90 transition-opacity"
+                  >
+                    <Icon name="add" />
+                    {d.newProduct}
+                  </a>
+                ) : undefined
+              }
+            />
+          </div>
         ) : (
+          <div className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
           <div className="gts-table-scroll">
             <table className="gts-table gts-table-comfortable">
               <caption className="gts-sr">{d.caption}</caption>
@@ -222,6 +242,7 @@ export default async function ProductsPage({
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
         )}
       </main>

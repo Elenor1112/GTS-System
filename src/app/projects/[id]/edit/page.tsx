@@ -30,29 +30,31 @@ export default async function EditProjectPage({
 
   return (
     <Shell active="/projects" domain="projects">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={`Project · ${project.code}`}
           title={d.title}
           lede={d.lede}
         />
-        <ProjectForm
-          mode="edit"
-          clients={clients.map((c) => ({ id: c.id, code: c.code, nameEn: c.nameEn }))}
-          dict={dict.operations.projects.form}
-          values={{
-            id: project.id,
-            code: project.code,
-            nameEn: project.nameEn,
-            nameAr: project.nameAr,
-            clientId: project.clientId,
-            status: project.status,
-            startsOn: dateInput(project.startsOn),
-            endsOn: dateInput(project.endsOn),
-            budget: project.budget?.toString() ?? null,
-            notes: project.notes,
-          }}
-        />
+        <div className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <ProjectForm
+            mode="edit"
+            clients={clients.map((c) => ({ id: c.id, code: c.code, nameEn: c.nameEn }))}
+            dict={dict.operations.projects.form}
+            values={{
+              id: project.id,
+              code: project.code,
+              nameEn: project.nameEn,
+              nameAr: project.nameAr,
+              clientId: project.clientId,
+              status: project.status,
+              startsOn: dateInput(project.startsOn),
+              endsOn: dateInput(project.endsOn),
+              budget: project.budget?.toString() ?? null,
+              notes: project.notes,
+            }}
+          />
+        </div>
       </main>
     </Shell>
   );

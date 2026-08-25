@@ -94,6 +94,7 @@ export interface OperationsDict {
       colDamaged: string;
       colInTransit: string;
       colOnSite: string;
+      colTotalPrice: string;
       emptyMaterialsTitle: string;
       emptyMaterialsBody: string;
       financialTitle: string;
@@ -182,6 +183,11 @@ export interface OperationsDict {
       returnToStock: string;
       writtenOffMessage: string;
       returnedMessage: string;
+      totalPriceModalTitle: string;
+      unitPriceLabel: string;
+      onSiteLabel: string;
+      close: string;
+      noActionsAvailable: string;
     };
     print: {
       backToProject: string;
@@ -434,6 +440,7 @@ export const en: OperationsDict = {
       colDamaged: 'Damaged',
       colInTransit: 'In transit',
       colOnSite: 'On site',
+      colTotalPrice: 'Total on site',
       emptyMaterialsTitle: 'Nothing allocated',
       emptyMaterialsBody: 'Stock allocated to this project from a warehouse appears here, with what has been delivered, returned and written off.',
       financialTitle: 'Financial position',
@@ -522,6 +529,11 @@ export const en: OperationsDict = {
       returnToStock: 'Return to stock',
       writtenOffMessage: 'Written off — the ledger keeps the loss rather than restocking the units.',
       returnedMessage: 'Returned. The units are back on the shelf and available again.',
+      totalPriceModalTitle: 'On site',
+      unitPriceLabel: 'Unit price',
+      onSiteLabel: 'On site',
+      close: 'Close',
+      noActionsAvailable: 'Nothing to deliver or return for this product.',
     },
     print: {
       backToProject: 'Back to the project',
@@ -774,6 +786,7 @@ export const ar: OperationsDict = {
       colDamaged: 'التالف',
       colInTransit: 'قيد النقل',
       colOnSite: 'في الموقع',
+      colTotalPrice: 'إجمالي في الموقع',
       emptyMaterialsTitle: 'لا يوجد مخصص',
       emptyMaterialsBody: 'يظهر هنا المخزون المخصص لهذا المشروع من مخزن، مع ما تم تسليمه وإرجاعه وإعدامه.',
       financialTitle: 'الموقف المالي',
@@ -862,6 +875,11 @@ export const ar: OperationsDict = {
       returnToStock: 'إرجاع إلى المخزون',
       writtenOffMessage: 'تم الإعدام — يحتفظ السجل بالخسارة بدلًا من إعادة تخزين الوحدات.',
       returnedMessage: 'تم الإرجاع. عادت الوحدات إلى الرف وأصبحت متاحة مرة أخرى.',
+      totalPriceModalTitle: 'في الموقع',
+      unitPriceLabel: 'سعر الوحدة',
+      onSiteLabel: 'في الموقع',
+      close: 'إغلاق',
+      noActionsAvailable: 'لا يوجد ما يمكن تسليمه أو إرجاعه لهذا المنتج.',
     },
     print: {
       backToProject: 'العودة إلى المشروع',

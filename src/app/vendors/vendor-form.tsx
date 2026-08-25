@@ -178,7 +178,7 @@ export function VendorForm({
         </Submit>
         <a
           href={mode === 'edit' && values?.id ? `/vendors/${values.id}` : '/vendors'}
-          className="gts-btn gts-btn-secondary"
+          className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors inline-flex items-center"
         >
           {dict.cancel}
         </a>

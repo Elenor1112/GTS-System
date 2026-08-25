@@ -70,6 +70,7 @@ export function ClientForm({
   const e = (field: string) => errorFor(state, field);
 
   return (
+    <div className="bg-surface rounded-lg border border-line shadow-raised p-6">
     <form action={formAction} className="gts-form" noValidate>
       <FormError state={state} />
 
@@ -188,11 +189,12 @@ export function ClientForm({
         </Submit>
         <a
           href={mode === 'edit' && values?.id ? `/clients/${values.id}` : '/clients'}
-          className="gts-btn gts-btn-secondary"
+          className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors inline-flex items-center gap-2"
         >
           {dict.cancel}
         </a>
       </FormActions>
     </form>
+    </div>
   );
 }

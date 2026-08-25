@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { Region, Status } from '@/components/primitives';
+import { Status } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { can, ADMIN_ROLE } from '@/lib/permissions';
@@ -44,7 +44,7 @@ export default async function UsersPage({
 
   return (
     <Shell active="/users" domain="admin">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={dict.admin.users.overline}
           title={dict.admin.users.title}
@@ -54,22 +54,26 @@ export default async function UsersPage({
         />
 
         {admins === 1 && (
-          <p className="gts-form-error" role="status">
+          <p className="px-4 py-3 rounded-sm bg-danger-bg border border-danger-br text-danger text-sm" role="status">
             {dict.admin.users.lastAdminWarning}
           </p>
         )}
 
-        <form method="get" className="gts-filter-bar">
-          <label className="gts-check">
-            <input type="checkbox" name="inactive" value="1" defaultChecked={includeInactive} />
+        <form method="get" className="bg-surface rounded-lg border border-line shadow-raised p-4 flex flex-wrap items-center gap-3">
+          <label className="inline-flex items-center gap-2 text-sm text-fg-secondary h-touch">
+            <input type="checkbox" name="inactive" value="1" defaultChecked={includeInactive} className="accent-brand" />
             {dict.admin.users.includeDeactivated}
           </label>
-          <button type="submit" className="gts-btn gts-btn-secondary">
+          <button
+            type="submit"
+            className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors"
+          >
             {dict.admin.users.apply}
           </button>
         </form>
 
-        <Region title={dict.admin.users.accountsRegion}>
+        <section className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
+          <h2 className="text-lg font-semibold text-fg px-6 pt-6 pb-4">{dict.admin.users.accountsRegion}</h2>
           {users.length === 0 ? (
             <Empty title={dict.admin.users.emptyTitle} body={dict.admin.users.emptyBody} />
           ) : (
@@ -149,26 +153,31 @@ export default async function UsersPage({
               </table>
             </div>
           )}
-        </Region>
+        </section>
 
         {mayManage && (
-          <Region title={dict.admin.users.newAccountRegion}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+            <h2 className="text-lg font-semibold text-fg mb-4">{dict.admin.users.newAccountRegion}</h2>
             <NewUserForm
               roles={roles.map((r) => ({ id: r.id, label: r.nameEn }))}
               dict={dict.admin.users.form}
             />
-          </Region>
+          </section>
         )}
 
         {can(actor, 'employees.view') && (
-          <Region title={dict.admin.users.employeesRegion}>
-            <p className="gts-body">
+          <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+            <h2 className="text-lg font-semibold text-fg mb-3">{dict.admin.users.employeesRegion}</h2>
+            <p className="text-sm text-fg-secondary mb-4">
               {dict.admin.users.employeesBody}
             </p>
-            <a href="/employees" className="gts-btn gts-btn-secondary">
+            <a
+              href="/employees"
+              className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg inline-flex items-center hover:bg-hover transition-colors"
+            >
               {dict.admin.users.openEmployees}
             </a>
-          </Region>
+          </section>
         )}
       </main>
     </Shell>

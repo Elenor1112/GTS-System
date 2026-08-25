@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 
 import { signOut } from '@/app/(auth)/actions';
-import { Glyph } from './glyph';
+import { Icon } from './icon';
 
 /**
  * The mobile "More" sheet.
@@ -87,7 +87,7 @@ export function MobileMore({
                   role="menuitem"
                   aria-current={item.active ? 'page' : undefined}
                 >
-                  <Glyph name={item.icon} />
+                  <Icon name={item.icon} />
                   {item.label}
                 </a>
               ))}
@@ -115,7 +115,7 @@ export function MobileMore({
         aria-haspopup="menu"
         onClick={() => setOpen((v) => !v)}
       >
-        <Glyph name="more" />
+        <Icon name="more_horiz" />
         {strings.more}
       </button>
     </div>

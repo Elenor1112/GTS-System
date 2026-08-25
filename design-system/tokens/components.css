@@ -430,6 +430,42 @@
 }
 .gts-mobile-sheet-item[aria-current='page'] { color: var(--gts-accent); }
 
+/* A centered modal — the desktop counterpart to the mobile sheet:
+   same scrim, but the panel scales in from its own center rather
+   than sliding from an edge, since there is no bottom-of-viewport
+   trigger to anchor it to. */
+.gts-modal-backdrop {
+  position: fixed; inset: 0;
+  background: var(--gts-scrim);
+  z-index: var(--gts-z-modal);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--gts-space-4);
+  animation: gts-fade-in var(--gts-dur-base) var(--gts-ease-move) both;
+}
+.gts-modal {
+  inline-size: 100%; max-inline-size: 28rem;
+  max-block-size: min(85dvh, 36rem);
+  overflow-y: auto;
+  background: var(--gts-bg-surface);
+  border: 1px solid var(--gts-border-default);
+  border-radius: var(--gts-radius-lg);
+  box-shadow: var(--gts-shadow-overlay);
+  padding: var(--gts-space-5);
+  animation: gts-scale-in var(--gts-dur-fast) var(--gts-ease-snap) both;
+}
+.gts-modal-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--gts-space-3);
+  margin-block-end: var(--gts-space-4);
+}
+.gts-modal-close {
+  flex: none; inline-size: var(--gts-touch-min); block-size: var(--gts-touch-min);
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: none; border-radius: var(--gts-radius-sm);
+  color: var(--gts-fg-muted); cursor: pointer;
+}
+.gts-modal-close:hover { background: var(--gts-bg-hover); color: var(--gts-fg-primary); }
+
 /* ============================================================
    LOADING STATES
    Skeletons mirror the SHAPE of incoming content. Never a
@@ -675,7 +711,6 @@
   flex: none; position: relative;
 
   padding: var(--gts-space-3);
-  border-block-start: 1px solid var(--gts-border-inverse);
 }
 .gts-user-button {
   inline-size: 100%;

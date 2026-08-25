@@ -84,19 +84,19 @@ export default async function AuditPage({
 
   return (
     <Shell active="/audit" domain="admin">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={dict.admin.audit.overline}
           title={dict.admin.audit.title}
           lede={`${total.toLocaleString('en-US')} ${dict.admin.audit.lede}`}
         />
 
-        <form method="get" className="gts-filter-bar">
-          <div className="gts-field">
+        <form method="get" className="bg-surface rounded-lg border border-line shadow-raised p-4 flex flex-wrap items-center gap-3">
+          <div>
             <label className="gts-sr" htmlFor="action">
               {dict.admin.audit.filter.actionLabel}
             </label>
-            <select id="action" name="action" defaultValue={action ?? ''} className="gts-input gts-select">
+            <select id="action" name="action" defaultValue={action ?? ''} className="h-touch px-3 rounded-sm border border-line bg-surface text-sm text-fg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none">
               <option value="">{dict.admin.audit.filter.anyAction}</option>
               {ACTIONS.map((a) => (
                 <option key={a} value={a}>
@@ -106,11 +106,11 @@ export default async function AuditPage({
             </select>
           </div>
 
-          <div className="gts-field">
+          <div>
             <label className="gts-sr" htmlFor="actor">
               {dict.admin.audit.filter.personLabel}
             </label>
-            <select id="actor" name="actor" defaultValue={params.actor ?? ''} className="gts-input gts-select">
+            <select id="actor" name="actor" defaultValue={params.actor ?? ''} className="h-touch px-3 rounded-sm border border-line bg-surface text-sm text-fg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none">
               <option value="">{dict.admin.audit.filter.anybody}</option>
               {actors.map((a) => (
                 <option key={a.id} value={a.id}>
@@ -120,11 +120,11 @@ export default async function AuditPage({
             </select>
           </div>
 
-          <div className="gts-field">
+          <div>
             <label className="gts-sr" htmlFor="entity">
               {dict.admin.audit.filter.recordLabel}
             </label>
-            <select id="entity" name="entity" defaultValue={params.entity ?? ''} className="gts-input gts-select">
+            <select id="entity" name="entity" defaultValue={params.entity ?? ''} className="h-touch px-3 rounded-sm border border-line bg-surface text-sm text-fg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none">
               <option value="">{dict.admin.audit.filter.anyRecord}</option>
               {entityTypes.map((e) => (
                 <option key={e.entityType} value={e.entityType}>
@@ -134,28 +134,34 @@ export default async function AuditPage({
             </select>
           </div>
 
-          <button type="submit" className="gts-btn gts-btn-secondary">
+          <button
+            type="submit"
+            className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors"
+          >
             {dict.admin.audit.filter.filterButton}
           </button>
           {(action || params.actor || params.entity) && (
-            <a href="/audit" className="gts-btn gts-btn-ghost">
+            <a href="/audit" className="h-touch px-4 inline-flex items-center text-sm font-medium text-fg-secondary hover:text-fg transition-colors">
               {dict.admin.audit.filter.clearButton}
             </a>
           )}
         </form>
 
         {entries.length === 0 ? (
-          <Empty
-            title={dict.admin.audit.emptyTitle}
-            body={
-              action || params.actor || params.entity
-                ? dict.admin.audit.emptyBodyFiltered
-                : dict.admin.audit.emptyBodyDefault
-            }
-            filtered={Boolean(action || params.actor || params.entity)}
-          />
+          <div className="bg-surface rounded-lg border border-line shadow-raised">
+            <Empty
+              title={dict.admin.audit.emptyTitle}
+              body={
+                action || params.actor || params.entity
+                  ? dict.admin.audit.emptyBodyFiltered
+                  : dict.admin.audit.emptyBodyDefault
+              }
+              filtered={Boolean(action || params.actor || params.entity)}
+            />
+          </div>
         ) : (
           <>
+            <div className="bg-surface rounded-lg border border-line shadow-raised overflow-hidden">
             <div className="gts-table-scroll">
               <table className="gts-table gts-table-compact">
                 <caption className="gts-sr">{dict.admin.audit.tableCaption}</caption>
@@ -214,26 +220,26 @@ export default async function AuditPage({
                 </tbody>
               </table>
             </div>
-
             {pages > 1 && (
-              <nav className="gts-pagination" aria-label={dict.admin.audit.pagination.label}>
-                {page > 1 && (
-                  <a href={query({ page: page - 1 })} className="gts-btn gts-btn-secondary">
+              <nav className="flex items-center justify-between gap-4 px-6 py-4 border-t border-line" aria-label={dict.admin.audit.pagination.label}>
+                {page > 1 ? (
+                  <a href={query({ page: page - 1 })} className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg inline-flex items-center hover:bg-hover transition-colors">
                     {dict.admin.audit.pagination.newer}
                   </a>
-                )}
-                <span className="gts-meta">
+                ) : <span />}
+                <span className="text-xs text-fg-muted">
                   {dict.admin.audit.pagination.pageOf
                     .replace('{page}', String(page))
                     .replace('{pages}', String(pages))}
                 </span>
-                {page < pages && (
-                  <a href={query({ page: page + 1 })} className="gts-btn gts-btn-secondary">
+                {page < pages ? (
+                  <a href={query({ page: page + 1 })} className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg inline-flex items-center hover:bg-hover transition-colors">
                     {dict.admin.audit.pagination.older}
                   </a>
-                )}
+                ) : <span />}
               </nav>
             )}
+            </div>
           </>
         )}
       </main>

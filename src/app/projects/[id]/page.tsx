@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { Amount, Region, Status } from '@/components/primitives';
+import { Amount, Status } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
+import { Icon } from '@/components/icon';
 import { requirePermission } from '@/lib/auth';
 import { can } from '@/lib/permissions';
 import { db } from '@/lib/db';
@@ -17,7 +18,7 @@ import { getLocale } from '@/lib/preferences';
 
 import { LocationForm } from './location-form';
 import { AssignForm, ReleaseButton } from './assign-form';
-import { AllocateForm, RowActions, type StockOption } from './materials-form';
+import { AllocateForm, RowActions, TotalOnSitePrice, type StockOption } from './materials-form';
 
 export const dynamic = 'force-dynamic';
 
@@ -140,7 +141,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
   return (
     <Shell active="/projects" domain="projects">
-      <main className="gts-page">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         <PageHead
           overline={`Project · ${project.code}`}
           title={project.nameEn}
@@ -151,11 +152,19 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                 {statusLabel(dict, project.status)}
               </Status>
               {can(actor, 'projects.edit') && (
-                <a href={`/projects/${project.id}/edit`} className="gts-btn gts-btn-primary">
+                <a
+                  href={`/projects/${project.id}/edit`}
+                  className="h-touch px-4 bg-brand text-fg-on-accent rounded-sm inline-flex items-center gap-2 font-medium text-sm hover:opacity-90 transition-opacity"
+                >
+                  <Icon name="edit" />
                   {d.edit}
                 </a>
               )}
-              <a href={`/projects/${project.id}/print`} className="gts-btn gts-btn-secondary">
+              <a
+                href={`/projects/${project.id}/print`}
+                className="h-touch px-4 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors inline-flex items-center gap-2"
+              >
+                <Icon name="print" />
                 {d.print}
               </a>
             </>
@@ -163,37 +172,39 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
         />
 
         {/* ---------- The site ---------- */}
-        <Region title={d.siteLocationTitle}>
+        <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <h2 className="text-lg font-semibold text-fg mb-4">{d.siteLocationTitle}</h2>
+
           {!project.location && (
-            <p className="gts-form-error" role="status">
+            <p className="px-4 py-3 rounded-sm bg-danger-bg border border-danger-br text-danger text-sm mb-4" role="status">
               {d.noLocationWarning}
             </p>
           )}
 
           {project.location && (
-            <div className="gts-stat-row" style={{ marginBlockEnd: 'var(--gts-space-5)' }}>
-              <div className="gts-stat">
-                <p className="gts-overline">{d.address}</p>
-                <p className="gts-stat-value">{project.location.addressLine}</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+              <div>
+                <p className="text-xs text-fg-muted uppercase tracking-wide">{d.address}</p>
+                <p className="text-sm text-fg mt-2">{project.location.addressLine}</p>
               </div>
-              <div className="gts-stat">
-                <p className="gts-overline">{d.coordinates}</p>
-                <p className="gts-stat-value">
+              <div>
+                <p className="text-xs text-fg-muted uppercase tracking-wide">{d.coordinates}</p>
+                <p className="mt-2">
                   <span className="gts-num gts-num-sm">
                     {project.location.latitude.toString()}, {project.location.longitude.toString()}
                   </span>
                 </p>
               </div>
-              <div className="gts-stat">
-                <p className="gts-overline">{d.checkInRadius}</p>
-                <p className="gts-stat-value">
+              <div>
+                <p className="text-xs text-fg-muted uppercase tracking-wide">{d.checkInRadius}</p>
+                <p className="mt-2">
                   <span className="gts-num gts-num-md">{project.location.radiusMetres}</span>
                   <span className="gts-num-currency">m</span>
                 </p>
               </div>
-              <div className="gts-stat">
-                <p className="gts-overline">{d.navigate}</p>
-                <p className="gts-stat-value">
+              <div>
+                <p className="text-xs text-fg-muted uppercase tracking-wide">{d.navigate}</p>
+                <p className="mt-2">
                   <a
                     href={navigationUrl(
                       {
@@ -204,8 +215,9 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                     )}
                     target="_blank"
                     rel="noreferrer"
-                    className="gts-btn gts-btn-secondary gts-btn-sm"
+                    className="h-touch px-3 rounded-sm border border-line bg-surface text-sm font-medium text-fg hover:bg-hover transition-colors inline-flex items-center gap-2"
                   >
+                    <Icon name="map" size={18} />
                     {d.openInMaps}
                   </a>
                 </p>
@@ -239,10 +251,12 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
               </p>
             )
           )}
-        </Region>
+        </section>
 
         {/* ---------- The team ---------- */}
-        <Region title={`${d.teamTitle} (${live.length})`}>
+        <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+          <h2 className="text-lg font-semibold text-fg mb-4">{`${d.teamTitle} (${live.length})`}</h2>
+
           {can(actor, 'projects.assign') && (
             <AssignForm
               projectId={project.id}
@@ -258,7 +272,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
               body={d.emptyTeamBody}
             />
           ) : (
-            <div className="gts-table-scroll">
+            <div className="gts-table-scroll mt-4">
               <table className="gts-table gts-table-comfortable">
                 <thead>
                   <tr>
@@ -321,11 +335,13 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
               </table>
             </div>
           )}
-        </Region>
+        </section>
 
         {/* ---------- Materials ---------- */}
         {can(actor, 'inventory.view') && (
-          <Region title={d.materialsTitle}>
+          <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+            <h2 className="text-lg font-semibold text-fg mb-4">{d.materialsTitle}</h2>
+
             {canMoveStock && (
               <AllocateForm
                 projectId={project.id}
@@ -341,7 +357,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                 body={d.emptyMaterialsBody}
               />
             ) : (
-              <div className="gts-table-scroll">
+              <div className="gts-table-scroll mt-4">
                 <table className="gts-table gts-table-comfortable">
                   <thead>
                     <tr>
@@ -352,73 +368,94 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                       <th scope="col" className="gts-cell-num">{d.colDamaged}</th>
                       <th scope="col" className="gts-cell-num">{d.colInTransit}</th>
                       <th scope="col" className="gts-cell-num">{d.colOnSite}</th>
+                      <th scope="col" className="gts-cell-num">{d.colTotalPrice}</th>
                       {canMoveStock && <th scope="col" />}
                     </tr>
                   </thead>
                   <tbody>
-                    {project.products.map((row) => (
-                      <tr key={row.id}>
-                        <th scope="row">
-                          <a href={`/products/${row.product.id}`} className="gts-cell-link">
-                            {row.product.nameEn}
-                          </a>
-                          <span className="gts-meta gts-cell-sub">
-                            <bdi>{row.product.sku}</bdi> · {row.product.unit}
-                          </span>
-                        </th>
-                        <td className="gts-cell-num">{row.position.allocated.toString()}</td>
-                        <td className="gts-cell-num">{row.position.delivered.toString()}</td>
-                        <td className="gts-cell-num">
-                          {row.position.returned.isZero() ? (
-                            <span className="gts-meta">—</span>
-                          ) : (
-                            row.position.returned.toString()
-                          )}
-                        </td>
-                        <td className="gts-cell-num">
-                          {row.position.damaged.isZero() ? (
-                            <span className="gts-meta">—</span>
-                          ) : (
-                            <Status tone="warning">{row.position.damaged.toString()}</Status>
-                          )}
-                        </td>
-                        <td className="gts-cell-num">
-                          {row.position.inTransit.isZero() ? (
-                            <span className="gts-meta">—</span>
-                          ) : (
-                            row.position.inTransit.toString()
-                          )}
-                        </td>
-                        <td className="gts-cell-num">
-                          <strong>{row.position.remaining.toString()}</strong>
-                        </td>
-                        {canMoveStock && (
-                          <td>
-                            <RowActions
+                    {project.products.map((row) => {
+                      const unitPrice = (row.agreedPrice ?? row.product.salePrice).toNumber();
+                      const totalPrice = row.position.remaining.toNumber() * unitPrice;
+                      return (
+                        <tr key={row.id}>
+                          <th scope="row">
+                            <a href={`/products/${row.product.id}`} className="gts-cell-link">
+                              {row.product.nameEn}
+                            </a>
+                            <span className="gts-meta gts-cell-sub">
+                              <bdi>{row.product.sku}</bdi> · {row.product.unit}
+                            </span>
+                          </th>
+                          <td className="gts-cell-num">{row.position.allocated.toString()}</td>
+                          <td className="gts-cell-num">{row.position.delivered.toString()}</td>
+                          <td className="gts-cell-num">
+                            {row.position.returned.isZero() ? (
+                              <span className="gts-meta">—</span>
+                            ) : (
+                              row.position.returned.toString()
+                            )}
+                          </td>
+                          <td className="gts-cell-num">
+                            {row.position.damaged.isZero() ? (
+                              <span className="gts-meta">—</span>
+                            ) : (
+                              <Status tone="warning">{row.position.damaged.toString()}</Status>
+                            )}
+                          </td>
+                          <td className="gts-cell-num">
+                            {row.position.inTransit.isZero() ? (
+                              <span className="gts-meta">—</span>
+                            ) : (
+                              row.position.inTransit.toString()
+                            )}
+                          </td>
+                          <td className="gts-cell-num">
+                            <strong>{row.position.remaining.toString()}</strong>
+                          </td>
+                          <td className="gts-cell-num">
+                            <TotalOnSitePrice
                               projectId={project.id}
                               productId={row.product.id}
                               productName={row.product.nameEn}
                               unit={row.product.unit}
+                              totalPrice={totalPrice}
                               inTransit={row.position.inTransit.toString()}
                               onSite={row.position.remaining.toString()}
                               warehouses={warehouses}
+                              canMoveStock={canMoveStock}
+                              locale={locale}
                               dict={dict.operations.projects.materials}
                             />
                           </td>
-                        )}
-                      </tr>
-                    ))}
+                          {canMoveStock && (
+                            <td>
+                              <RowActions
+                                projectId={project.id}
+                                productId={row.product.id}
+                                productName={row.product.nameEn}
+                                unit={row.product.unit}
+                                inTransit={row.position.inTransit.toString()}
+                                onSite={row.position.remaining.toString()}
+                                warehouses={warehouses}
+                                dict={dict.operations.projects.materials}
+                              />
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
             )}
-          </Region>
+          </section>
         )}
 
         {/* ---------- Financials ---------- */}
         {financials && (
-          <Region title={d.financialTitle}>
-            <div className="gts-stat-row">
+          <section className="bg-surface rounded-lg border border-line shadow-raised p-6">
+            <h2 className="text-lg font-semibold text-fg mb-4">{d.financialTitle}</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               <Figure label={d.figureBudget} value={financials.budget?.toNumber() ?? null} notSet={d.notSet} locale={locale} />
               <Figure label={d.figureBilled} value={financials.billed.toNumber()} notSet={d.notSet} locale={locale} />
               <Figure label={d.figureCollected} value={financials.collected.toNumber()} notSet={d.notSet} locale={locale} />
@@ -442,7 +479,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                 {financials.attendanceDays} {financials.attendanceDays === 1 ? d.attendanceDay_one : d.attendanceDay_other}
               </p>
             )}
-          </Region>
+          </section>
         )}
       </main>
     </Shell>
@@ -463,9 +500,9 @@ function Figure({
   locale: 'en' | 'ar';
 }) {
   return (
-    <div className="gts-stat">
-      <p className="gts-overline">{label}</p>
-      <p className={tone ? `gts-stat-value gts-stat-${tone}` : 'gts-stat-value'}>
+    <div className="bg-inset rounded-lg border border-line p-4 min-w-0">
+      <p className="text-xs text-fg-muted uppercase tracking-wide truncate">{label}</p>
+      <p className={`mt-2 min-w-0 gts-num-fit ${tone === 'danger' ? 'text-danger' : tone === 'warning' ? 'text-warning' : ''}`}>
         {value === null ? (
           <span className="gts-meta">{notSet}</span>
         ) : (
