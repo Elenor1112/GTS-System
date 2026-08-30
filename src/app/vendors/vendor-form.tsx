@@ -3,9 +3,9 @@
 import { useActionState, useEffect } from 'react';
 
 import {
-  FormError, FormActions, FieldGrid, TextField, SelectField, TextArea, Submit, errorFor,
+  FormError, FormActions, FieldGrid, TextField, SelectField, SelectWithOtherField, TextArea, Submit, errorFor,
 } from '@/components/form';
-import { GOVERNORATES } from '@/lib/egypt';
+import { GOVERNORATES, VENDOR_FIELDS } from '@/lib/egypt';
 import type { CatalogueDict } from '@/lib/i18n/dict/catalogue';
 
 import { submitCreateVendor, submitUpdateVendor } from './actions';
@@ -29,6 +29,7 @@ export interface VendorFormValues {
   trn: string | null;
   commercialRegNo: string | null;
   governorateCode: number | null;
+  field: string | null;
   addressLine: string | null;
   contactName: string | null;
   contactPhone: string | null;
@@ -75,15 +76,17 @@ export function VendorForm({
       {mode === 'edit' && values?.id && <input type="hidden" name="vendorId" value={values.id} />}
 
       <FieldGrid>
-        <TextField
-          name="code"
-          label={dict.codeLabel}
-          hint={dict.codeHint}
-          required
-          defaultValue={values?.code}
-          error={e('code')}
-          maxLength={32}
-        />
+        {mode === 'edit' && (
+          <TextField
+            name="code"
+            label={dict.codeLabel}
+            hint={dict.codeHint}
+            required
+            defaultValue={values?.code}
+            error={e('code')}
+            maxLength={32}
+          />
+        )}
         <TextField
           name="nameEn"
           label={dict.nameEnLabel}
@@ -122,6 +125,15 @@ export function VendorForm({
           defaultValue={values?.governorateCode ?? ''}
           error={e('governorateCode')}
           options={GOVERNORATES.map((g) => ({ value: g.code, label: `${g.en} — ${g.ar}` }))}
+        />
+        <SelectWithOtherField
+          name="field"
+          label={dict.fieldLabel}
+          placeholder={dict.fieldPlaceholder}
+          defaultValue={values?.field}
+          error={e('field')}
+          options={VENDOR_FIELDS}
+          otherPlaceholder={dict.fieldOtherPlaceholder}
         />
       </FieldGrid>
 

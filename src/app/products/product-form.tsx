@@ -71,15 +71,17 @@ export function ProductForm({
       {mode === 'edit' && values?.id && <input type="hidden" name="productId" value={values.id} />}
 
       <FieldGrid>
-        <TextField
-          name="sku"
-          label={dict.skuLabel}
-          hint={dict.skuHint}
-          required
-          defaultValue={values?.sku}
-          error={e('sku')}
-          maxLength={64}
-        />
+        {mode === 'edit' && (
+          <TextField
+            name="sku"
+            label={dict.skuLabel}
+            hint={dict.skuHint}
+            required
+            defaultValue={values?.sku}
+            error={e('sku')}
+            maxLength={64}
+          />
+        )}
         <TextField
           name="nameEn"
           label={dict.nameEnLabel}

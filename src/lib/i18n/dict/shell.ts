@@ -48,6 +48,7 @@ export interface ShellDict {
     alerts: string;
     account: string;
     signOut: string;
+    help: string;
   };
   preferences: {
     appearance: string;
@@ -100,7 +101,7 @@ export const en: ShellDict = {
     clients: 'Clients',
     vendors: 'Vendors',
     projects: 'Projects',
-    storage: 'Storage',
+    storage: 'Warehouses',
     products: 'Products',
     employees: 'Employees',
     attendance: 'Attendance',
@@ -120,6 +121,7 @@ export const en: ShellDict = {
     alerts: 'Alerts',
     account: 'Your account',
     signOut: 'Sign out',
+    help: 'Help',
   },
   preferences: {
     appearance: 'Appearance',
@@ -192,6 +194,7 @@ export const ar: ShellDict = {
     alerts: 'التنبيهات',
     account: 'حسابك',
     signOut: 'تسجيل الخروج',
+    help: 'المساعدة',
   },
   preferences: {
     appearance: 'المظهر',

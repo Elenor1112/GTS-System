@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useFormStatus } from 'react-dom';
 
 import { type ActionResult, errorFor } from '@/lib/action-result';
@@ -165,6 +165,82 @@ export function SelectField({
         ))}
       </select>
     </Field>
+  );
+}
+
+/**
+ * A select whose last option is "Other" — choosing it reveals a text
+ * input (posted under `${name}Other`) instead of constraining the value
+ * to the fixed list.
+ *
+ * `defaultValue` may be any free-text value that isn't one of `options`;
+ * that case starts the control already switched to "Other" with the text
+ * box pre-filled, so editing a record saved before an option existed (or
+ * with a one-off value) doesn't silently discard it.
+ */
+export function SelectWithOtherField({
+  name,
+  label,
+  hint,
+  error,
+  required,
+  defaultValue,
+  options,
+  placeholder,
+  otherLabel = 'Other',
+  otherPlaceholder,
+}: {
+  name: string;
+  label: string;
+  hint?: string;
+  error?: string;
+  required?: boolean;
+  defaultValue?: string | null;
+  options: readonly string[];
+  placeholder?: string;
+  otherLabel?: string;
+  otherPlaceholder?: string;
+}) {
+  const knownValue = defaultValue && options.includes(defaultValue) ? defaultValue : '';
+  const startsAsOther = Boolean(defaultValue) && !knownValue;
+  const [isOther, setIsOther] = useState(startsAsOther);
+
+  return (
+    <>
+      <Field name={name} label={label} hint={isOther ? undefined : hint} error={error} required={required}>
+        <select
+          id={name}
+          name={name}
+          required={required}
+          defaultValue={isOther ? otherLabel : knownValue}
+          onChange={(e) => setIsOther(e.target.value === otherLabel)}
+          className="gts-input gts-select"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${name}-error` : hint ? `${name}-hint` : undefined}
+        >
+          {placeholder && <option value="">{placeholder}</option>}
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+          <option value={otherLabel}>{otherLabel}</option>
+        </select>
+      </Field>
+      {isOther && (
+        <Field name={`${name}Other`} label={otherLabel} hint={hint}>
+          <input
+            id={`${name}Other`}
+            name={`${name}Other`}
+            type="text"
+            defaultValue={startsAsOther ? defaultValue ?? '' : ''}
+            placeholder={otherPlaceholder}
+            maxLength={100}
+            className="gts-input"
+          />
+        </Field>
+      )}
+    </>
   );
 }
 

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Shell, PageHead, Empty } from '@/components/shell';
 import { Icon } from '@/components/icon';
 import { requirePermission } from '@/lib/auth';
+import { can } from '@/lib/permissions';
 import { listEmployees, employeeFilterOptions } from '@/lib/services/people';
 import { formatDate } from '@/lib/format';
 import { t } from '@/lib/i18n';
@@ -25,7 +26,7 @@ export default async function EmployeesPage({
 }: {
   searchParams: Promise<{ q?: string; position?: string; department?: string; project?: string; inactive?: string }>;
 }) {
-  await requirePermission('employees.view');
+  const actor = await requirePermission('employees.view');
   const params = await searchParams;
   const dict = await t();
   const locale = await getLocale();
@@ -53,6 +54,17 @@ export default async function EmployeesPage({
           lede={dict.people.employees.countLede
             .replace('{count}', String(employees.length))
             .replace('{plural}', employees.length === 1 ? '' : 's')}
+          actions={
+            can(actor, 'employees.manage') ? (
+              <a
+                href="/employees/new"
+                className="h-touch px-4 bg-brand text-fg-on-accent rounded-sm inline-flex items-center gap-2 font-medium text-sm hover:opacity-90 transition-opacity"
+              >
+                <Icon name="add" />
+                {dict.people.employees.newEmployee}
+              </a>
+            ) : undefined
+          }
         />
 
         <form method="get" className="bg-surface rounded-lg border border-line shadow-raised p-4 flex flex-wrap items-center gap-3" role="search">
@@ -161,7 +173,13 @@ export default async function EmployeesPage({
                 {employees.map((employee) => (
                   <tr key={employee.id}>
                     <th scope="row">
-                      {employee.nameEn}
+                      {can(actor, 'employees.manage') ? (
+                        <a href={`/employees/${employee.id}/edit`} className="gts-cell-link">
+                          {employee.nameEn}
+                        </a>
+                      ) : (
+                        employee.nameEn
+                      )}
                       <span className="gts-meta gts-cell-sub">{employee.code}</span>
                     </th>
                     <td>{employee.jobTitleEn}</td>

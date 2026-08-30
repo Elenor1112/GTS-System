@@ -175,8 +175,19 @@ export default async function DashboardPage() {
               tone={data.netPosition.toNumber() < 0 ? 'danger' : undefined}
             />
             <MetricCard
+              icon="account_balance_wallet"
+              label={dict.overview.dashboard.cashBalance}
+              value={money(data.cashBalance.toNumber(), locale)}
+              tone={data.cashBalance.toNumber() < 0 ? 'danger' : undefined}
+            />
+            <MetricCard
+              icon="payments"
+              label={dict.overview.dashboard.collectedThisMonth}
+              value={money(data.collectedThisMonth.toNumber(), locale)}
+            />
+            <MetricCard
               icon="arrow_downward"
-              label={dict.overview.dashboard.moneyComingIn}
+              label={dict.overview.dashboard.receivable}
               value={money(data.receivable.toNumber(), locale)}
               trend={
                 data.overdueReceivable.greaterThan(0) ? (
@@ -188,9 +199,9 @@ export default async function DashboardPage() {
               }
             />
             <MetricCard
-              icon="payments"
-              label={dict.overview.dashboard.collectedThisMonth}
-              value={money(data.collectedThisMonth.toNumber(), locale)}
+              icon="arrow_upward"
+              label={dict.overview.dashboard.payable}
+              value={money(data.payable.toNumber(), locale)}
             />
           </section>
         ) : (

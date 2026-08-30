@@ -3,6 +3,7 @@ export interface OverviewDict {
   overview: {
   dashboard: {
     netPosition: string;
+    cashBalance: string;
     yourWorkspace: string;
     goodMorning: string;
     receivable: string;
@@ -145,10 +146,11 @@ export const en: OverviewDict = {
   overview: {
   dashboard: {
     netPosition: 'Net position',
+    cashBalance: 'Cash balance',
     yourWorkspace: 'Your workspace',
     goodMorning: 'Good morning',
     receivable: 'Receivable',
-    payable: 'payable',
+    payable: 'Payable',
     overdue: 'overdue',
     activeProjectsSummary: 'active project',
     activeProjectsSummaryPlural: 'active projects',
@@ -168,7 +170,7 @@ export const en: OverviewDict = {
     needsAttention: 'Needs attention',
     nothingNeedsYou: 'Nothing needs you',
     nothingNeedsYouBody: 'No overdue bills, no low stock, nothing waiting on your approval.',
-    storage: 'Storage',
+    storage: 'Warehouses',
     all: 'All',
     noWarehouses: 'No warehouses',
     createWarehouseHint: 'Create one to start receiving stock.',
@@ -287,6 +289,7 @@ export const ar: OverviewDict = {
   overview: {
   dashboard: {
     netPosition: 'صافي المركز المالي',
+    cashBalance: 'الرصيد النقدي',
     yourWorkspace: 'مساحة عملك',
     goodMorning: 'صباح الخير',
     receivable: 'مستحق القبض',

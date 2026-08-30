@@ -5,8 +5,8 @@ import { Shell, PageHead, Empty } from '@/components/shell';
 import { Icon } from '@/components/icon';
 import { requirePermission } from '@/lib/auth';
 import { can } from '@/lib/permissions';
-import { listVendors } from '@/lib/services/vendors';
-import { GOVERNORATES, TRN } from '@/lib/egypt';
+import { listVendors, listVendorFields } from '@/lib/services/vendors';
+import { GOVERNORATES, VENDOR_FIELDS, TRN } from '@/lib/egypt';
 import { t } from '@/lib/i18n';
 import { getLocale } from '@/lib/preferences';
 
@@ -23,18 +23,29 @@ export const dynamic = 'force-dynamic';
 export default async function VendorsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; archived?: string }>;
+  searchParams: Promise<{ q?: string; archived?: string; field?: string; governorate?: string }>;
 }) {
   const actor = await requirePermission('vendors.view');
   const params = await searchParams;
-  const [dict, locale] = await Promise.all([t(), getLocale()]);
+  const [dict, locale, availableFields] = await Promise.all([t(), getLocale(), listVendorFields()]);
   const d = dict.catalogue.vendors.list;
 
   const includeArchived = params.archived === '1';
-  const vendors = await listVendors({ search: params.q, includeArchived });
+  const governorateCode = params.governorate ? Number(params.governorate) : undefined;
+  const vendors = await listVendors({
+    search: params.q,
+    includeArchived,
+    field: params.field || undefined,
+    governorateCode,
+  });
 
   const governorate = (code: number | null) =>
     code ? GOVERNORATES.find((g) => g.code === code)?.en ?? '—' : '—';
+
+  // Fixed list first, then any "Other" free-text values actually in use —
+  // so the filter can select a vendor's field even when it isn't one of
+  // the presets.
+  const fieldOptions = [...VENDOR_FIELDS, ...availableFields.filter((f) => !(VENDOR_FIELDS as readonly string[]).includes(f))];
 
   const totalOwed = vendors.reduce((sum, v) => sum + v.outstanding.toNumber(), 0);
   const totalOverdue = vendors.reduce((sum, v) => sum + v.overdue.toNumber(), 0);
@@ -82,6 +93,38 @@ export default async function VendorsPage({
               />
             </div>
           </div>
+          <div>
+            <label className="gts-sr" htmlFor="field">
+              {d.fieldLabel}
+            </label>
+            <select
+              id="field"
+              name="field"
+              defaultValue={params.field ?? ''}
+              className="h-touch px-3 rounded-sm border border-line bg-surface text-sm text-fg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none transition-colors"
+            >
+              <option value="">{d.allFields}</option>
+              {fieldOptions.map((f) => (
+                <option key={f} value={f}>{f}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="gts-sr" htmlFor="governorate">
+              {d.governorateLabel}
+            </label>
+            <select
+              id="governorate"
+              name="governorate"
+              defaultValue={params.governorate ?? ''}
+              className="h-touch px-3 rounded-sm border border-line bg-surface text-sm text-fg focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none transition-colors"
+            >
+              <option value="">{d.allGovernorates}</option>
+              {GOVERNORATES.map((g) => (
+                <option key={g.code} value={g.code}>{g.en}</option>
+              ))}
+            </select>
+          </div>
           <label className="inline-flex items-center gap-2 text-sm text-fg-secondary h-touch">
             <input type="checkbox" name="archived" value="1" defaultChecked={includeArchived} className="accent-brand" />
             {d.includeArchived}
@@ -92,7 +135,7 @@ export default async function VendorsPage({
           >
             {d.search}
           </button>
-          {(params.q || includeArchived) && (
+          {(params.q || includeArchived || params.field || params.governorate) && (
             <a href="/vendors" className="h-touch px-4 inline-flex items-center text-sm font-medium text-fg-secondary hover:text-fg transition-colors">
               {d.clear}
             </a>
@@ -102,13 +145,13 @@ export default async function VendorsPage({
         {vendors.length === 0 ? (
           <div className="bg-surface rounded-lg border border-line shadow-raised">
             <Empty
-              title={params.q ? d.emptySearchTitle : d.emptyTitle}
+              title={params.q || params.field || params.governorate ? d.emptySearchTitle : d.emptyTitle}
               body={
-                params.q
+                params.q || params.field || params.governorate
                   ? d.emptySearchBody
                   : d.emptyBody
               }
-              filtered={Boolean(params.q)}
+              filtered={Boolean(params.q || params.field || params.governorate)}
               action={
                 can(actor, 'vendors.create') && !params.q ? (
                   <a
@@ -132,6 +175,7 @@ export default async function VendorsPage({
                   <th scope="col">{d.colVendor}</th>
                   <th scope="col">{d.colTaxNumber}</th>
                   <th scope="col">{d.colGovernorate}</th>
+                  <th scope="col">{d.colField}</th>
                   <th scope="col" className="gts-cell-num">{d.colProducts}</th>
                   <th scope="col" className="gts-cell-num">{d.colPayable}</th>
                   <th scope="col" className="gts-cell-num">{d.colOverdue}</th>
@@ -155,6 +199,7 @@ export default async function VendorsPage({
                       </bdi>
                     </td>
                     <td>{governorate(vendor.governorateCode)}</td>
+                    <td>{vendor.field ?? <span className="gts-meta">—</span>}</td>
                     <td className="gts-cell-num">
                       <span className="gts-num gts-num-sm">{vendor.productCount}</span>
                     </td>
@@ -180,7 +225,7 @@ export default async function VendorsPage({
               {totalOwed > 0 && (
                 <tfoot>
                   <tr>
-                    <th scope="row" colSpan={4}>
+                    <th scope="row" colSpan={5}>
                       {d.total}
                     </th>
                     <td className="gts-cell-num">

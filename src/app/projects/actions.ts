@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 import { action, formToObject, dateOnly, optionalText, requiredText, id, checkbox } from '@/lib/action';
+import { can } from '@/lib/permissions';
+import { ForbiddenError } from '@/lib/auth';
 import {
   createProject, updateProject, setProjectLocation,
   assignEmployee, releaseEmployee, archiveProject,
@@ -22,7 +24,6 @@ const optionalDate = z
   );
 
 const projectSchema = z.object({
-  code: requiredText('Project code', 32),
   nameEn: requiredText('Name', 200),
   nameAr: optionalText,
   clientId: id,
@@ -38,11 +39,120 @@ const projectSchema = z.object({
   notes: optionalText,
 });
 
+/* ============================================================
+   CREATE — with optional day-one location, team member, material
+
+   The create form may carry three optional bundles alongside the base
+   project fields, posted with dotted names (`location.addressLine`,
+   `material.productId`, …) because that reads better in the form than
+   an invented flat-name scheme. `unflattenGroups` below turns those
+   into nested objects before Zod sees them.
+
+   Each bundle still runs through its OWN permission check inside the
+   handler, not just `projects.create` — the page only renders a bundle's
+   fields to someone who already holds that permission, but the action
+   must not trust the client for that; a request forged with those keys
+   must fail exactly as it would from the dedicated form.
+   ============================================================ */
+
+function unflattenGroups(raw: Record<string, unknown>, prefixes: string[]) {
+  const out: Record<string, unknown> = { ...raw };
+  for (const prefix of prefixes) {
+    const group: Record<string, unknown> = {};
+    let found = false;
+    for (const key of Object.keys(raw)) {
+      if (!key.startsWith(`${prefix}.`)) continue;
+      group[key.slice(prefix.length + 1)] = raw[key];
+      delete out[key];
+      found = true;
+    }
+    if (found) out[prefix] = group;
+  }
+  return out;
+}
+
+const optionalLocationSchema = z
+  .object({
+    addressLine: requiredText('Address', 300),
+    governorateCode: z.coerce
+      .number()
+      .refine((v) => GOVERNORATE_CODES.has(v), 'Choose one of the 27 governorates'),
+    latitude: z.coerce
+      .number()
+      .refine(Number.isFinite, 'Enter a latitude')
+      .refine((v) => v >= -90 && v <= 90, 'Latitude must be between −90 and 90'),
+    longitude: z.coerce
+      .number()
+      .refine(Number.isFinite, 'Enter a longitude')
+      .refine((v) => v >= -180 && v <= 180, 'Longitude must be between −180 and 180'),
+    radiusMetres: z.coerce
+      .number()
+      .int('The radius must be a whole number of metres')
+      .refine((v) => v >= 25 && v <= 5000, 'The radius must be between 25m and 5km'),
+    siteType: z.enum(['office', 'warehouse', 'site', 'yard']).optional(),
+  })
+  .optional();
+
+const optionalMaterialSchema = z
+  .object({
+    productId: id,
+    warehouseId: id,
+    quantity: z.coerce
+      .number({ message: 'Enter a quantity' })
+      .refine(Number.isFinite, 'Enter a quantity')
+      .positive('The quantity must be greater than zero'),
+    agreedPrice: z.preprocess(
+      (v) => (v === '' || v === undefined || v === null ? null : v),
+      z.union([z.coerce.number().nonnegative('A price cannot be negative'), z.null()]),
+    ),
+  })
+  .optional();
+
+// A checkbox list posts one value per box checked: none, one bare
+// string, or several — `formToObject` only produces an array once
+// there are two or more, so a single checked box needs folding back
+// into a one-element array here.
+const idList = z.preprocess(
+  (v) => (v === undefined ? [] : Array.isArray(v) ? v : [v]),
+  z.array(id),
+);
+
+const createProjectSchema = projectSchema.extend({
+  location: optionalLocationSchema,
+  assignEmployeeIds: idList,
+  roleOnSite: optionalText,
+  material: optionalMaterialSchema,
+});
+
 const createProjectAction = action({
   permission: 'projects.create',
-  input: projectSchema,
-  handler: async (input, { actor }) => {
+  input: createProjectSchema,
+  handler: async ({ location, assignEmployeeIds, roleOnSite, material, ...input }, { actor }) => {
     const project = await createProject({ actor, input });
+
+    // Only a filled-in address means the section was actually opened —
+    // an empty object never reaches here because `location` is omitted
+    // from the posted form entirely when the checkbox is off.
+    if (location) {
+      if (!can(actor, 'projects.location')) throw new ForbiddenError('projects.location');
+      await setProjectLocation({ actor, projectId: project.id, input: location });
+    }
+
+    if (assignEmployeeIds.length > 0) {
+      if (!can(actor, 'projects.assign')) throw new ForbiddenError('projects.assign');
+      // Sequential, not Promise.all: each call re-reads the project's
+      // open/closed status and re-checks for a duplicate assignment,
+      // and concurrent writes to the same project row would race that.
+      for (const employeeId of assignEmployeeIds) {
+        await assignEmployee({ actor, projectId: project.id, employeeId, roleOnSite });
+      }
+    }
+
+    if (material) {
+      if (!can(actor, 'inventory.manage')) throw new ForbiddenError('inventory.manage');
+      await allocateToProject({ actor, projectId: project.id, ...material });
+    }
+
     revalidatePath('/projects');
     return { id: project.id, code: project.code };
   },
@@ -50,7 +160,7 @@ const createProjectAction = action({
 
 const updateProjectAction = action({
   permission: 'projects.edit',
-  input: projectSchema.partial().extend({ projectId: id }),
+  input: projectSchema.partial().extend({ projectId: id, code: requiredText('Project code', 32) }),
   handler: async ({ projectId, ...input }, { actor }) => {
     const project = await updateProject({ actor, projectId, input });
     revalidatePath('/projects');
@@ -242,7 +352,7 @@ const returnAction = action({
 /* ---- Form adapters ---- */
 
 export async function submitCreateProject(_previous: unknown, formData: FormData) {
-  return createProjectAction(formToObject(formData));
+  return createProjectAction(unflattenGroups(formToObject(formData), ['location', 'material']));
 }
 
 export async function submitUpdateProject(_previous: unknown, formData: FormData) {

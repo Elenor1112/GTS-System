@@ -1076,6 +1076,36 @@ a.gts-list-title:hover { color: var(--gts-accent); text-decoration: underline;
   padding-block-start: var(--gts-space-5);
   border-block-start: 1px solid var(--gts-border-hairline);
 }
+
+/* An optional block within a form, toggled open by its own checkbox —
+   the site location, an initial team member, an initial allocation on
+   the new-project form. */
+.gts-form-section {
+  padding-block-start: var(--gts-space-5);
+  border-block-start: 1px solid var(--gts-border-hairline);
+}
+.gts-checkbox-label {
+  display: inline-flex; align-items: center; gap: var(--gts-space-2);
+  font: var(--gts-role-label);
+  color: var(--gts-fg);
+  cursor: pointer;
+}
+
+/* A checklist of records — several employees to assign at once. */
+.gts-checkbox-list {
+  display: flex; flex-direction: column; gap: var(--gts-space-2);
+  max-block-size: 14rem; overflow-y: auto;
+  padding: var(--gts-space-3);
+  border: 1px solid var(--gts-border-hairline);
+  border-radius: var(--gts-radius-sm);
+  background: var(--gts-bg-surface);
+}
+.gts-checkbox-list-item {
+  display: flex; align-items: center; gap: var(--gts-space-2);
+  font: var(--gts-role-body-sm);
+  color: var(--gts-fg);
+  cursor: pointer;
+}
 @media (max-width: 430px) {
   .gts-form-actions { flex-direction: column-reverse }
   .gts-form-actions .gts-btn { inline-size: 100% }
@@ -1114,6 +1144,24 @@ a.gts-list-title:hover { color: var(--gts-accent); text-decoration: underline;
 
 /* Location helpers sit below the coordinate fields. */
 .gts-location-tools { display: flex; gap: var(--gts-space-3); flex-wrap: wrap }
+
+/* The click-to-pin map. Rounded and bordered like the rest of the
+   form's inputs, so it reads as part of the field group rather than a
+   third-party widget dropped in. */
+.gts-map-picker {
+  margin-block: var(--gts-space-4);
+}
+.gts-map-picker .leaflet-container {
+  border-radius: var(--gts-radius-sm);
+  border: 1px solid var(--gts-border-hairline);
+}
+.gts-map-picker-loading {
+  height: 18rem;
+  border-radius: var(--gts-radius-sm);
+  border: 1px solid var(--gts-border-hairline);
+  background: var(--gts-bg-inset);
+  margin-block: var(--gts-space-4);
+}
 @media (max-width: 430px) {
   .gts-assign-form, .gts-location-tools { align-items: stretch }
   .gts-assign-form .gts-btn, .gts-location-tools .gts-btn { inline-size: 100% }

@@ -63,6 +63,7 @@ export default async function VendorPage({ params }: { params: Promise<{ id: str
           lede={
             [
               vendor.contactName,
+              vendor.field,
               governorate,
               vendor.trn ? `TRN ${TRN.format(vendor.trn)}` : null,
             ]

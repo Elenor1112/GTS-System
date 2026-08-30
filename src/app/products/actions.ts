@@ -37,7 +37,6 @@ const decimalTextOrZero = (label: string, opts: { min?: number; max?: number } =
   z.preprocess((v) => (v === '' || v === undefined || v === null ? '0' : v), decimalText(label, opts));
 
 const productSchema = z.object({
-  sku: requiredText('SKU', 64),
   nameEn: requiredText('Name', 200),
   nameAr: optionalText,
   // An unselected <select> posts "". Normalise to null before the id
@@ -80,7 +79,7 @@ const createProductAction = action({
 
 const updateProductAction = action({
   permission: 'products.edit',
-  input: productSchema.partial().extend({ productId: id }),
+  input: productSchema.partial().extend({ productId: id, sku: requiredText('SKU', 64) }),
   handler: async ({ productId, ...input }, { actor }) => {
     const product = await updateProduct({ actor, productId, input });
     revalidatePath('/products');

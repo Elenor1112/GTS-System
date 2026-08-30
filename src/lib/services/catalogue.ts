@@ -2,10 +2,11 @@ import 'server-only';
 
 import { Prisma } from '@prisma/client';
 
-import { db } from '../db';
+import { db, transaction } from '../db';
 import { DomainError } from '../errors';
 import { writeAudit, writeUpdateAudit } from './audit';
 import { receiveStock } from './inventory';
+import { nextCode } from './counters';
 
 /**
  * GTS — products and warehouses.
@@ -129,7 +130,8 @@ export async function productDetail(productId: string) {
 }
 
 export interface ProductInput {
-  sku: string;
+  /** Omitted on create — the server assigns the next PRD-0001-style SKU. */
+  sku?: string;
   nameEn: string;
   nameAr?: string | null;
   categoryId?: string | null;
@@ -150,12 +152,6 @@ export interface ProductInput {
 export async function createProduct(params: { actor: ActorRef; input: ProductInput }) {
   const { input, actor } = params;
 
-  const clash = await db.product.findFirst({
-    where: { deletedAt: null, sku: input.sku },
-    select: { id: true },
-  });
-  if (clash) throw new CatalogueError('DUPLICATE', `SKU ${input.sku} is already in use.`);
-
   if (input.warehouseId) {
     const warehouse = await db.warehouse.findFirst({
       where: { id: input.warehouseId, deletedAt: null },
@@ -164,21 +160,24 @@ export async function createProduct(params: { actor: ActorRef; input: ProductInp
     if (!warehouse) throw new CatalogueError('NOT_FOUND', 'That warehouse does not exist.');
   }
 
-  const product = await db.product.create({
-    data: {
-      sku: input.sku,
-      nameEn: input.nameEn,
-      nameAr: input.nameAr ?? null,
-      categoryId: input.categoryId ?? null,
-      vendorId: input.vendorId ?? null,
-      brand: input.brand ?? null,
-      unit: input.unit,
-      gpcCode: input.gpcCode ?? null,
-      costPrice: D(input.costPrice),
-      salePrice: D(input.salePrice),
-      vatRate: D(input.vatRate),
-      reorderLevel: D(input.reorderLevel),
-    },
+  const product = await transaction(async (tx) => {
+    const sku = input.sku ?? (await nextCode(tx, 'product'));
+    return tx.product.create({
+      data: {
+        sku,
+        nameEn: input.nameEn,
+        nameAr: input.nameAr ?? null,
+        categoryId: input.categoryId ?? null,
+        vendorId: input.vendorId ?? null,
+        brand: input.brand ?? null,
+        unit: input.unit,
+        gpcCode: input.gpcCode ?? null,
+        costPrice: D(input.costPrice),
+        salePrice: D(input.salePrice),
+        vatRate: D(input.vatRate),
+        reorderLevel: D(input.reorderLevel),
+      },
+    });
   });
 
   await writeAudit({
@@ -380,7 +379,8 @@ export async function warehouseDetail(warehouseId: string) {
 }
 
 export interface WarehouseInput {
-  code: string;
+  /** Omitted on create — the server assigns the next WH-0001-style code. */
+  code?: string;
   nameEn: string;
   nameAr?: string | null;
   governorateCode?: number | null;
@@ -393,23 +393,20 @@ export interface WarehouseInput {
 export async function createWarehouse(params: { actor: ActorRef; input: WarehouseInput }) {
   const { input, actor } = params;
 
-  const clash = await db.warehouse.findFirst({
-    where: { deletedAt: null, code: input.code },
-    select: { id: true },
-  });
-  if (clash) throw new CatalogueError('DUPLICATE', `Warehouse code ${input.code} is already in use.`);
-
-  const warehouse = await db.warehouse.create({
-    data: {
-      code: input.code,
-      nameEn: input.nameEn,
-      nameAr: input.nameAr ?? null,
-      governorateCode: input.governorateCode ?? null,
-      addressLine: input.addressLine ?? null,
-      latitude: input.latitude != null ? D(input.latitude) : null,
-      longitude: input.longitude != null ? D(input.longitude) : null,
-      capacityM3: input.capacityM3 != null ? D(input.capacityM3) : null,
-    },
+  const warehouse = await transaction(async (tx) => {
+    const code = input.code ?? (await nextCode(tx, 'warehouse'));
+    return tx.warehouse.create({
+      data: {
+        code,
+        nameEn: input.nameEn,
+        nameAr: input.nameAr ?? null,
+        governorateCode: input.governorateCode ?? null,
+        addressLine: input.addressLine ?? null,
+        latitude: input.latitude != null ? D(input.latitude) : null,
+        longitude: input.longitude != null ? D(input.longitude) : null,
+        capacityM3: input.capacityM3 != null ? D(input.capacityM3) : null,
+      },
+    });
   });
 
   await writeAudit({

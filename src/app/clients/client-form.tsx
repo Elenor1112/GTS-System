@@ -77,15 +77,17 @@ export function ClientForm({
       {mode === 'edit' && values?.id && <input type="hidden" name="clientId" value={values.id} />}
 
       <FieldGrid>
-        <TextField
-          name="code"
-          label={dict.codeLabel}
-          hint={dict.codeHint}
-          required
-          defaultValue={values?.code}
-          error={e('code')}
-          maxLength={32}
-        />
+        {mode === 'edit' && (
+          <TextField
+            name="code"
+            label={dict.codeLabel}
+            hint={dict.codeHint}
+            required
+            defaultValue={values?.code}
+            error={e('code')}
+            maxLength={32}
+          />
+        )}
         <TextField
           name="nameEn"
           label={dict.nameEnLabel}

@@ -38,6 +38,8 @@ export interface DashboardAlert {
 export interface Dashboard {
   /** Outstanding receivables minus payables — the headline figure. */
   netPosition: Prisma.Decimal;
+  /** All money ever collected from clients minus all money ever paid to vendors. */
+  cashBalance: Prisma.Decimal;
   receivable: Prisma.Decimal;
   payable: Prisma.Decimal;
   overdueReceivable: Prisma.Decimal;
@@ -109,6 +111,8 @@ export async function buildDashboard(actor: Actor): Promise<Dashboard> {
 
   const [
     ledger,
+    cashIn,
+    cashOut,
     monthPayments,
     monthBills,
     receiptRows,
@@ -119,6 +123,16 @@ export async function buildDashboard(actor: Actor): Promise<Dashboard> {
     counts,
   ] = await Promise.all([
     seesMoney ? ledgerTotals(now) : null,
+
+    // All-time cash actually received/paid, for the cash balance — not
+    // outstanding obligations, which is what receivable/payable track.
+    seesMoney
+      ? db.payment.aggregate({ where: { clientId: { not: null } }, _sum: { amount: true } })
+      : null,
+
+    seesMoney
+      ? db.payment.aggregate({ where: { vendorId: { not: null } }, _sum: { amount: true } })
+      : null,
 
     seesMoney
       ? db.payment.aggregate({
@@ -252,6 +266,7 @@ export async function buildDashboard(actor: Actor): Promise<Dashboard> {
 
   return {
     netPosition: ledger ? ledger.netPosition : D(0),
+    cashBalance: money(D(cashIn?._sum.amount ?? 0).minus(D(cashOut?._sum.amount ?? 0))),
     receivable: ledger ? ledger.receivable.outstanding : D(0),
     payable: ledger ? ledger.payable.outstanding : D(0),
     overdueReceivable: ledger ? ledger.receivable.overdue : D(0),

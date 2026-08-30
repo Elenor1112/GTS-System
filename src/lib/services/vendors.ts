@@ -2,9 +2,10 @@ import 'server-only';
 
 import { Prisma } from '@prisma/client';
 
-import { db } from '../db';
+import { db, transaction } from '../db';
 import { DomainError } from '../errors';
 import { writeAudit, writeUpdateAudit } from './audit';
+import { nextCode } from './counters';
 
 /**
  * GTS — vendors.
@@ -30,10 +31,14 @@ export interface ActorRef {
 export async function listVendors(options: {
   search?: string;
   includeArchived?: boolean;
+  field?: string;
+  governorateCode?: number;
 } = {}) {
   const rows = await db.vendor.findMany({
     where: {
       ...(options.includeArchived ? {} : { deletedAt: null }),
+      ...(options.field ? { field: options.field } : {}),
+      ...(options.governorateCode ? { governorateCode: options.governorateCode } : {}),
       ...(options.search
         ? {
             OR: [
@@ -47,7 +52,7 @@ export async function listVendors(options: {
     },
     select: {
       id: true, code: true, nameEn: true, nameAr: true, trn: true,
-      governorateCode: true, contactName: true, contactPhone: true, isActive: true,
+      governorateCode: true, field: true, contactName: true, contactPhone: true, isActive: true,
       _count: { select: { products: true } },
       bills: {
         where: { deletedAt: null, status: { in: ['SENT', 'PARTIALLY_PAID', 'OVERDUE'] } },
@@ -68,13 +73,23 @@ export async function listVendors(options: {
     }
     return {
       id: v.id, code: v.code, nameEn: v.nameEn, nameAr: v.nameAr, trn: v.trn,
-      governorateCode: v.governorateCode, contactName: v.contactName,
+      governorateCode: v.governorateCode, field: v.field, contactName: v.contactName,
       contactPhone: v.contactPhone, isActive: v.isActive,
       productCount: v._count.products,
       outstanding: outstanding.toDecimalPlaces(2),
       overdue: overdue.toDecimalPlaces(2),
     };
   });
+}
+
+/** Distinct field values currently in use, for the list-page filter. */
+export async function listVendorFields(): Promise<string[]> {
+  const rows = await db.vendor.findMany({
+    where: { deletedAt: null, field: { not: null } },
+    select: { field: true },
+    distinct: ['field'],
+  });
+  return rows.map((r) => r.field!).sort((a, b) => a.localeCompare(b));
 }
 
 /* ============================================================
@@ -176,12 +191,14 @@ export async function vendorDetail(vendorId: string) {
    ============================================================ */
 
 export interface VendorInput {
-  code: string;
+  /** Omitted on create — the server assigns the next VN-0001-style code. */
+  code?: string;
   nameEn: string;
   nameAr?: string | null;
   trn?: string | null;
   commercialRegNo?: string | null;
   governorateCode?: number | null;
+  field?: string | null;
   addressLine?: string | null;
   contactName?: string | null;
   contactPhone?: string | null;
@@ -193,37 +210,35 @@ export interface VendorInput {
 export async function createVendor(params: { actor: ActorRef; input: VendorInput }) {
   const { input, actor } = params;
 
-  const clash = await db.vendor.findFirst({
-    where: {
-      deletedAt: null,
-      OR: [{ code: input.code }, ...(input.trn ? [{ trn: input.trn }] : [])],
-    },
-    select: { code: true, trn: true },
-  });
-  if (clash) {
-    throw new VendorError(
-      'DUPLICATE',
-      clash.code === input.code
-        ? `Vendor code ${input.code} is already in use.`
-        : `Another vendor is already registered with tax number ${input.trn}.`,
-    );
+  if (input.trn) {
+    const clash = await db.vendor.findFirst({
+      where: { deletedAt: null, trn: input.trn },
+      select: { trn: true },
+    });
+    if (clash) {
+      throw new VendorError('DUPLICATE', `Another vendor is already registered with tax number ${input.trn}.`);
+    }
   }
 
-  const vendor = await db.vendor.create({
-    data: {
-      code: input.code,
-      nameEn: input.nameEn,
-      nameAr: input.nameAr ?? null,
-      trn: input.trn ?? null,
-      commercialRegNo: input.commercialRegNo ?? null,
-      governorateCode: input.governorateCode ?? null,
-      addressLine: input.addressLine ?? null,
-      contactName: input.contactName ?? null,
-      contactPhone: input.contactPhone ?? null,
-      contactEmail: input.contactEmail ?? null,
-      paymentTermsDays: input.paymentTermsDays ?? 30,
-      notes: input.notes ?? null,
-    },
+  const vendor = await transaction(async (tx) => {
+    const code = input.code ?? (await nextCode(tx, 'vendor'));
+    return tx.vendor.create({
+      data: {
+        code,
+        nameEn: input.nameEn,
+        nameAr: input.nameAr ?? null,
+        trn: input.trn ?? null,
+        commercialRegNo: input.commercialRegNo ?? null,
+        governorateCode: input.governorateCode ?? null,
+        field: input.field ?? null,
+        addressLine: input.addressLine ?? null,
+        contactName: input.contactName ?? null,
+        contactPhone: input.contactPhone ?? null,
+        contactEmail: input.contactEmail ?? null,
+        paymentTermsDays: input.paymentTermsDays ?? 30,
+        notes: input.notes ?? null,
+      },
+    });
   });
 
   await writeAudit({
@@ -266,6 +281,7 @@ export async function updateVendor(params: {
       ...(params.input.trn !== undefined ? { trn: params.input.trn } : {}),
       ...(params.input.commercialRegNo !== undefined ? { commercialRegNo: params.input.commercialRegNo } : {}),
       ...(params.input.governorateCode !== undefined ? { governorateCode: params.input.governorateCode } : {}),
+      ...(params.input.field !== undefined ? { field: params.input.field } : {}),
       ...(params.input.addressLine !== undefined ? { addressLine: params.input.addressLine } : {}),
       ...(params.input.contactName !== undefined ? { contactName: params.input.contactName } : {}),
       ...(params.input.contactPhone !== undefined ? { contactPhone: params.input.contactPhone } : {}),

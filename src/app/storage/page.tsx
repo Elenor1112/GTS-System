@@ -9,7 +9,7 @@ import { listWarehouses } from '@/lib/services/catalogue';
 import { GOVERNORATES } from '@/lib/egypt';
 import { t } from '@/lib/i18n';
 
-export const metadata: Metadata = { title: 'Storage — GTS' };
+export const metadata: Metadata = { title: 'Warehouses — GTS' };
 export const dynamic = 'force-dynamic';
 
 /**

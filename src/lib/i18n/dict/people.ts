@@ -142,6 +142,38 @@ export interface PeopleDict {
     overline: string;
     title: string;
     countLede: string; // "{n} employee(s)"
+    newEmployee: string;
+    newPage: {
+      overline: string;
+      title: string;
+      lede: string;
+    };
+    editPage: {
+      editTitle: string;
+    };
+    form: {
+      codeLabel: string;
+      codeHint: string;
+      nameEnLabel: string;
+      nameArLabel: string;
+      jobTitleEnLabel: string;
+      jobTitleArLabel: string;
+      departmentLabel: string;
+      nationalIdLabel: string;
+      nationalIdHint: string;
+      insuranceNoLabel: string;
+      insuranceNoHint: string;
+      phoneLabel: string;
+      emailLabel: string;
+      hiredOnLabel: string;
+      dailyRateLabel: string;
+      dailyRateHint: string;
+      createEmployee: string;
+      saveChanges: string;
+      creating: string;
+      saving: string;
+      cancel: string;
+    };
     filters: {
       searchLabel: string;
       searchPlaceholder: string;
@@ -323,6 +355,38 @@ export const en: PeopleDict = {
     overline: 'People',
     title: 'Employees',
     countLede: '{count} employee{plural}',
+    newEmployee: 'New employee',
+    newPage: {
+      overline: 'People',
+      title: 'New employee',
+      lede: 'Add someone to the directory. Their code is assigned automatically.',
+    },
+    editPage: {
+      editTitle: 'Edit',
+    },
+    form: {
+      codeLabel: 'Employee code',
+      codeHint: 'Assigned automatically. Change it here if you need a different reference.',
+      nameEnLabel: 'Name (English)',
+      nameArLabel: 'Name (Arabic)',
+      jobTitleEnLabel: 'Job title (English)',
+      jobTitleArLabel: 'Job title (Arabic)',
+      departmentLabel: 'Department',
+      nationalIdLabel: 'National ID',
+      nationalIdHint: '14 digits',
+      insuranceNoLabel: 'Insurance number',
+      insuranceNoHint: '9 digits, issued for payroll',
+      phoneLabel: 'Phone',
+      emailLabel: 'Email',
+      hiredOnLabel: 'Hired on',
+      dailyRateLabel: 'Daily rate',
+      dailyRateHint: 'Used to cost attendance against a project',
+      createEmployee: 'Create employee',
+      saveChanges: 'Save changes',
+      creating: 'Creating…',
+      saving: 'Saving…',
+      cancel: 'Cancel',
+    },
     filters: {
       searchLabel: 'Search employees',
       searchPlaceholder: 'Name, code or email',
@@ -503,6 +567,38 @@ export const ar: PeopleDict = {
     overline: 'الأفراد',
     title: 'الموظفون',
     countLede: '{count} موظف{plural}',
+    newEmployee: 'موظف جديد',
+    newPage: {
+      overline: 'الأفراد',
+      title: 'موظف جديد',
+      lede: 'أضف شخصًا إلى الدليل. يُخصَّص الكود تلقائيًا.',
+    },
+    editPage: {
+      editTitle: 'تعديل',
+    },
+    form: {
+      codeLabel: 'كود الموظف',
+      codeHint: 'يُخصَّص تلقائيًا. يمكنك تغييره هنا إذا احتجت مرجعًا مختلفًا.',
+      nameEnLabel: 'الاسم (إنجليزي)',
+      nameArLabel: 'الاسم (عربي)',
+      jobTitleEnLabel: 'المسمى الوظيفي (إنجليزي)',
+      jobTitleArLabel: 'المسمى الوظيفي (عربي)',
+      departmentLabel: 'القسم',
+      nationalIdLabel: 'الرقم القومي',
+      nationalIdHint: '14 رقمًا',
+      insuranceNoLabel: 'رقم التأمين',
+      insuranceNoHint: '9 أرقام، صادر لأغراض الرواتب',
+      phoneLabel: 'الهاتف',
+      emailLabel: 'البريد الإلكتروني',
+      hiredOnLabel: 'تاريخ التعيين',
+      dailyRateLabel: 'الأجر اليومي',
+      dailyRateHint: 'يُستخدم لتقدير تكلفة الحضور على المشروع',
+      createEmployee: 'إنشاء موظف',
+      saveChanges: 'حفظ التغييرات',
+      creating: 'جارٍ الإنشاء…',
+      saving: 'جارٍ الحفظ…',
+      cancel: 'إلغاء',
+    },
     filters: {
       searchLabel: 'البحث عن الموظفين',
       searchPlaceholder: 'الاسم أو الكود أو البريد الإلكتروني',

@@ -1,9 +1,12 @@
 import 'server-only';
 
-import { db } from '../db';
+import { Prisma } from '@prisma/client';
+
+import { db, transaction } from '../db';
 import { DomainError } from '../errors';
 import { hashPassword, destroyAllSessions } from '../auth';
 import { writeAudit, writeUpdateAudit } from './audit';
+import { nextCode } from './counters';
 import { ADMIN_ROLE, PERMISSION_KEYS, type PermissionKey } from '../permissions';
 
 /**
@@ -459,4 +462,173 @@ export async function employeeFilterOptions() {
     departments: departments.map((d) => d.department!),
     projects,
   };
+}
+
+export async function employeeDetail(employeeId: string) {
+  return db.employee.findFirst({
+    where: { id: employeeId, deletedAt: null },
+  });
+}
+
+export interface EmployeeInput {
+  /** Omitted on create — the server assigns the next EMP-0001-style code. */
+  code?: string;
+  nameEn: string;
+  nameAr?: string | null;
+  nationalId?: string | null;
+  insuranceNo?: string | null;
+  jobTitleEn: string;
+  jobTitleAr?: string | null;
+  department?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  hiredOn: Date;
+  dailyRate?: number | string | null;
+}
+
+export async function createEmployee(params: { actor: ActorRef; input: EmployeeInput }) {
+  const { input, actor } = params;
+
+  if (input.nationalId) {
+    const clash = await db.employee.findFirst({
+      where: { deletedAt: null, nationalId: input.nationalId },
+      select: { id: true },
+    });
+    if (clash) {
+      throw new PeopleError('DUPLICATE', `Another employee is already registered with national ID ${input.nationalId}.`);
+    }
+  }
+
+  const employee = await transaction(async (tx) => {
+    const code = input.code ?? (await nextCode(tx, 'employee'));
+    return tx.employee.create({
+      data: {
+        code,
+        nameEn: input.nameEn,
+        nameAr: input.nameAr ?? null,
+        nationalId: input.nationalId ?? null,
+        insuranceNo: input.insuranceNo ?? null,
+        jobTitleEn: input.jobTitleEn,
+        jobTitleAr: input.jobTitleAr ?? null,
+        department: input.department ?? null,
+        phone: input.phone ?? null,
+        email: input.email ?? null,
+        hiredOn: input.hiredOn,
+        dailyRate: input.dailyRate != null ? new Prisma.Decimal(input.dailyRate) : null,
+      },
+    });
+  });
+
+  await writeAudit({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: 'CREATE',
+    entityType: 'Employee',
+    entityId: employee.id,
+    summary: `Created employee ${employee.code} — ${employee.nameEn}`,
+    afterState: { code: employee.code, nameEn: employee.nameEn },
+  });
+
+  return employee;
+}
+
+export async function updateEmployee(params: {
+  actor: ActorRef;
+  employeeId: string;
+  input: Partial<EmployeeInput>;
+}) {
+  const before = await db.employee.findFirst({
+    where: { id: params.employeeId, deletedAt: null },
+  });
+  if (!before) throw new PeopleError('NOT_FOUND', 'That employee does not exist.');
+
+  if (
+    params.input.nationalId &&
+    params.input.nationalId !== before.nationalId
+  ) {
+    const clash = await db.employee.findFirst({
+      where: { deletedAt: null, nationalId: params.input.nationalId, id: { not: params.employeeId } },
+      select: { id: true },
+    });
+    if (clash) {
+      throw new PeopleError('DUPLICATE', `Another employee is already registered with national ID ${params.input.nationalId}.`);
+    }
+  }
+
+  if (params.input.code && params.input.code !== before.code) {
+    const clash = await db.employee.findFirst({
+      where: { deletedAt: null, code: params.input.code, id: { not: params.employeeId } },
+      select: { id: true },
+    });
+    if (clash) throw new PeopleError('DUPLICATE', `Employee code ${params.input.code} is already in use.`);
+  }
+
+  const after = await db.employee.update({
+    where: { id: params.employeeId },
+    data: {
+      ...(params.input.code !== undefined ? { code: params.input.code } : {}),
+      ...(params.input.nameEn !== undefined ? { nameEn: params.input.nameEn } : {}),
+      ...(params.input.nameAr !== undefined ? { nameAr: params.input.nameAr } : {}),
+      ...(params.input.nationalId !== undefined ? { nationalId: params.input.nationalId } : {}),
+      ...(params.input.insuranceNo !== undefined ? { insuranceNo: params.input.insuranceNo } : {}),
+      ...(params.input.jobTitleEn !== undefined ? { jobTitleEn: params.input.jobTitleEn } : {}),
+      ...(params.input.jobTitleAr !== undefined ? { jobTitleAr: params.input.jobTitleAr } : {}),
+      ...(params.input.department !== undefined ? { department: params.input.department } : {}),
+      ...(params.input.phone !== undefined ? { phone: params.input.phone } : {}),
+      ...(params.input.email !== undefined ? { email: params.input.email } : {}),
+      ...(params.input.hiredOn !== undefined ? { hiredOn: params.input.hiredOn } : {}),
+      ...(params.input.dailyRate !== undefined
+        ? { dailyRate: params.input.dailyRate != null ? new Prisma.Decimal(params.input.dailyRate) : null }
+        : {}),
+    },
+  });
+
+  await writeUpdateAudit({
+    actorId: params.actor.id,
+    actorEmail: params.actor.email,
+    entityType: 'Employee',
+    entityId: after.id,
+    summary: `Updated employee ${after.code}`,
+    before: before as unknown as Record<string, unknown>,
+    after: after as unknown as Record<string, unknown>,
+  });
+
+  return after;
+}
+
+export async function archiveEmployee(params: { actor: ActorRef; employeeId: string }) {
+  const employee = await db.employee.findFirst({
+    where: { id: params.employeeId, deletedAt: null },
+    select: {
+      id: true, code: true, nameEn: true,
+      projects: {
+        where: { releasedOn: null },
+        select: { project: { select: { code: true } } },
+      },
+    },
+  });
+  if (!employee) throw new PeopleError('NOT_FOUND', 'That employee does not exist.');
+
+  if (employee.projects.length > 0) {
+    throw new PeopleError(
+      'HAS_LIVE_ASSIGNMENTS',
+      `${employee.nameEn} is still assigned to ${employee.projects.length} active project${employee.projects.length === 1 ? '' : 's'}. Release them first.`,
+    );
+  }
+
+  const archived = await db.employee.update({
+    where: { id: params.employeeId },
+    data: { deletedAt: new Date(), isActive: false },
+  });
+
+  await writeAudit({
+    actorId: params.actor.id,
+    actorEmail: params.actor.email,
+    action: 'DELETE',
+    entityType: 'Employee',
+    entityId: archived.id,
+    summary: `Archived employee ${archived.code} — ${archived.nameEn}`,
+  });
+
+  return archived;
 }

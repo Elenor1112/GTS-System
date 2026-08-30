@@ -223,6 +223,7 @@ model Vendor {
   trn              String? @unique
   commercialRegNo  String?
   governorateCode  Int?
+  field            String?
   addressLine      String?
   contactName      String?
   contactPhone     String?

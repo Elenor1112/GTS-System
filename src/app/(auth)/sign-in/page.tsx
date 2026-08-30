@@ -50,8 +50,8 @@ export default async function SignInPage({
           <Image
             src="/logo-mark.png"
             alt="GTS"
-            width={1244}
-            height={361}
+            width={1734}
+            height={592}
             priority
             className="h-14 w-auto"
           />

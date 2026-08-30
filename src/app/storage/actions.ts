@@ -37,7 +37,6 @@ const optionalNumber = (label: string, min: number, max: number) =>
     .refine((v) => v === null || (v >= min && v <= max), `${label} must be between ${min} and ${max}`);
 
 const warehouseSchema = z.object({
-  code: requiredText('Warehouse code', 32),
   nameEn: requiredText('Name', 200),
   nameAr: optionalText,
   // Same shape as the vendor schema: normalise "not chosen" to null
@@ -71,7 +70,7 @@ const createWarehouseAction = action({
 
 const updateWarehouseAction = action({
   permission: 'warehouses.manage',
-  input: warehouseSchema.partial().extend({ warehouseId: id }),
+  input: warehouseSchema.partial().extend({ warehouseId: id, code: requiredText('Warehouse code', 32) }),
   handler: async ({ warehouseId, ...input }, { actor }) => {
     const warehouse = await updateWarehouse({ actor, warehouseId, input });
     revalidatePath('/storage');

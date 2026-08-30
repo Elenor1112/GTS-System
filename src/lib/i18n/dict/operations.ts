@@ -140,6 +140,7 @@ export interface OperationsDict {
       employeeLabel: string;
       employeePlaceholder: string;
       roleOnSiteLabel: string;
+      roleOnSiteHint: string;
       roleOnSitePlaceholder: string;
       assigning: string;
       assign: string;
@@ -383,7 +384,7 @@ export const en: OperationsDict = {
     },
     form: {
       codeLabel: 'Project code',
-      codeHint: 'Your own reference, e.g. PRJ-2026-014',
+      codeHint: 'Assigned automatically. Change it here if you need a different reference.',
       nameEnLabel: 'Name (English)',
       nameArLabel: 'Name (Arabic)',
       clientLabel: 'Client',
@@ -486,6 +487,7 @@ export const en: OperationsDict = {
       employeeLabel: 'Employee',
       employeePlaceholder: 'Select an employee',
       roleOnSiteLabel: 'Role on site',
+      roleOnSiteHint: 'Applied to everyone checked above.',
       roleOnSitePlaceholder: 'Site foreman',
       assigning: 'Assigning…',
       assign: 'Assign',
@@ -588,7 +590,7 @@ export const en: OperationsDict = {
     },
     form: {
       codeLabel: 'Client code',
-      codeHint: 'Your own reference, e.g. CL-006',
+      codeHint: 'Assigned automatically. Change it here if you need a different reference.',
       nameEnLabel: 'Name (English)',
       nameArLabel: 'Name (Arabic)',
       trnLabel: 'Tax registration number',
@@ -729,7 +731,7 @@ export const ar: OperationsDict = {
     },
     form: {
       codeLabel: 'كود المشروع',
-      codeHint: 'مرجعك الخاص، مثال: PRJ-2026-014',
+      codeHint: 'يُخصَّص تلقائيًا. يمكنك تغييره هنا إذا احتجت مرجعًا مختلفًا.',
       nameEnLabel: 'الاسم (إنجليزي)',
       nameArLabel: 'الاسم (عربي)',
       clientLabel: 'العميل',
@@ -832,6 +834,7 @@ export const ar: OperationsDict = {
       employeeLabel: 'الموظف',
       employeePlaceholder: 'اختر موظفًا',
       roleOnSiteLabel: 'الدور في الموقع',
+      roleOnSiteHint: 'يُطبَّق على كل من تم تحديده أعلاه.',
       roleOnSitePlaceholder: 'رئيس عمال الموقع',
       assigning: 'جارٍ الإسناد…',
       assign: 'إسناد',
@@ -934,7 +937,7 @@ export const ar: OperationsDict = {
     },
     form: {
       codeLabel: 'كود العميل',
-      codeHint: 'مرجعك الخاص، مثال: CL-006',
+      codeHint: 'يُخصَّص تلقائيًا. يمكنك تغييره هنا إذا احتجت مرجعًا مختلفًا.',
       nameEnLabel: 'الاسم (إنجليزي)',
       nameArLabel: 'الاسم (عربي)',
       trnLabel: 'الرقم الضريبي',

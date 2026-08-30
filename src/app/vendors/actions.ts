@@ -25,7 +25,6 @@ const trnSchema = z
   .nullable();
 
 const vendorSchema = z.object({
-  code: requiredText('Vendor code', 32),
   nameEn: requiredText('Name', 200),
   nameAr: optionalText,
   trn: trnSchema.optional(),
@@ -43,6 +42,11 @@ const vendorSchema = z.object({
       (v) => v === null || GOVERNORATE_CODES.has(v),
       'Choose one of the 27 governorates',
     ),
+  // The <select> posts one of the known fields, or the sentinel "Other"
+  // paired with free text in `fieldOther`. Resolve to a single value here
+  // so the rest of the app only ever sees `field` — never the sentinel.
+  field: z.string().trim().optional(),
+  fieldOther: z.string().trim().max(100).optional(),
   addressLine: optionalText,
   contactName: optionalText,
   contactPhone: optionalText,
@@ -62,9 +66,23 @@ const vendorSchema = z.object({
   notes: optionalText,
 });
 
+/**
+ * Resolve the field select and its "Other" sidecar into one value.
+ *
+ * The client only ever emits `field: "Other"` alongside `fieldOther` when
+ * the sentinel is chosen; anywhere else `fieldOther` is absent. Doing this
+ * outside the schema keeps `vendorSchema.partial()` simple for updates.
+ */
+function resolveField<T extends { field?: string; fieldOther?: string }>({
+  field, fieldOther, ...rest
+}: T) {
+  const resolved = field === 'Other' ? fieldOther?.trim() || undefined : field;
+  return { ...rest, field: resolved === undefined ? resolved : resolved || null };
+}
+
 const createVendorAction = action({
   permission: 'vendors.create',
-  input: vendorSchema,
+  input: vendorSchema.transform(resolveField),
   handler: async (input, { actor }) => {
     const vendor = await createVendor({ actor, input });
     revalidatePath('/vendors');
@@ -74,7 +92,10 @@ const createVendorAction = action({
 
 const updateVendorAction = action({
   permission: 'vendors.edit',
-  input: vendorSchema.partial().extend({ vendorId: id }),
+  input: vendorSchema
+    .partial()
+    .extend({ vendorId: id, code: requiredText('Vendor code', 32) })
+    .transform(resolveField),
   handler: async ({ vendorId, ...input }, { actor }) => {
     const vendor = await updateVendor({ actor, vendorId, input });
     revalidatePath('/vendors');

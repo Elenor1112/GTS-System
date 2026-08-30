@@ -2,8 +2,9 @@ import 'server-only';
 
 import { Prisma } from '@prisma/client';
 
-import { db, type DbClient } from '../db';
+import { db, transaction, type DbClient } from '../db';
 import { writeAudit, writeUpdateAudit } from './audit';
+import { nextCode } from './counters';
 import { DomainError } from '../errors';
 
 /**
@@ -201,7 +202,8 @@ export async function clientDetail(clientId: string) {
    ============================================================ */
 
 export interface ClientInput {
-  code: string;
+  /** Omitted on create — the server assigns the next CL-0001-style code. */
+  code?: string;
   nameEn: string;
   nameAr?: string | null;
   trn?: string | null;
@@ -219,37 +221,37 @@ export interface ClientInput {
 export async function createClient(params: { actor: ActorRef; input: ClientInput }) {
   const { input, actor } = params;
 
-  // The partial unique index only covers live rows, so this check is
-  // about giving a useful message rather than a raw constraint error.
-  const clash = await db.client.findFirst({
-    where: { deletedAt: null, OR: [{ code: input.code }, ...(input.trn ? [{ trn: input.trn }] : [])] },
-    select: { code: true, trn: true },
-  });
-  if (clash) {
-    throw new ClientError(
-      'DUPLICATE',
-      clash.code === input.code
-        ? `Client code ${input.code} is already in use.`
-        : `Another client is already registered with tax number ${input.trn}.`,
-    );
+  // A TRN clash is still worth a friendly message before we touch the
+  // counter — the code itself is server-assigned and cannot clash.
+  if (input.trn) {
+    const clash = await db.client.findFirst({
+      where: { deletedAt: null, trn: input.trn },
+      select: { trn: true },
+    });
+    if (clash) {
+      throw new ClientError('DUPLICATE', `Another client is already registered with tax number ${input.trn}.`);
+    }
   }
 
-  const client = await db.client.create({
-    data: {
-      code: input.code,
-      nameEn: input.nameEn,
-      nameAr: input.nameAr ?? null,
-      trn: input.trn ?? null,
-      commercialRegNo: input.commercialRegNo ?? null,
-      governorateCode: input.governorateCode ?? null,
-      addressLine: input.addressLine ?? null,
-      contactName: input.contactName ?? null,
-      contactPhone: input.contactPhone ?? null,
-      contactEmail: input.contactEmail ?? null,
-      paymentTermsDays: input.paymentTermsDays ?? 30,
-      creditLimit: D(input.creditLimit ?? 0),
-      notes: input.notes ?? null,
-    },
+  const client = await transaction(async (tx) => {
+    const code = input.code ?? (await nextCode(tx, 'client'));
+    return tx.client.create({
+      data: {
+        code,
+        nameEn: input.nameEn,
+        nameAr: input.nameAr ?? null,
+        trn: input.trn ?? null,
+        commercialRegNo: input.commercialRegNo ?? null,
+        governorateCode: input.governorateCode ?? null,
+        addressLine: input.addressLine ?? null,
+        contactName: input.contactName ?? null,
+        contactPhone: input.contactPhone ?? null,
+        contactEmail: input.contactEmail ?? null,
+        paymentTermsDays: input.paymentTermsDays ?? 30,
+        creditLimit: D(input.creditLimit ?? 0),
+        notes: input.notes ?? null,
+      },
+    });
   });
 
   await writeAudit({

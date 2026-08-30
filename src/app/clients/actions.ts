@@ -25,7 +25,6 @@ const trnSchema = z
   .nullable();
 
 const clientSchema = z.object({
-  code: requiredText('Client code', 32),
   nameEn: requiredText('Name', 200),
   nameAr: optionalText,
   trn: trnSchema.optional(),
@@ -80,7 +79,7 @@ const createClientAction = action({
 
 const updateClientAction = action({
   permission: 'clients.edit',
-  input: clientSchema.partial().extend({ clientId: id }),
+  input: clientSchema.partial().extend({ clientId: id, code: requiredText('Client code', 32) }),
   handler: async ({ clientId, ...input }, { actor }) => {
     const client = await updateClient({ actor, clientId, input });
     revalidatePath('/clients');

@@ -2,10 +2,11 @@ import 'server-only';
 
 import { Prisma, type ProjectStatus } from '@prisma/client';
 
-import { db } from '../db';
+import { db, transaction } from '../db';
 import { writeAudit, writeUpdateAudit } from './audit';
 import { notifyProjectAssigned } from './notifications';
 import { projectPosition } from './inventory';
+import { nextCode } from './counters';
 import { DomainError } from '../errors';
 
 /**
@@ -141,7 +142,8 @@ export async function projectDetail(projectId: string) {
    ============================================================ */
 
 export interface ProjectInput {
-  code: string;
+  /** Omitted on create — the server assigns the next PRJ-0001-style code. */
+  code?: string;
   nameEn: string;
   nameAr?: string | null;
   clientId: string;
@@ -155,12 +157,6 @@ export interface ProjectInput {
 export async function createProject(params: { actor: ActorRef; input: ProjectInput }) {
   const { input, actor } = params;
 
-  const clash = await db.project.findFirst({
-    where: { deletedAt: null, code: input.code },
-    select: { id: true },
-  });
-  if (clash) throw new ProjectError('DUPLICATE', `Project code ${input.code} is already in use.`);
-
   const client = await db.client.findFirst({
     where: { id: input.clientId, deletedAt: null },
     select: { id: true, nameEn: true },
@@ -171,18 +167,21 @@ export async function createProject(params: { actor: ActorRef; input: ProjectInp
     throw new ProjectError('INVALID_DATES', 'The end date cannot fall before the start date.');
   }
 
-  const project = await db.project.create({
-    data: {
-      code: input.code,
-      nameEn: input.nameEn,
-      nameAr: input.nameAr ?? null,
-      clientId: input.clientId,
-      status: input.status ?? 'PLANNING',
-      startsOn: input.startsOn ?? null,
-      endsOn: input.endsOn ?? null,
-      budget: input.budget != null ? D(input.budget) : null,
-      notes: input.notes ?? null,
-    },
+  const project = await transaction(async (tx) => {
+    const code = input.code ?? (await nextCode(tx, 'project'));
+    return tx.project.create({
+      data: {
+        code,
+        nameEn: input.nameEn,
+        nameAr: input.nameAr ?? null,
+        clientId: input.clientId,
+        status: input.status ?? 'PLANNING',
+        startsOn: input.startsOn ?? null,
+        endsOn: input.endsOn ?? null,
+        budget: input.budget != null ? D(input.budget) : null,
+        notes: input.notes ?? null,
+      },
+    });
   });
 
   await writeAudit({
@@ -212,6 +211,14 @@ export async function updateProject(params: {
   const endsOn = params.input.endsOn ?? before.endsOn;
   if (startsOn && endsOn && endsOn < startsOn) {
     throw new ProjectError('INVALID_DATES', 'The end date cannot fall before the start date.');
+  }
+
+  if (params.input.code && params.input.code !== before.code) {
+    const clash = await db.project.findFirst({
+      where: { deletedAt: null, code: params.input.code, id: { not: params.projectId } },
+      select: { id: true },
+    });
+    if (clash) throw new ProjectError('DUPLICATE', `Project code ${params.input.code} is already in use.`);
   }
 
   const after = await db.project.update({

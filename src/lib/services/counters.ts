@@ -30,6 +30,48 @@ const PREFIX: Record<CounterKind, string> = {
 /** Width of the zero-padded sequence. */
 const PAD = 5;
 
+/** Master-data entities whose identity code is system-assigned. */
+export type CodeKind = 'client' | 'vendor' | 'project' | 'warehouse' | 'product' | 'employee';
+
+const CODE_PREFIX: Record<CodeKind, string> = {
+  client: 'CL',
+  vendor: 'VN',
+  project: 'PRJ',
+  warehouse: 'WH',
+  product: 'PRD',
+  employee: 'EMP',
+};
+
+/** Width of the zero-padded sequence for master-data codes. */
+const CODE_PAD = 4;
+
+/**
+ * Take the next master-data code for a kind — CL-0001, PRJ-0001, and so
+ * on. Unlike `nextRef`, there is no year component: a client or a
+ * warehouse does not reset its numbering every January.
+ *
+ * MUST be called with an open transaction, for the same reason as
+ * `nextRef` — a counter incremented outside the transaction that uses it
+ * leaves a gap when that transaction rolls back.
+ */
+export async function nextCode(tx: Tx, kind: CodeKind): Promise<string> {
+  const key = `code:${kind}`;
+
+  const rows = await tx.$queryRaw<{ value: number }[]>`
+    INSERT INTO "counters" ("key", "value")
+    VALUES (${key}, 1)
+    ON CONFLICT ("key") DO UPDATE SET "value" = "counters"."value" + 1
+    RETURNING "value"
+  `;
+
+  const value = rows[0]?.value;
+  if (value === undefined) {
+    throw new Error(`Could not allocate a ${kind} code.`);
+  }
+
+  return `${CODE_PREFIX[kind]}-${String(value).padStart(CODE_PAD, '0')}`;
+}
+
 /**
  * Take the next number for a kind, within the current year.
  *

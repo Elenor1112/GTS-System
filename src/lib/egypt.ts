@@ -38,6 +38,35 @@ export const CURRENCY_OPTIONS = [
 ] as const;
 
 /* ============================================================
+   VENDOR FIELDS OF WORK
+   ============================================================ */
+
+/**
+ * What a vendor is in the business of supplying.
+ *
+ * A fixed list keeps the field filterable and consistent across vendors;
+ * an "Other" option on the form escapes to free text for anything that
+ * doesn't fit, stored in the same column so listing and filtering never
+ * need to know which case produced the value.
+ */
+export const VENDOR_FIELDS = [
+  'Construction materials',
+  'Electrical & lighting',
+  'Plumbing & sanitary ware',
+  'Steel & metalwork',
+  'Timber & carpentry',
+  'Paints & finishes',
+  'Machinery & equipment',
+  'Furniture & fixtures',
+  'IT & electronics',
+  'Office supplies & stationery',
+  'Transport & logistics',
+  'Food & catering',
+  'Cleaning & maintenance services',
+  'Professional services',
+] as const;
+
+/* ============================================================
    VALUE ADDED TAX — Law 67 of 2016
    ============================================================ */
 

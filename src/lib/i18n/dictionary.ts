@@ -20,6 +20,7 @@ import * as people from './dict/people';
 import * as catalogue from './dict/catalogue';
 import * as operations from './dict/operations';
 import * as finance from './dict/finance';
+import * as help from './dict/help';
 
 export const en = {
   ...shell.en,
@@ -29,6 +30,7 @@ export const en = {
   ...catalogue.en,
   ...operations.en,
   ...finance.en,
+  ...help.en,
 };
 
 export const ar: typeof en = {
@@ -39,4 +41,5 @@ export const ar: typeof en = {
   ...catalogue.ar,
   ...operations.ar,
   ...finance.ar,
+  ...help.ar,
 };

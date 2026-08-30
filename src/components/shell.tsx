@@ -40,7 +40,7 @@ export type Domain =
   | 'finance' | 'inventory' | 'projects' | 'clients'
   | 'vendors' | 'attendance' | 'admin';
 
-type NavKey = Exclude<keyof Dictionary['nav'], 'more' | 'home' | 'checkIn' | 'alerts' | 'account' | 'signOut'
+type NavKey = Exclude<keyof Dictionary['nav'], 'more' | 'home' | 'checkIn' | 'alerts' | 'account' | 'signOut' | 'help'
   | 'accounting' | 'warehouses' | 'humanResources' | 'system' | 'notifications' | 'dashboard'>;
 type NavItem = { labelKey: NavKey; href: string; domain: Domain; permission: PermissionKey };
 type NavGroupKey = 'accounting' | 'warehouses' | 'humanResources' | 'system';
@@ -163,8 +163,8 @@ export async function Shell({
             <Image
               src="/logo-mark.png"
               alt="GTS"
-              width={1244}
-              height={361}
+              width={1734}
+              height={592}
               priority
               className="h-8 w-auto"
             />
@@ -225,15 +225,15 @@ export async function Shell({
             <Image
               src="/logo-mark.png"
               alt="GTS"
-              width={1244}
-              height={361}
+              width={1734}
+              height={592}
               className="h-6 w-auto shrink-0 py-1 hidden md:block"
             />
           </div>
           <div className="flex items-center gap-3">
-            <button type="button" className="p-2 text-fg-secondary hover:text-brand-fg transition-colors" aria-label="Help">
+            <a href="/help" className="p-2 text-fg-secondary hover:text-brand-fg transition-colors" aria-label={dict.nav.help}>
               <Icon name="help" />
-            </button>
+            </a>
             <a href="/notifications" className="p-2 text-fg-secondary hover:text-brand-fg transition-colors relative" aria-label={dict.nav.notifications}>
               <Icon name="notifications" />
               {unread > 0 && <span className="absolute top-1.5 end-1.5 w-2 h-2 rounded-full bg-danger" aria-hidden="true" />}

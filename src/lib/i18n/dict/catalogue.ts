@@ -255,6 +255,10 @@ export interface CatalogueDict {
         newVendor: string;
         searchLabel: string;
         searchPlaceholder: string;
+        fieldLabel: string;
+        allFields: string;
+        governorateLabel: string;
+        allGovernorates: string;
         includeArchived: string;
         search: string;
         clear: string;
@@ -262,6 +266,7 @@ export interface CatalogueDict {
         colVendor: string;
         colTaxNumber: string;
         colGovernorate: string;
+        colField: string;
         colProducts: string;
         colPayable: string;
         colOverdue: string;
@@ -283,6 +288,9 @@ export interface CatalogueDict {
         commercialRegHint: string;
         governorateLabel: string;
         governoratePlaceholder: string;
+        fieldLabel: string;
+        fieldPlaceholder: string;
+        fieldOtherPlaceholder: string;
         addressLabel: string;
         contactNameLabel: string;
         contactPhoneLabel: string;
@@ -410,7 +418,7 @@ export const en: CatalogueDict = {
       },
       form: {
         skuLabel: 'SKU',
-        skuHint: 'Your own stock code, e.g. CBL-3C-25',
+        skuHint: 'Assigned automatically. Change it here if you need a different code.',
         nameEnLabel: 'Name (English)',
         nameArLabel: 'Name (Arabic)',
         unitLabel: 'Unit',
@@ -510,7 +518,7 @@ export const en: CatalogueDict = {
     warehouses: {
       list: {
         overline: 'Operations',
-        title: 'Storage',
+        title: 'Warehouses',
         countOne: 'warehouse',
         countOther: 'warehouses',
         unitsSuffix: 'units on hand',
@@ -525,7 +533,7 @@ export const en: CatalogueDict = {
       },
       form: {
         codeLabel: 'Warehouse code',
-        codeHint: 'Your own reference, e.g. WH-CAI-01',
+        codeHint: 'Assigned automatically. Change it here if you need a different reference.',
         nameEnLabel: 'Name (English)',
         nameArLabel: 'Name (Arabic)',
         governorateLabel: 'Governorate',
@@ -612,6 +620,10 @@ export const en: CatalogueDict = {
         newVendor: 'New vendor',
         searchLabel: 'Search vendors',
         searchPlaceholder: 'Name, code or tax number',
+        fieldLabel: 'Field',
+        allFields: 'All fields',
+        governorateLabel: 'Governorate',
+        allGovernorates: 'All governorates',
         includeArchived: 'Include archived',
         search: 'Search',
         clear: 'Clear',
@@ -619,6 +631,7 @@ export const en: CatalogueDict = {
         colVendor: 'Vendor',
         colTaxNumber: 'Tax number',
         colGovernorate: 'Governorate',
+        colField: 'Field',
         colProducts: 'Products',
         colPayable: 'Payable',
         colOverdue: 'Overdue',
@@ -631,7 +644,7 @@ export const en: CatalogueDict = {
       },
       form: {
         codeLabel: 'Vendor code',
-        codeHint: 'Your own reference, e.g. CL-006',
+        codeHint: 'Assigned automatically. Change it here if you need a different reference.',
         nameEnLabel: 'Name (English)',
         nameArLabel: 'Name (Arabic)',
         trnLabel: 'Tax registration number',
@@ -640,6 +653,9 @@ export const en: CatalogueDict = {
         commercialRegHint: 'Issued by GAFI',
         governorateLabel: 'Governorate',
         governoratePlaceholder: 'Select a governorate',
+        fieldLabel: 'Field',
+        fieldPlaceholder: 'Select a field',
+        fieldOtherPlaceholder: 'Describe their field',
         addressLabel: 'Address',
         contactNameLabel: 'Contact name',
         contactPhoneLabel: 'Contact phone',
@@ -767,7 +783,7 @@ export const ar: CatalogueDict = {
       },
       form: {
         skuLabel: 'رمز الصنف',
-        skuHint: 'رمز المخزون الخاص بك، مثل CBL-3C-25',
+        skuHint: 'يُخصَّص تلقائيًا. يمكنك تغييره هنا إذا احتجت رمزًا مختلفًا.',
         nameEnLabel: 'الاسم (بالإنجليزية)',
         nameArLabel: 'الاسم (بالعربية)',
         unitLabel: 'الوحدة',
@@ -882,7 +898,7 @@ export const ar: CatalogueDict = {
       },
       form: {
         codeLabel: 'رمز المخزن',
-        codeHint: 'مرجعك الخاص، مثل WH-CAI-01',
+        codeHint: 'يُخصَّص تلقائيًا. يمكنك تغييره هنا إذا احتجت مرجعًا مختلفًا.',
         nameEnLabel: 'الاسم (بالإنجليزية)',
         nameArLabel: 'الاسم (بالعربية)',
         governorateLabel: 'المحافظة',
@@ -969,6 +985,10 @@ export const ar: CatalogueDict = {
         newVendor: 'مورد جديد',
         searchLabel: 'بحث في الموردين',
         searchPlaceholder: 'الاسم أو الرمز أو الرقم الضريبي',
+        fieldLabel: 'المجال',
+        allFields: 'كل المجالات',
+        governorateLabel: 'المحافظة',
+        allGovernorates: 'كل المحافظات',
         includeArchived: 'تضمين المؤرشفين',
         search: 'بحث',
         clear: 'مسح',
@@ -976,6 +996,7 @@ export const ar: CatalogueDict = {
         colVendor: 'المورد',
         colTaxNumber: 'الرقم الضريبي',
         colGovernorate: 'المحافظة',
+        colField: 'المجال',
         colProducts: 'المنتجات',
         colPayable: 'المستحق',
         colOverdue: 'المتأخر',
@@ -988,7 +1009,7 @@ export const ar: CatalogueDict = {
       },
       form: {
         codeLabel: 'رمز المورد',
-        codeHint: 'مرجعك الخاص، مثل CL-006',
+        codeHint: 'يُخصَّص تلقائيًا. يمكنك تغييره هنا إذا احتجت مرجعًا مختلفًا.',
         nameEnLabel: 'الاسم (بالإنجليزية)',
         nameArLabel: 'الاسم (بالعربية)',
         trnLabel: 'الرقم الضريبي',
@@ -997,6 +1018,9 @@ export const ar: CatalogueDict = {
         commercialRegHint: 'صادر عن الهيئة العامة للاستثمار (GAFI)',
         governorateLabel: 'المحافظة',
         governoratePlaceholder: 'اختر محافظة',
+        fieldLabel: 'المجال',
+        fieldPlaceholder: 'اختر مجالاً',
+        fieldOtherPlaceholder: 'صف مجال عمله',
         addressLabel: 'العنوان',
         contactNameLabel: 'اسم جهة الاتصال',
         contactPhoneLabel: 'هاتف جهة الاتصال',

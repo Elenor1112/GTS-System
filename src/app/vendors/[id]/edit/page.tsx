@@ -46,6 +46,7 @@ export default async function EditVendorPage({ params }: { params: Promise<{ id:
               trn: vendor.trn,
               commercialRegNo: vendor.commercialRegNo,
               governorateCode: vendor.governorateCode,
+              field: vendor.field,
               addressLine: vendor.addressLine,
               contactName: vendor.contactName,
               contactPhone: vendor.contactPhone,
