@@ -74,7 +74,17 @@ export function UserRow({
         defaultValue={currentRoleId}
         className="gts-input gts-select gts-input-sm"
         aria-label={`${dict.roleLabel} ${name}`}
-        onChange={(event) => event.currentTarget.form?.requestSubmit()}
+        onChange={(event) => {
+          const form = event.currentTarget.form;
+          if (!form) return;
+          const submitter = document.createElement('input');
+          submitter.type = 'hidden';
+          submitter.name = 'intent';
+          submitter.value = 'role';
+          form.appendChild(submitter);
+          form.requestSubmit();
+          submitter.remove();
+        }}
       >
         {roles.map((role) => (
           <option key={role.id} value={role.id}>
@@ -82,8 +92,6 @@ export function UserRow({
           </option>
         ))}
       </select>
-      {/* The select's own submit carries this intent. */}
-      <input type="hidden" name="intent" value="role" />
 
       <div className="gts-user-row-actions">
         <button
