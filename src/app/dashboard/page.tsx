@@ -60,15 +60,20 @@ function MetricCard({
   value,
   trend,
   tone,
+  href,
 }: {
   icon: string;
   label: string;
   value: React.ReactNode;
   trend?: React.ReactNode;
   tone?: 'danger';
+  href: string;
 }) {
   return (
-    <div className="bg-surface rounded-lg p-6 border border-line shadow-raised flex flex-col hover:bg-hover transition-colors">
+    <a
+      href={href}
+      className="bg-surface rounded-lg p-6 border border-line shadow-raised flex flex-col hover:bg-hover transition-colors"
+    >
       <div className="flex items-center gap-2 text-fg-secondary mb-4">
         <Icon name={icon} className={tone === 'danger' ? 'text-danger' : 'text-accent'} />
         <span className="text-xs font-medium uppercase tracking-wide">{label}</span>
@@ -77,7 +82,7 @@ function MetricCard({
         {value}
       </div>
       {trend && <div className="text-xs text-fg-secondary flex items-center gap-1">{trend}</div>}
-    </div>
+    </a>
   );
 }
 
@@ -91,6 +96,11 @@ export default async function DashboardPage() {
   const firstName = actor.nameEn.split(' ')[0];
   const leadAlerts = data.alerts.slice(0, LEAD_ALERT_COUNT);
   const restAlertsCount = data.alerts.length - leadAlerts.length;
+
+  const now = new Date();
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const monthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0));
+  const collectedThisMonthHref = `/payments?direction=IN&from=${monthStart.toISOString().slice(0, 10)}&to=${monthEnd.toISOString().slice(0, 10)}`;
 
   return (
     <Shell active="/dashboard" domain="finance">
@@ -173,17 +183,20 @@ export default async function DashboardPage() {
               label={dict.overview.dashboard.yourNetPosition}
               value={money(data.netPosition.toNumber(), locale)}
               tone={data.netPosition.toNumber() < 0 ? 'danger' : undefined}
+              href="/accounts"
             />
             <MetricCard
               icon="account_balance_wallet"
               label={dict.overview.dashboard.cashBalance}
               value={money(data.cashBalance.toNumber(), locale)}
               tone={data.cashBalance.toNumber() < 0 ? 'danger' : undefined}
+              href="/payments"
             />
             <MetricCard
               icon="payments"
               label={dict.overview.dashboard.collectedThisMonth}
               value={money(data.collectedThisMonth.toNumber(), locale)}
+              href={collectedThisMonthHref}
             />
             <MetricCard
               icon="arrow_downward"
@@ -197,11 +210,13 @@ export default async function DashboardPage() {
                   </span>
                 ) : undefined
               }
+              href="/accounts"
             />
             <MetricCard
               icon="arrow_upward"
               label={dict.overview.dashboard.payable}
               value={money(data.payable.toNumber(), locale)}
+              href="/accounts"
             />
           </section>
         ) : (

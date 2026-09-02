@@ -291,6 +291,33 @@ export interface FinanceDict {
         cancelled: string;
       };
     };
+    payments: {
+      overline: string;
+      title: string;
+      lede: string;
+      total: string;
+      directionLabel: string;
+      bothDirections: string;
+      inOption: string;
+      outOption: string;
+      fromLabel: string;
+      toLabel: string;
+      filter: string;
+      clear: string;
+      noMatchTitle: string;
+      noneYetTitle: string;
+      noMatchBody: string;
+      noneYetBody: string;
+      table: {
+        caption: string;
+        ref: string;
+        counterparty: string;
+        againstBill: string;
+        method: string;
+        receivedOn: string;
+        amount: string;
+      };
+    };
   };
 }
 
@@ -585,6 +612,33 @@ export const en: FinanceDict = {
         cancelled: 'cancelled',
       },
     },
+    payments: {
+      overline: 'Financial',
+      title: 'Payments',
+      lede: 'Money received from clients and paid to vendors. Computed from the payment ledger, never stored.',
+      total: 'Total',
+      directionLabel: 'Direction',
+      bothDirections: 'In and out',
+      inOption: 'Received (in)',
+      outOption: 'Paid (out)',
+      fromLabel: 'From',
+      toLabel: 'To',
+      filter: 'Filter',
+      clear: 'Clear',
+      noMatchTitle: 'No payments match',
+      noneYetTitle: 'No payments yet',
+      noMatchBody: 'Try a different direction or date range.',
+      noneYetBody: 'Payments will appear here once one is recorded.',
+      table: {
+        caption: 'Payments received and paid, most recent first',
+        ref: 'Ref',
+        counterparty: 'Counterparty',
+        againstBill: 'Against bill',
+        method: 'Method',
+        receivedOn: 'Received on',
+        amount: 'Amount',
+      },
+    },
   },
 };
 
@@ -877,6 +931,33 @@ export const ar: FinanceDict = {
         paid: 'مسددة',
         overdue: 'متأخرة',
         cancelled: 'ملغاة',
+      },
+    },
+    payments: {
+      overline: 'المالية',
+      title: 'المدفوعات',
+      lede: 'الأموال المُحصَّلة من العملاء والمدفوعة للموردين. تُحسب من سجل المدفوعات ولا تُخزَّن.',
+      total: 'الإجمالي',
+      directionLabel: 'الاتجاه',
+      bothDirections: 'وارد وصادر',
+      inOption: 'محصَّل (وارد)',
+      outOption: 'مدفوع (صادر)',
+      fromLabel: 'من',
+      toLabel: 'إلى',
+      filter: 'تصفية',
+      clear: 'مسح',
+      noMatchTitle: 'لا توجد مدفوعات مطابقة',
+      noneYetTitle: 'لا توجد مدفوعات بعد',
+      noMatchBody: 'جرّب اتجاهًا أو نطاق تاريخ مختلفًا.',
+      noneYetBody: 'ستظهر المدفوعات هنا بمجرد تسجيل أحدها.',
+      table: {
+        caption: 'المدفوعات المُحصَّلة والمدفوعة، الأحدث أولاً',
+        ref: 'المرجع',
+        counterparty: 'الطرف المقابل',
+        againstBill: 'مقابل فاتورة',
+        method: 'الطريقة',
+        receivedOn: 'تاريخ الاستلام',
+        amount: 'المبلغ',
       },
     },
   },

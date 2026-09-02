@@ -25,6 +25,7 @@ export interface ShellDict {
     notifications: string;
     accounts: string;
     bills: string;
+    payments: string;
     clients: string;
     vendors: string;
     projects: string;
@@ -98,6 +99,7 @@ export const en: ShellDict = {
     notifications: 'Notifications',
     accounts: 'Accounts',
     bills: 'Electronic bills',
+    payments: 'Payments',
     clients: 'Clients',
     vendors: 'Vendors',
     projects: 'Projects',
@@ -171,6 +173,7 @@ export const ar: ShellDict = {
     notifications: 'الإشعارات',
     accounts: 'الحسابات',
     bills: 'الفواتير الإلكترونية',
+    payments: 'المدفوعات',
     clients: 'العملاء',
     vendors: 'الموردون',
     projects: 'المشاريع',

@@ -62,6 +62,7 @@ const NAV_ICON: Record<NavKey | 'dashboard', string> = {
   dashboard: 'dashboard',
   accounts: 'account_balance',
   bills: 'receipt_long',
+  payments: 'payments',
   clients: 'groups',
   vendors: 'factory',
   projects: 'account_tree',
@@ -83,6 +84,7 @@ export const NAV: NavGroup[] = [
     items: [
       { labelKey: 'accounts', href: '/accounts', domain: 'finance', permission: 'accounts.view' },
       { labelKey: 'bills', href: '/bills', domain: 'finance', permission: 'bills.view' },
+      { labelKey: 'payments', href: '/payments', domain: 'finance', permission: 'payments.view' },
       { labelKey: 'clients', href: '/clients', domain: 'clients', permission: 'clients.view' },
       { labelKey: 'vendors', href: '/vendors', domain: 'vendors', permission: 'vendors.view' },
     ],
