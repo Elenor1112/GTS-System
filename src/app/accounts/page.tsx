@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
+import type { Prisma } from '@prisma/client';
 
-import { Amount, Status } from '@/components/primitives';
+import { Amount } from '@/components/primitives';
 import { Shell, PageHead, Empty } from '@/components/shell';
 import { Icon } from '@/components/icon';
 import { requirePermission } from '@/lib/auth';
 import { t, type Dictionary } from '@/lib/i18n';
+import { formatDate } from '@/lib/format';
 import { getLocale, type Locale } from '@/lib/preferences';
 import {
   ledgerTotals, receivablesByClient, payablesByVendor,
-  type CounterpartySummary, type AgeingBuckets,
+  type CounterpartySummary,
 } from '@/lib/services/accounts';
 
 export const metadata: Metadata = { title: 'Accounts — GTS' };
@@ -112,7 +114,7 @@ export default async function AccountsPage() {
               body={d.nothingOutstandingReceivableBody}
             />
           ) : (
-            <AgeingTable
+            <BalanceTable
               rows={clients.map((c) => ({
                 id: c.id,
                 href: `/clients/${c.id}`,
@@ -121,7 +123,11 @@ export default async function AccountsPage() {
                 summary: c.summary,
                 creditLimit: c.creditLimit.toNumber(),
               }))}
-              totals={ledger.receivable.ageing}
+              totals={{
+                collected: ledger.receivable.paid,
+                outstanding: ledger.receivable.outstanding,
+                total: ledger.receivable.billed,
+              }}
               dict={dict}
               locale={locale}
             />
@@ -137,7 +143,7 @@ export default async function AccountsPage() {
           {vendors.length === 0 ? (
             <Empty title={d.nothingOutstandingTitle} body={d.nothingOutstandingPayableBody} />
           ) : (
-            <AgeingTable
+            <BalanceTable
               rows={vendors.map((v) => ({
                 id: v.id,
                 href: `/vendors/${v.id}`,
@@ -145,7 +151,11 @@ export default async function AccountsPage() {
                 code: v.code,
                 summary: v.summary,
               }))}
-              totals={ledger.payable.ageing}
+              totals={{
+                collected: ledger.payable.paid,
+                outstanding: ledger.payable.outstanding,
+                total: ledger.payable.billed,
+              }}
               dict={dict}
               locale={locale}
             />
@@ -157,12 +167,13 @@ export default async function AccountsPage() {
 }
 
 /**
- * The ageing ladder, as a table.
+ * The balance table: what has been collected, what is still outstanding,
+ * and the total billed — per counterparty.
  *
  * Ordered worst-first by overdue rather than by size: the collections
  * question is "who is late", not "who is large".
  */
-interface AgeingRow {
+interface BalanceRow {
   id: string;
   href: string;
   name: string;
@@ -171,9 +182,14 @@ interface AgeingRow {
   summary: CounterpartySummary;
 }
 
-function AgeingTable({
+function BalanceTable({
   rows, totals, dict, locale,
-}: { rows: AgeingRow[]; totals: AgeingBuckets; dict: Dictionary; locale: Locale }) {
+}: {
+  rows: BalanceRow[];
+  totals: { collected: Prisma.Decimal; outstanding: Prisma.Decimal; total: Prisma.Decimal };
+  dict: Dictionary;
+  locale: Locale;
+}) {
   const d = dict.finance.accounts.table;
   const cell = (value: number) =>
     value === 0 ? (
@@ -189,11 +205,8 @@ function AgeingTable({
         <thead>
           <tr>
             <th scope="col">{d.counterparty}</th>
-            <th scope="col" className="gts-cell-num">{d.current}</th>
-            <th scope="col" className="gts-cell-num">{d.days1to30}</th>
-            <th scope="col" className="gts-cell-num">{d.days31to60}</th>
-            <th scope="col" className="gts-cell-num">{d.days61to90}</th>
-            <th scope="col" className="gts-cell-num">{d.over90}</th>
+            <th scope="col" className="gts-cell-num">{d.collected}</th>
+            <th scope="col" className="gts-cell-num">{d.outstanding}</th>
             <th scope="col" className="gts-cell-num">{d.total}</th>
           </tr>
         </thead>
@@ -214,56 +227,31 @@ function AgeingTable({
                     ` · ${d.overCreditLimit}`}
                 </span>
               </th>
-              <td className="gts-cell-num">{cell(row.summary.ageing.current.toNumber())}</td>
-              <td className="gts-cell-num">{cell(row.summary.ageing.days1to30.toNumber())}</td>
-              <td className="gts-cell-num">{cell(row.summary.ageing.days31to60.toNumber())}</td>
               <td className="gts-cell-num">
-                {row.summary.ageing.days61to90.toNumber() > 0 ? (
-                  <Status tone="warning">
-                    <Amount
-                      value={row.summary.ageing.days61to90.toNumber()}
-                      size="sm"
-                      currency={null}
-                      locale={locale}
-                    />
-                  </Status>
-                ) : (
-                  <span className="gts-meta">—</span>
+                {cell(row.summary.paid.toNumber())}
+                {row.summary.lastPaymentOn && (
+                  <span className="gts-meta gts-cell-sub block">
+                    {d.lastPaymentOn.replace('{date}', formatDate(row.summary.lastPaymentOn.toISOString(), locale))}
+                  </span>
                 )}
               </td>
               <td className="gts-cell-num">
-                {row.summary.ageing.over90.toNumber() > 0 ? (
-                  <Status tone="danger">
-                    <Amount
-                      value={row.summary.ageing.over90.toNumber()}
-                      size="sm"
-                      currency={null}
-                      locale={locale}
-                    />
-                  </Status>
-                ) : (
-                  <span className="gts-meta">—</span>
+                {cell(row.summary.outstanding.toNumber())}
+                {row.summary.outstanding.greaterThan(0) && row.summary.oldestDueOn && (
+                  <span className="gts-meta gts-cell-sub block">
+                    {d.dueSince.replace('{date}', formatDate(row.summary.oldestDueOn.toISOString(), locale))}
+                  </span>
                 )}
               </td>
-              <td className="gts-cell-num">
-                <Amount
-                  value={row.summary.outstanding.toNumber()}
-                  size="sm"
-                  currency={null}
-                  locale={locale}
-                />
-              </td>
+              <td className="gts-cell-num">{cell(row.summary.billed.toNumber())}</td>
             </tr>
           ))}
         </tbody>
         <tfoot>
           <tr>
             <th scope="row">{d.total}</th>
-            <td className="gts-cell-num">{cell(totals.current.toNumber())}</td>
-            <td className="gts-cell-num">{cell(totals.days1to30.toNumber())}</td>
-            <td className="gts-cell-num">{cell(totals.days31to60.toNumber())}</td>
-            <td className="gts-cell-num">{cell(totals.days61to90.toNumber())}</td>
-            <td className="gts-cell-num">{cell(totals.over90.toNumber())}</td>
+            <td className="gts-cell-num">{cell(totals.collected.toNumber())}</td>
+            <td className="gts-cell-num">{cell(totals.outstanding.toNumber())}</td>
             <td className="gts-cell-num">{cell(totals.total.toNumber())}</td>
           </tr>
         </tfoot>

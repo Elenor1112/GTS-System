@@ -107,4 +107,8 @@ table { border-collapse: separate; border-spacing: 0 }
   .gts-table thead { display: table-header-group } /* repeat head per page */
   .gts-table tr { break-inside: avoid }
   .gts-panel, .gts-card { box-shadow: none; border: 1px solid #ccc }
+  /* Without this, browsers strip background colors on print by default —
+     the most common way a colored bar silently vanishes in a PDF export. */
+  .gts-eta-bar { background: #000 !important; color: #fff !important;
+    print-color-adjust: exact; -webkit-print-color-adjust: exact }
 }

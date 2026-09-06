@@ -62,6 +62,9 @@ export interface CatalogueDict {
         unitHint: string;
         categoryLabel: string;
         uncategorised: string;
+        otherCategory: string;
+        newCategoryLabel: string;
+        newCategoryPlaceholder: string;
         vendorLabel: string;
         noneOption: string;
         brandLabel: string;
@@ -425,6 +428,9 @@ export const en: CatalogueDict = {
         unitHint: 'How it is counted — each, m, kg, roll',
         categoryLabel: 'Category',
         uncategorised: 'Uncategorised',
+        otherCategory: 'Other…',
+        newCategoryLabel: 'New category name',
+        newCategoryPlaceholder: 'e.g. Fasteners',
         vendorLabel: 'Preferred vendor',
         noneOption: 'None',
         brandLabel: 'Brand',
@@ -790,6 +796,9 @@ export const ar: CatalogueDict = {
         unitHint: 'طريقة العد — قطعة، متر، كيلوجرام، لفة',
         categoryLabel: 'الفئة',
         uncategorised: 'بدون فئة',
+        otherCategory: 'أخرى…',
+        newCategoryLabel: 'اسم الفئة الجديدة',
+        newCategoryPlaceholder: 'مثال: مشدات',
         vendorLabel: 'المورد المفضل',
         noneOption: 'لا يوجد',
         brandLabel: 'العلامة التجارية',

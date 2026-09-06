@@ -4,7 +4,10 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 import { action, formToObject, optionalText, requiredText, id } from '@/lib/action';
-import { createProduct, updateProduct, archiveProduct } from '@/lib/services/catalogue';
+import { createProduct, updateProduct, archiveProduct, resolveOrCreateCategory } from '@/lib/services/catalogue';
+
+/** Posted as `categoryId` when the user picks "Other" and types a new category name. */
+const OTHER_CATEGORY = '__other__';
 
 /**
  * Product mutations.
@@ -36,12 +39,33 @@ const decimalText = (label: string, opts: { min?: number; max?: number } = {}) =
 const decimalTextOrZero = (label: string, opts: { min?: number; max?: number } = {}) =>
   z.preprocess((v) => (v === '' || v === undefined || v === null ? '0' : v), decimalText(label, opts));
 
+/**
+ * The "Other" sentinel requires a name to create the category from.
+ *
+ * Applied after `.extend()`/`.partial()` rather than baked into
+ * `productSchema` itself, since a `ZodEffects` from `.refine()` cannot be
+ * extended or made partial.
+ */
+const requireNewCategoryName = <T extends z.ZodType<{ categoryId?: string | null; newCategoryName?: string | null }>>(
+  schema: T,
+) =>
+  schema.refine((v) => v.categoryId !== OTHER_CATEGORY || Boolean(v.newCategoryName?.trim()), {
+    message: 'New category name is required',
+    path: ['newCategoryName'],
+  });
+
 const productSchema = z.object({
   nameEn: requiredText('Name', 200),
   nameAr: optionalText,
   // An unselected <select> posts "". Normalise to null before the id
-  // check, so "no category" is not reported as a malformed id.
-  categoryId: z.preprocess((v) => (v === '' || v === undefined ? null : v), id.nullable()),
+  // check, so "no category" is not reported as a malformed id. The
+  // "Other" sentinel is left as-is here and resolved to a real id
+  // (creating the category if needed) in the form adapters below.
+  categoryId: z.preprocess(
+    (v) => (v === '' || v === undefined ? null : v),
+    z.union([id, z.literal(OTHER_CATEGORY)]).nullable(),
+  ),
+  newCategoryName: optionalText,
   vendorId: z.preprocess((v) => (v === '' || v === undefined ? null : v), id.nullable()),
   brand: optionalText,
   unit: requiredText('Unit', 24),
@@ -61,17 +85,21 @@ const productSchema = z.object({
  * re-receive stock — `warehouseId` has no meaning once a product exists
  * in more than one warehouse.
  */
-const createProductSchema = productSchema.extend({
-  warehouseId: id,
-  openingQuantity: decimalTextOrZero('Opening quantity', { min: 0, max: 9_999_999 }),
-  binLocation: optionalText,
-});
+const createProductSchema = requireNewCategoryName(
+  productSchema.extend({
+    warehouseId: id,
+    openingQuantity: decimalTextOrZero('Opening quantity', { min: 0, max: 9_999_999 }),
+    binLocation: optionalText,
+  }),
+);
 
 const createProductAction = action({
   permission: 'products.create',
   input: createProductSchema,
-  handler: async (input, { actor }) => {
-    const product = await createProduct({ actor, input });
+  handler: async ({ categoryId, newCategoryName, ...input }, { actor }) => {
+    const resolvedCategoryId =
+      categoryId === OTHER_CATEGORY ? await resolveOrCreateCategory(newCategoryName!.trim()) : categoryId;
+    const product = await createProduct({ actor, input: { ...input, categoryId: resolvedCategoryId } });
     revalidatePath('/products');
     return { id: product.id, sku: product.sku };
   },
@@ -79,9 +107,17 @@ const createProductAction = action({
 
 const updateProductAction = action({
   permission: 'products.edit',
-  input: productSchema.partial().extend({ productId: id, sku: requiredText('SKU', 64) }),
-  handler: async ({ productId, ...input }, { actor }) => {
-    const product = await updateProduct({ actor, productId, input });
+  input: requireNewCategoryName(productSchema.partial()).and(
+    z.object({ productId: id, sku: requiredText('SKU', 64) }),
+  ),
+  handler: async ({ productId, categoryId, newCategoryName, ...input }, { actor }) => {
+    const resolvedCategoryId =
+      categoryId === OTHER_CATEGORY ? await resolveOrCreateCategory(newCategoryName!.trim()) : categoryId;
+    const product = await updateProduct({
+      actor,
+      productId,
+      input: { ...input, ...(categoryId !== undefined ? { categoryId: resolvedCategoryId } : {}) },
+    });
     revalidatePath('/products');
     revalidatePath(`/products/${productId}`);
     return { id: product.id };

@@ -101,8 +101,8 @@ export type VatRate = (typeof VAT_RATES)[number];
 
 export const WHT_RATES = [
   { rate: 0.5, labelEn: 'Supplies & contracting 0.5%', labelAr: 'توريدات ومقاولات ٠٫٥٪' },
-  { rate: 1, labelEn: 'Services 1%', labelAr: 'خدمات ١٪' },
-  { rate: 3, labelEn: 'Professional fees 3%', labelAr: 'أتعاب مهنية ٣٪' },
+  { rate: 1, labelEn: 'Sales 1%', labelAr: 'مبيعات ١٪' },
+  { rate: 3, labelEn: 'Service 3%', labelAr: 'خدمات ٣٪' },
   { rate: 5, labelEn: 'Commission 5%', labelAr: 'عمولة ٥٪' },
 ] as const;
 

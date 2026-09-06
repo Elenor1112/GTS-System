@@ -24,15 +24,14 @@ export interface FinanceDict {
       table: {
         caption: string;
         counterparty: string;
-        current: string;
-        days1to30: string;
-        days31to60: string;
-        days61to90: string;
-        over90: string;
+        collected: string;
+        outstanding: string;
         total: string;
         openSuffix: string;
         oldestDaysLate: string;
         overCreditLimit: string;
+        lastPaymentOn: string;
+        dueSince: string;
       };
     };
     bills: {
@@ -112,6 +111,9 @@ export interface FinanceDict {
         unitLabel: string;
         unitPriceLabel: string;
         discountLabel: string;
+        discountModeLabel: string;
+        discountModeAmount: string;
+        discountModePercent: string;
         vatLabel: string;
         removeLine: string;
         removeLabel: string;
@@ -272,6 +274,35 @@ export interface FinanceDict {
         };
         notes: string;
         disclaimer: string;
+        eta: {
+          title: string;
+          statusLabel: string;
+          submissionDate: string;
+          issueDate: string;
+          scanNote: string;
+          seller: string;
+          buyer: string;
+          registrationNumber: string;
+          address: string;
+          electronicNumber: string;
+          internalDocRef: string;
+          table: {
+            itemCode: string;
+            description: string;
+            qtyUnit: string;
+            unitPrice: string;
+            lineValue: string;
+          };
+          totals: {
+            salesTotal: string;
+            discountTotal: string;
+            vat: string;
+            whtDeduction: string;
+            grandTotal: string;
+          };
+          internalNumber: string;
+          signatureLabel: string;
+        };
       };
       paymentMethods: {
         bankTransfer: string;
@@ -343,17 +374,16 @@ export const en: FinanceDict = {
       nothingOutstandingReceivableBody: 'Every issued invoice has been settled.',
       nothingOutstandingPayableBody: 'Every supplier bill has been settled.',
       table: {
-        caption: 'Outstanding balances by age since the due date',
+        caption: 'Collected, outstanding and total balances by counterparty',
         counterparty: 'Counterparty',
-        current: 'Current',
-        days1to30: '1–30',
-        days31to60: '31–60',
-        days61to90: '61–90',
-        over90: '90+',
+        collected: 'Collected',
+        outstanding: 'Outstanding',
         total: 'Total',
         openSuffix: 'open',
         oldestDaysLate: 'oldest {days} days late',
         overCreditLimit: 'over credit limit',
+        lastPaymentOn: 'last payment {date}',
+        dueSince: 'due since {date}',
       },
     },
     bills: {
@@ -433,6 +463,9 @@ export const en: FinanceDict = {
         unitLabel: 'Unit',
         unitPriceLabel: 'Unit price',
         discountLabel: 'Discount',
+        discountModeLabel: 'Discount type',
+        discountModeAmount: 'Amount',
+        discountModePercent: '%',
         vatLabel: 'VAT',
         removeLine: 'Remove line {n}',
         removeLabel: 'Remove',
@@ -593,6 +626,35 @@ export const en: FinanceDict = {
         },
         notes: 'Notes',
         disclaimer: 'This document was produced by GTS. It has not been submitted to the Egyptian Tax Authority from this system.',
+        eta: {
+          title: 'Invoice',
+          statusLabel: 'Status',
+          submissionDate: 'Submission date',
+          issueDate: 'Issue date',
+          scanNote: 'For more information, please scan this barcode',
+          seller: 'Seller',
+          buyer: 'Buyer',
+          registrationNumber: 'Registration number',
+          address: 'Address',
+          electronicNumber: 'Electronic number',
+          internalDocRef: 'Internal document reference',
+          table: {
+            itemCode: 'Item code',
+            description: 'Description',
+            qtyUnit: 'Quantity / unit',
+            unitPrice: 'Unit price',
+            lineValue: 'Sales value',
+          },
+          totals: {
+            salesTotal: 'Total sales',
+            discountTotal: 'Total discount',
+            vat: 'VAT',
+            whtDeduction: 'Withholding tax deduction',
+            grandTotal: 'Grand total',
+          },
+          internalNumber: 'Internal number',
+          signatureLabel: 'Signature',
+        },
       },
       paymentMethods: {
         bankTransfer: 'Bank transfer',
@@ -664,17 +726,16 @@ export const ar: FinanceDict = {
       nothingOutstandingReceivableBody: 'تمت تسوية جميع الفواتير الصادرة.',
       nothingOutstandingPayableBody: 'تمت تسوية جميع فواتير الموردين.',
       table: {
-        caption: 'الأرصدة المستحقة موزعة حسب مدة التأخير عن تاريخ الاستحقاق',
+        caption: 'المحصَّل والمستحق والإجمالي لكل طرف مقابل',
         counterparty: 'الطرف المقابل',
-        current: 'حالي',
-        days1to30: '١–٣٠',
-        days31to60: '٣١–٦٠',
-        days61to90: '٦١–٩٠',
-        over90: '+٩٠',
+        collected: 'المحصَّل',
+        outstanding: 'المستحق',
         total: 'الإجمالي',
         openSuffix: 'مفتوحة',
         oldestDaysLate: 'الأقدم متأخر {days} يومًا',
         overCreditLimit: 'تجاوز حد الائتمان',
+        lastPaymentOn: 'آخر دفعة {date}',
+        dueSince: 'مستحق منذ {date}',
       },
     },
     bills: {
@@ -754,6 +815,9 @@ export const ar: FinanceDict = {
         unitLabel: 'الوحدة',
         unitPriceLabel: 'سعر الوحدة',
         discountLabel: 'الخصم',
+        discountModeLabel: 'نوع الخصم',
+        discountModeAmount: 'مبلغ',
+        discountModePercent: '%',
         vatLabel: 'ض.ق.م',
         removeLine: 'حذف البند {n}',
         removeLabel: 'حذف',
@@ -914,6 +978,35 @@ export const ar: FinanceDict = {
         },
         notes: 'ملاحظات',
         disclaimer: 'تم إصدار هذا المستند بواسطة نظام GTS. لم يُرسَل إلى مصلحة الضرائب المصرية من هذا النظام.',
+        eta: {
+          title: 'فاتورة',
+          statusLabel: 'الحالة',
+          submissionDate: 'تاريخ التقديم',
+          issueDate: 'تاريخ الإصدار',
+          scanNote: 'للمزيد من المعلومات، فضلا امسح هذا الباركود',
+          seller: 'البائع',
+          buyer: 'المشتري',
+          registrationNumber: 'رقم التسجيل',
+          address: 'العنوان',
+          electronicNumber: 'الرقم الإلكتروني',
+          internalDocRef: 'الرقم الداخلي للمصدر',
+          table: {
+            itemCode: 'اسم الكود',
+            description: 'الوصف',
+            qtyUnit: 'الكمية/نوع الوحدة',
+            unitPrice: 'سعر الوحدة',
+            lineValue: 'قيمة المبيعات',
+          },
+          totals: {
+            salesTotal: 'إجمالي المبيعات',
+            discountTotal: 'إجمالي الخصم',
+            vat: 'ضريبة القيمة المضافة',
+            whtDeduction: 'الخصم تحت حساب الضريبة',
+            grandTotal: 'إجمالي المبلغ',
+          },
+          internalNumber: 'الرقم الداخلي',
+          signatureLabel: 'توقيع',
+        },
       },
       paymentMethods: {
         bankTransfer: 'تحويل بنكي',

@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 
 import {
   FormError, FieldGrid, TextField, SelectField, Submit, FormActions, errorFor,
@@ -8,6 +8,9 @@ import {
 import type { CatalogueDict } from '@/lib/i18n/dict/catalogue';
 
 import { submitCreateProduct, submitUpdateProduct } from './actions';
+
+/** Sentinel posted as `categoryId` when the user picks "Other" and types a new category name. */
+const OTHER_CATEGORY = '__other__';
 
 type ProductFormDict = CatalogueDict['catalogue']['products']['form'];
 
@@ -53,6 +56,9 @@ export function ProductForm({
 }) {
   const submit = mode === 'create' ? submitCreateProduct : submitUpdateProduct;
   const [state, formAction] = useActionState(submit, null);
+  // Stays open across a failed resubmit (e.g. "Other" chosen with the name
+  // left blank) since a fieldError for it only ever comes back that way.
+  const [isOtherCategory, setIsOtherCategory] = useState(() => Boolean(errorFor(state, 'newCategoryName')));
 
   useEffect(() => {
     if (!state?.ok) return;
@@ -111,11 +117,23 @@ export function ProductForm({
           label={dict.categoryLabel}
           defaultValue={values?.categoryId ?? ''}
           error={e('categoryId')}
+          onChange={(value) => setIsOtherCategory(value === OTHER_CATEGORY)}
           options={[
             { value: '', label: dict.uncategorised },
             ...categories.map((c) => ({ value: c.id, label: c.nameEn })),
+            { value: OTHER_CATEGORY, label: dict.otherCategory },
           ]}
         />
+        {isOtherCategory && (
+          <TextField
+            name="newCategoryName"
+            label={dict.newCategoryLabel}
+            placeholder={dict.newCategoryPlaceholder}
+            required
+            error={e('newCategoryName')}
+            maxLength={120}
+          />
+        )}
         <SelectField
           name="vendorId"
           label={dict.vendorLabel}

@@ -97,6 +97,7 @@ export default async function EditBillPage({ params }: { params: Promise<{ id: s
             unit: item.unit,
             unitPrice: item.unitPrice.toString(),
             discount: item.discount.toString(),
+            discountMode: 'amount' as const,
             vatRate: item.vatRate.toString(),
           }))}
           dict={f}

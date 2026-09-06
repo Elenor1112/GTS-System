@@ -136,6 +136,7 @@ export function SelectField({
   defaultValue,
   options,
   placeholder,
+  onChange,
 }: {
   name: string;
   label: string;
@@ -145,6 +146,7 @@ export function SelectField({
   defaultValue?: string | number | null;
   options: { value: string | number; label: string }[];
   placeholder?: string;
+  onChange?: (value: string) => void;
 }) {
   return (
     <Field name={name} label={label} hint={hint} error={error} required={required}>
@@ -153,6 +155,7 @@ export function SelectField({
         name={name}
         required={required}
         defaultValue={defaultValue ?? ''}
+        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
         className="gts-input gts-select"
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${name}-error` : hint ? `${name}-hint` : undefined}

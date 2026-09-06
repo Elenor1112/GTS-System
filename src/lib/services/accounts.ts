@@ -90,24 +90,42 @@ export interface CounterpartySummary {
   openBillCount: number;
   overdueBillCount: number;
   oldestOverdueDays: number;
+  /** Due date of the oldest bill still outstanding, if any. */
+  oldestDueOn: Date | null;
+  /** Most recent payment received against this counterparty, if any. */
+  lastPaymentOn: Date | null;
 }
 
 export async function clientSummary(clientId: string, asOf = new Date()): Promise<CounterpartySummary> {
-  const bills = await db.electronicBill.findMany({
-    where: { clientId, deletedAt: null, status: { not: 'CANCELLED' } },
-    select: { status: true, total: true, whtAmount: true, paidAmount: true, dueOn: true },
-  });
+  const [bills, lastPayment] = await Promise.all([
+    db.electronicBill.findMany({
+      where: { clientId, deletedAt: null, status: { not: 'CANCELLED' } },
+      select: { status: true, total: true, whtAmount: true, paidAmount: true, dueOn: true },
+    }),
+    db.payment.findFirst({
+      where: { clientId },
+      orderBy: { receivedOn: 'desc' },
+      select: { receivedOn: true },
+    }),
+  ]);
 
-  return summarise(bills, asOf);
+  return { ...summarise(bills, asOf), lastPaymentOn: lastPayment?.receivedOn ?? null };
 }
 
 export async function vendorSummary(vendorId: string, asOf = new Date()): Promise<CounterpartySummary> {
-  const bills = await db.electronicBill.findMany({
-    where: { vendorId, deletedAt: null, status: { not: 'CANCELLED' } },
-    select: { status: true, total: true, whtAmount: true, paidAmount: true, dueOn: true },
-  });
+  const [bills, lastPayment] = await Promise.all([
+    db.electronicBill.findMany({
+      where: { vendorId, deletedAt: null, status: { not: 'CANCELLED' } },
+      select: { status: true, total: true, whtAmount: true, paidAmount: true, dueOn: true },
+    }),
+    db.payment.findFirst({
+      where: { vendorId },
+      orderBy: { receivedOn: 'desc' },
+      select: { receivedOn: true },
+    }),
+  ]);
 
-  return summarise(bills, asOf);
+  return { ...summarise(bills, asOf), lastPaymentOn: lastPayment?.receivedOn ?? null };
 }
 
 function summarise(
@@ -126,6 +144,7 @@ function summarise(
   let openCount = 0;
   let overdueCount = 0;
   let oldestOverdueDays = 0;
+  let oldestDueOn: Date | null = null;
 
   for (const bill of bills) {
     billed = billed.plus(D(bill.total));
@@ -147,7 +166,10 @@ function summarise(
     if (days > 0) {
       overdue = overdue.plus(due);
       overdueCount += 1;
-      oldestOverdueDays = Math.max(oldestOverdueDays, days);
+      if (days > oldestOverdueDays || oldestDueOn === null) {
+        oldestOverdueDays = Math.max(oldestOverdueDays, days);
+        oldestDueOn = bill.dueOn;
+      }
     }
   }
 
@@ -169,6 +191,8 @@ function summarise(
     openBillCount: openCount,
     overdueBillCount: overdueCount,
     oldestOverdueDays,
+    oldestDueOn,
+    lastPaymentOn: null,
   };
 }
 
@@ -294,6 +318,34 @@ export async function ledgerTotals(asOf = new Date()): Promise<LedgerTotals> {
   };
 }
 
+/** Most recent payment date per client, for the counterparties that have one. */
+async function lastPaymentByClient(): Promise<Map<string, Date>> {
+  const rows = await db.payment.groupBy({
+    by: ['clientId'],
+    where: { clientId: { not: null } },
+    _max: { receivedOn: true },
+  });
+  return new Map(
+    rows
+      .filter((r): r is typeof r & { clientId: string } => r.clientId !== null && r._max.receivedOn !== null)
+      .map((r) => [r.clientId, r._max.receivedOn as Date]),
+  );
+}
+
+/** Most recent payment date per vendor, for the counterparties that have one. */
+async function lastPaymentByVendor(): Promise<Map<string, Date>> {
+  const rows = await db.payment.groupBy({
+    by: ['vendorId'],
+    where: { vendorId: { not: null } },
+    _max: { receivedOn: true },
+  });
+  return new Map(
+    rows
+      .filter((r): r is typeof r & { vendorId: string } => r.vendorId !== null && r._max.receivedOn !== null)
+      .map((r) => [r.vendorId, r._max.receivedOn as Date]),
+  );
+}
+
 /**
  * Every client with money outstanding, worst first.
  *
@@ -301,16 +353,19 @@ export async function ledgerTotals(asOf = new Date()): Promise<LedgerTotals> {
  * question is "who is late", not "who is large".
  */
 export async function receivablesByClient(asOf = new Date()) {
-  const clients = await db.client.findMany({
-    where: { deletedAt: null },
-    select: {
-      id: true, code: true, nameEn: true, nameAr: true, creditLimit: true,
-      bills: {
-        where: { deletedAt: null, status: { not: 'CANCELLED' } },
-        select: { status: true, total: true, whtAmount: true, paidAmount: true, dueOn: true },
+  const [clients, lastPayments] = await Promise.all([
+    db.client.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true, code: true, nameEn: true, nameAr: true, creditLimit: true,
+        bills: {
+          where: { deletedAt: null, status: { not: 'CANCELLED' } },
+          select: { status: true, total: true, whtAmount: true, paidAmount: true, dueOn: true },
+        },
       },
-    },
-  });
+    }),
+    lastPaymentByClient(),
+  ]);
 
   return clients
     .map((client) => ({
@@ -319,7 +374,10 @@ export async function receivablesByClient(asOf = new Date()) {
       nameEn: client.nameEn,
       nameAr: client.nameAr,
       creditLimit: money(client.creditLimit),
-      summary: summarise(client.bills, asOf),
+      summary: {
+        ...summarise(client.bills, asOf),
+        lastPaymentOn: lastPayments.get(client.id) ?? null,
+      },
     }))
     .filter((c) => c.summary.outstanding.greaterThan(0))
     .sort((a, b) => {
@@ -329,16 +387,19 @@ export async function receivablesByClient(asOf = new Date()) {
 }
 
 export async function payablesByVendor(asOf = new Date()) {
-  const vendors = await db.vendor.findMany({
-    where: { deletedAt: null },
-    select: {
-      id: true, code: true, nameEn: true, nameAr: true,
-      bills: {
-        where: { deletedAt: null, status: { not: 'CANCELLED' } },
-        select: { status: true, total: true, whtAmount: true, paidAmount: true, dueOn: true },
+  const [vendors, lastPayments] = await Promise.all([
+    db.vendor.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true, code: true, nameEn: true, nameAr: true,
+        bills: {
+          where: { deletedAt: null, status: { not: 'CANCELLED' } },
+          select: { status: true, total: true, whtAmount: true, paidAmount: true, dueOn: true },
+        },
       },
-    },
-  });
+    }),
+    lastPaymentByVendor(),
+  ]);
 
   return vendors
     .map((vendor) => ({
@@ -346,7 +407,10 @@ export async function payablesByVendor(asOf = new Date()) {
       code: vendor.code,
       nameEn: vendor.nameEn,
       nameAr: vendor.nameAr,
-      summary: summarise(vendor.bills, asOf),
+      summary: {
+        ...summarise(vendor.bills, asOf),
+        lastPaymentOn: lastPayments.get(vendor.id) ?? null,
+      },
     }))
     .filter((v) => v.summary.outstanding.greaterThan(0))
     .sort((a, b) => b.summary.overdue.comparedTo(a.summary.overdue));

@@ -57,6 +57,7 @@ interface DraftLine {
   unit: string;
   unitPrice: string;
   discount: string;
+  discountMode: 'amount' | 'percent';
   vatRate: string;
 }
 
@@ -70,6 +71,7 @@ const emptyLine = (key: number): DraftLine => ({
   unit: 'EA',
   unitPrice: '0',
   discount: '0',
+  discountMode: 'amount',
   vatRate: '14',
 });
 
@@ -154,15 +156,23 @@ export function BillForm({
   };
 
   /* ---- The preview. Never submitted. ---- */
-  const previewLines: BillLine[] = lines.map((l) => ({
-    code: l.itemCode || '—',
-    descriptionEn: l.descriptionEn || 'Line',
-    quantity: Number(l.quantity) || 0,
-    unit: l.unit,
-    unitPrice: Number(l.unitPrice) || 0,
-    discount: Number(l.discount) || 0,
-    vatRate: Number(l.vatRate) || 0,
-  }));
+  const previewLines: BillLine[] = lines.map((l) => {
+    const quantity = Number(l.quantity) || 0;
+    const unitPrice = Number(l.unitPrice) || 0;
+    const discount =
+      l.discountMode === 'percent'
+        ? quantity * unitPrice * ((Number(l.discount) || 0) / 100)
+        : Number(l.discount) || 0;
+    return {
+      code: l.itemCode || '—',
+      descriptionEn: l.descriptionEn || 'Line',
+      quantity,
+      unit: l.unit,
+      unitPrice,
+      discount,
+      vatRate: Number(l.vatRate) || 0,
+    };
+  });
   const preview = computeTotals(previewLines, Number(whtRate) || 0);
 
   const money = (v: number) => {
@@ -462,18 +472,44 @@ export function BillForm({
                 />
               </div>
 
-              <div className="gts-field" style={{ flex: '0 1 7rem' }}>
+              <div className="gts-field" style={{ flex: '0 1 10rem' }}>
                 <label className="gts-label" htmlFor={`disc-${line.key}`}>
                   {dict.discountLabel}
                 </label>
+                <div className="gts-input-group">
+                  <input
+                    id={`disc-${line.key}`}
+                    type="number"
+                    step="0.01"
+                    className="gts-input gts-input-num"
+                    value={line.discount}
+                    onChange={(event) => setLine(line.key, { discount: event.target.value })}
+                  />
+                  <select
+                    aria-label={dict.discountModeLabel}
+                    className="gts-input gts-select"
+                    style={{ flex: '0 0 auto' }}
+                    value={line.discountMode}
+                    onChange={(event) =>
+                      setLine(line.key, { discountMode: event.target.value as 'amount' | 'percent' })
+                    }
+                  >
+                    <option value="amount">{dict.discountModeAmount}</option>
+                    <option value="percent">{dict.discountModePercent}</option>
+                  </select>
+                </div>
                 <input
-                  id={`disc-${line.key}`}
+                  type="hidden"
                   name={`lines[${index}].discount`}
-                  type="number"
-                  step="0.01"
-                  className="gts-input gts-input-num"
-                  value={line.discount}
-                  onChange={(event) => setLine(line.key, { discount: event.target.value })}
+                  value={
+                    line.discountMode === 'percent'
+                      ? (
+                          (Number(line.quantity) || 0) *
+                          (Number(line.unitPrice) || 0) *
+                          ((Number(line.discount) || 0) / 100)
+                        ).toFixed(2)
+                      : line.discount
+                  }
                 />
               </div>
 

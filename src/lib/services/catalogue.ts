@@ -477,3 +477,25 @@ export async function listCategories() {
     orderBy: { nameEn: 'asc' },
   });
 }
+
+/**
+ * Resolve a free-typed category name to an id, creating the category if
+ * no existing one matches.
+ *
+ * Used by the "Other" option on the product form: `nameEn` is unique, so
+ * two people typing the same new category name end up sharing one row
+ * instead of the catalogue accumulating near-duplicate categories.
+ */
+export async function resolveOrCreateCategory(nameEn: string) {
+  const existing = await db.productCategory.findFirst({
+    where: { nameEn: { equals: nameEn, mode: 'insensitive' } },
+    select: { id: true },
+  });
+  if (existing) return existing.id;
+
+  const created = await db.productCategory.create({
+    data: { nameEn },
+    select: { id: true },
+  });
+  return created.id;
+}
