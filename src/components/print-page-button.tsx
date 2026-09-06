@@ -7,10 +7,18 @@
  * IS the document — the global print stylesheet strips the rail, filter
  * bar and buttons, so there is nothing a separate route would add.
  */
-export function PrintPageButton({ className = 'gts-btn gts-btn-secondary' }: { className?: string }) {
+export function PrintPageButton({
+  label,
+  className = 'gts-btn gts-btn-secondary',
+}: {
+  /** Passed in by the caller: this is a client component, and the
+   *  dictionary is server-only, so it cannot resolve its own label. */
+  label: string;
+  className?: string;
+}) {
   return (
     <button type="button" className={className} onClick={() => window.print()}>
-      Print
+      {label}
     </button>
   );
 }

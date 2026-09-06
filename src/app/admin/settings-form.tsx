@@ -75,6 +75,21 @@ export function SettingsForm({
             defaultValue={values['org.commercialRegNo']}
             error={e('org.commercialRegNo')}
           />
+          <TextField
+            name="org.activityCode"
+            label={dict.taxIdentity.activityCodeLabel}
+            hint={dict.taxIdentity.activityCodeHint}
+            inputMode="numeric"
+            defaultValue={values['org.activityCode']}
+            error={e('org.activityCode')}
+          />
+          <TextField
+            name="org.branchId"
+            label={dict.taxIdentity.branchIdLabel}
+            hint={dict.taxIdentity.branchIdHint}
+            defaultValue={values['org.branchId']}
+            error={e('org.branchId')}
+          />
           <SelectField
             name="org.governorateCode"
             label={dict.taxIdentity.governorateLabel}

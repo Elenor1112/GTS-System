@@ -36,6 +36,13 @@ export const settingsSchema = z.object({
     .number()
     .refine((v) => GOVERNORATE_CODES.has(v), 'Choose one of the 27 governorates')
     .optional(),
+  'org.activityCode': z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/\D/g, ''))
+    .refine((v) => v === '' || v.length === 4, 'An ETA activity code is 4 digits')
+    .optional(),
+  'org.branchId': z.string().trim().max(20).optional(),
 
   'attendance.workStart': timeOfDay.optional(),
   'attendance.workEnd': timeOfDay.optional(),

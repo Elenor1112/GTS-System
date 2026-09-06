@@ -234,6 +234,10 @@ export interface CreateBillInput {
   currency?: string;
   exchangeRate?: Numeric | null;
   whtRate?: Numeric;
+  /** Counterparty's own purchase-order reference, printed on the document. */
+  purchaseOrderRef?: string | null;
+  /** Our own sales-order reference. */
+  salesOrderRef?: string | null;
   notes?: string | null;
   lines: LineInput[];
 }
@@ -312,6 +316,8 @@ export async function createBill(input: CreateBillInput) {
         total: totals.total,
         whtRate: totals.whtRate,
         whtAmount: totals.whtAmount,
+        purchaseOrderRef: input.purchaseOrderRef ?? null,
+        salesOrderRef: input.salesOrderRef ?? null,
         notes: input.notes ?? null,
         items: { create: totals.lines },
       },

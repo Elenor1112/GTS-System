@@ -1,0 +1,344 @@
+/* ============================================================
+   ETA E-INVOICE — the Egyptian Tax Authority document format
+   ------------------------------------------------------------
+   This sheet reproduces the ETA's own PDF export, not the GTS
+   design language. That is deliberate and it is the whole point:
+   the printed bill is a tax document whose appearance is
+   specified by the authority, so it must NOT drift with the
+   app's own tokens, theme or type scale.
+
+   Hence two rules that look like mistakes and are not:
+
+   1. LITERAL COLOURS, never var(--gts-*). Every app token
+      inverts under [data-theme='dark'] and prefers-color-scheme.
+      A tax document that prints dark because the user likes a
+      dark UI is a broken tax document.
+   2. Everything is scoped under .gts-eta-doc, so none of it can
+      leak into the application shell.
+
+   Direction is handled STRUCTURALLY with logical properties, the
+   same way the rest of the codebase does it — so one ruleset
+   serves the Arabic (RTL) and English (LTR) documents, and the
+   English one is a true mirror rather than a second stylesheet.
+   ============================================================ */
+
+.gts-eta-doc {
+  /* The ETA palette, sampled from the authority's own export. */
+  --eta-seller-bar: #3e5060;
+  --eta-seller-fg: #ffffff;
+  --eta-buyer-bar: #d3d3d3;
+  --eta-buyer-fg: #1a1a1a;
+  --eta-head-bg: #ededed;
+  --eta-border: #b0b0b0;
+  --eta-border-strong: #8a8a8a;
+  --eta-ink: #1a1a1a;
+  --eta-ink-muted: #4a4a4a;
+
+  background: #ffffff;
+  color: var(--eta-ink);
+  font-size: 8.5pt;
+  line-height: 1.55;
+  /* An A4 sheet on screen as well as on paper, so what the user checks
+     before printing is the page that comes out of the printer. */
+  inline-size: 210mm;
+  max-inline-size: 100%;
+  min-block-size: 297mm;
+  margin-inline: auto;
+  padding: 10mm;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+/* Latin runs — numbers, codes, UUIDs — stay LTR inside an RTL
+   document, matching how .gts-num behaves app-wide. Without the
+   isolation an invoice number renders with its segments reordered. */
+.gts-eta-doc .gts-eta-doc-ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+
+/* ---------- 1. Header ------------------------------------- */
+.gts-eta-doc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12mm;
+  margin-block-end: 6mm;
+}
+.gts-eta-doc-title {
+  font-size: 15pt;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+  order: 2; /* the outer edge: right in RTL, left in LTR */
+}
+.gts-eta-doc-scannote {
+  font-size: 7pt;
+  color: var(--eta-ink-muted);
+  /* Wide enough to hold the note on one line at both languages' widths;
+     wrapping it mid-phrase is the giveaway that this is not the real
+     authority export. */
+  max-inline-size: 70mm;
+  order: 1;
+  text-wrap: balance;
+}
+
+/* The status / submission / issue rows. Label and value sit on one
+   line, the label bold, exactly as the authority renders them. */
+.gts-eta-doc-daterow {
+  display: flex;
+  gap: 1.5mm;
+  justify-content: flex-end;
+  font-size: 7.5pt;
+  line-height: 1.7;
+}
+.gts-eta-doc-daterow dt {
+  font-weight: 700;
+  margin: 0;
+}
+.gts-eta-doc-daterow dd {
+  margin: 0;
+  color: var(--eta-ink-muted);
+}
+.gts-eta-doc-dates {
+  margin: 0 0 6mm;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* ---------- 2-3. Party bands + QR ------------------------- */
+/* The QR occupies the outer column beside the seller band. Grid
+   rather than a float, so the band keeps its full height even when
+   there is no QR to show — an unsubmitted invoice must not reflow
+   into a different layout from a submitted one. */
+.gts-eta-doc-partyrow {
+  display: grid;
+  grid-template-columns: 34mm minmax(0, 1fr);
+  gap: 6mm;
+  align-items: start;
+  margin-block-end: 4mm;
+}
+.gts-eta-doc-qr {
+  inline-size: 34mm;
+  block-size: 34mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gts-eta-doc-qr img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+
+.gts-eta-doc-band {
+  border: 1px solid var(--eta-border);
+}
+.gts-eta-doc-band-head {
+  background: var(--eta-seller-bar);
+  color: var(--eta-seller-fg);
+  font-weight: 700;
+  font-size: 8.5pt;
+  padding: 1.2mm 2.5mm;
+}
+.gts-eta-doc-band-head--buyer {
+  background: var(--eta-buyer-bar);
+  color: var(--eta-buyer-fg);
+}
+/* Two columns: the party's own details, and a secondary column
+   (activity code) pinned to the inner edge, as in the reference. */
+.gts-eta-doc-band-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34mm;
+  gap: 2mm 6mm;
+  padding: 2mm 2.5mm;
+  align-items: start;
+}
+.gts-eta-doc-band-grid p {
+  margin: 0;
+}
+.gts-eta-doc-label {
+  font-weight: 700;
+}
+.gts-eta-doc-aside {
+  text-align: start;
+  font-size: 7.5pt;
+}
+
+/* ---------- 4. Reference row ------------------------------ */
+/* Electronic number / export number, then the two order refs.
+   Value first, label second in source order; `justify-content:
+   space-between` puts each on its correct edge in either
+   direction without a mirrored rule. */
+.gts-eta-doc-refs {
+  margin-block-end: 4mm;
+  font-size: 7.5pt;
+}
+.gts-eta-doc-refrow {
+  display: flex;
+  justify-content: space-between;
+  gap: 6mm;
+  padding-block: 1mm;
+}
+.gts-eta-doc-refrow > span {
+  min-inline-size: 0;
+}
+
+/* ---------- 6. Line items --------------------------------- */
+.gts-eta-doc-items-wrap {
+  position: relative;
+  margin-block-end: 0;
+}
+.gts-eta-doc-items {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 7.5pt;
+  position: relative;
+  z-index: 1;
+}
+.gts-eta-doc-items th,
+.gts-eta-doc-items td {
+  border: 1px solid var(--eta-border);
+  padding: 1.6mm 2mm;
+  text-align: center;
+  vertical-align: middle;
+}
+.gts-eta-doc-items thead th {
+  background: var(--eta-head-bg);
+  font-weight: 700;
+}
+/* Numeric cells stay LTR and tabular even in the RTL document. */
+.gts-eta-doc-items td.gts-eta-doc-num {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* The diagonal watermark the authority stamps behind the rows.
+   aria-hidden in the markup; purely decorative. */
+.gts-eta-doc-watermark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.gts-eta-doc-watermark span {
+  transform: rotate(-30deg);
+  font-size: 26pt;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.07);
+  white-space: nowrap;
+  letter-spacing: 0.1em;
+}
+
+/* ---------- 7. Totals ------------------------------------- */
+/* One table sharing the item table's column edges, so the two read
+   as a single continuous grid. The leading cells are empty and
+   borderless; only the label/value pair carries a box. */
+.gts-eta-doc-totals {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 7.5pt;
+  table-layout: fixed;
+}
+/* Column widths mirror the item table's last two columns, so the label
+   sits under "unit price" and the figure under "sales value". */
+.gts-eta-doc-totals col.gts-eta-doc-col-pad { inline-size: 46%; }
+.gts-eta-doc-totals col.gts-eta-doc-col-label { inline-size: 32%; }
+.gts-eta-doc-totals col.gts-eta-doc-col-value { inline-size: 22%; }
+.gts-eta-doc-totals td {
+  padding: 1.6mm 2mm;
+}
+.gts-eta-doc-totals .gts-eta-doc-totals-spacer {
+  border: none;
+}
+.gts-eta-doc-totals-label,
+.gts-eta-doc-totals-value {
+  border: 1px solid var(--eta-border);
+  text-align: center;
+}
+.gts-eta-doc-totals-value {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+}
+.gts-eta-doc-totals tr:last-child .gts-eta-doc-totals-label,
+.gts-eta-doc-totals tr:last-child .gts-eta-doc-totals-value {
+  font-weight: 700;
+  border-color: var(--eta-border-strong);
+}
+/* The stacked pair the reference prints in the VAT row: the tax
+   itself, then the deduction taken on account of it. */
+.gts-eta-doc-totals-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5mm;
+}
+
+/* ---------- 8. Footer ------------------------------------- */
+.gts-eta-doc-footer {
+  margin-block-start: 6mm;
+  font-size: 7pt;
+  color: var(--eta-ink-muted);
+}
+.gts-eta-doc-footer-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 6mm;
+  padding-block: 0.8mm;
+}
+.gts-eta-doc-legal {
+  margin-block-start: 3mm;
+  font-size: 6.5pt;
+  line-height: 1.6;
+  color: var(--eta-ink-muted);
+}
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+@page {
+  size: A4;
+  margin: 10mm;
+}
+
+@media print {
+  .gts-eta-doc {
+    padding: 0;
+    inline-size: auto;
+    max-inline-size: none;
+    min-block-size: 0;
+    box-shadow: none;
+    font-size: 8pt;
+  }
+
+  /* Browsers drop background fills when printing unless asked not
+     to. Without this the seller bar, the buyer bar, the table
+     header and the watermark all vanish from the PDF silently —
+     the single most common way a document like this degrades. */
+  .gts-eta-doc,
+  .gts-eta-doc * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .gts-eta-doc-items thead {
+    display: table-header-group;
+  }
+  .gts-eta-doc-items tr {
+    break-inside: avoid;
+  }
+  /* A totals block or a footer split across a page break reads as a
+     different figure on each half. */
+  .gts-eta-doc-totals,
+  .gts-eta-doc-footer,
+  .gts-eta-doc-partyrow {
+    break-inside: avoid;
+  }
+}

@@ -103,6 +103,8 @@ export interface FinanceDict {
         withholdingLegend: string;
         withholdingLabel: string;
         withholdingNone: string;
+        purchaseOrderRefLabel: string;
+        salesOrderRefLabel: string;
         lineItemsLegend: string;
         productLabel: string;
         freeTextLine: string;
@@ -282,11 +284,23 @@ export interface FinanceDict {
           scanNote: string;
           seller: string;
           buyer: string;
+          nameLabel: string;
           registrationNumber: string;
           address: string;
           electronicNumber: string;
           internalDocRef: string;
+          branchId: string;
+          activityCode: string;
+          exportProvisionalNumber: string;
+          purchaseOrderRef: string;
+          salesOrderRef: string;
+          /** Timezone suffixes appended to the two renderings of one instant. */
+          cairoTime: string;
+          utcTime: string;
+          issuedBy: string;
+          fileCreatedAt: string;
           table: {
+            itemName: string;
             itemCode: string;
             description: string;
             qtyUnit: string;
@@ -296,12 +310,16 @@ export interface FinanceDict {
           totals: {
             salesTotal: string;
             discountTotal: string;
+            itemsTotal: string;
             vat: string;
             whtDeduction: string;
+            extraDiscount: string;
             grandTotal: string;
           };
           internalNumber: string;
           signatureLabel: string;
+          /** The ETA's own footer paragraph, printed verbatim on the document. */
+          legalNote: string;
         };
       };
       paymentMethods: {
@@ -455,6 +473,8 @@ export const en: FinanceDict = {
         withholdingLegend: 'Withholding',
         withholdingLabel: 'Withholding tax',
         withholdingNone: 'None',
+        purchaseOrderRefLabel: 'Purchase order reference',
+        salesOrderRefLabel: 'Sales order reference',
         lineItemsLegend: 'Line items',
         productLabel: 'Product',
         freeTextLine: 'Free text line',
@@ -634,26 +654,41 @@ export const en: FinanceDict = {
           scanNote: 'For more information, please scan this barcode',
           seller: 'Seller',
           buyer: 'Buyer',
+          nameLabel: 'Name',
           registrationNumber: 'Registration number',
           address: 'Address',
           electronicNumber: 'Electronic number',
           internalDocRef: 'Internal document reference',
+          branchId: 'Branch ID',
+          activityCode: 'Activity code',
+          exportProvisionalNumber: 'Provisional export invoice number',
+          purchaseOrderRef: 'Purchase order reference',
+          salesOrderRef: 'Sales order reference',
+          cairoTime: 'Cairo',
+          utcTime: 'UTC',
+          issuedBy: 'Issued by',
+          fileCreatedAt: 'File created on',
           table: {
+            itemName: 'Item name',
             itemCode: 'Item code',
             description: 'Description',
-            qtyUnit: 'Quantity / unit',
+            qtyUnit: 'Quantity / unit type',
             unitPrice: 'Unit price',
             lineValue: 'Sales value',
           },
           totals: {
             salesTotal: 'Total sales',
             discountTotal: 'Total discount',
-            vat: 'VAT',
-            whtDeduction: 'Withholding tax deduction',
-            grandTotal: 'Grand total',
+            itemsTotal: 'Items total',
+            vat: 'Value added tax',
+            whtDeduction: 'Deduction on account of tax',
+            extraDiscount: 'Additional invoice discount',
+            grandTotal: 'Total amount',
           },
           internalNumber: 'Internal number',
           signatureLabel: 'Signature',
+          legalNote:
+            'This invoice was issued through the Egyptian electronic invoicing system in accordance with the requirements of the Egyptian Tax Authority (ETA), and the provisions of Law No. 206 of 2020 apply to it. Any alteration of the data recorded on this document is prohibited.',
         },
       },
       paymentMethods: {
@@ -807,6 +842,8 @@ export const ar: FinanceDict = {
         withholdingLegend: 'الخصم من المنبع',
         withholdingLabel: 'ضريبة الخصم من المنبع',
         withholdingNone: 'بدون',
+        purchaseOrderRefLabel: 'مرجع طلب الشراء',
+        salesOrderRefLabel: 'مرجع طلب المبيعات',
         lineItemsLegend: 'بنود الفاتورة',
         productLabel: 'المنتج',
         freeTextLine: 'بند نصي حر',
@@ -983,29 +1020,44 @@ export const ar: FinanceDict = {
           statusLabel: 'الحالة',
           submissionDate: 'تاريخ التقديم',
           issueDate: 'تاريخ الإصدار',
-          scanNote: 'للمزيد من المعلومات، فضلا امسح هذا الباركود',
+          scanNote: 'للمزيد من المعلومات، فضلاً قم بمسح هذا الباركود',
           seller: 'البائع',
           buyer: 'المشتري',
+          nameLabel: 'الاسم',
           registrationNumber: 'رقم التسجيل',
           address: 'العنوان',
           electronicNumber: 'الرقم الإلكتروني',
           internalDocRef: 'الرقم الداخلي للمصدر',
+          branchId: 'كود الفرع',
+          activityCode: 'كود النشاط التجاري',
+          exportProvisionalNumber: 'رقم الفاتورة المبدئية للتصدير',
+          purchaseOrderRef: 'مرجع طلب الشراء',
+          salesOrderRef: 'مرجع طلب المبيعات',
+          cairoTime: 'القاهرة',
+          utcTime: 'UTC',
+          issuedBy: 'بواسطة',
+          fileCreatedAt: 'تاريخ انشاء الملف',
           table: {
-            itemCode: 'اسم الكود',
+            itemName: 'اسم الكود',
+            itemCode: 'كود الصنف',
             description: 'الوصف',
             qtyUnit: 'الكمية/نوع الوحدة',
             unitPrice: 'سعر الوحدة',
             lineValue: 'قيمة المبيعات',
           },
           totals: {
-            salesTotal: 'إجمالي المبيعات',
-            discountTotal: 'إجمالي الخصم',
+            salesTotal: 'اجمالي المبيعات',
+            discountTotal: 'اجمالي الخصم',
+            itemsTotal: 'اجمالي الصنف',
             vat: 'ضريبة القيمة المضافة',
             whtDeduction: 'الخصم تحت حساب الضريبة',
-            grandTotal: 'إجمالي المبلغ',
+            extraDiscount: 'خصم الفاتورة الاضافي',
+            grandTotal: 'اجمالي المبلغ',
           },
           internalNumber: 'الرقم الداخلي',
           signatureLabel: 'توقيع',
+          legalNote:
+            'تم إصدار هذه الفاتورة من خلال منظومة الفوترة الإلكترونية المصرية وفقاً لمتطلبات مصلحة الضرائب المصرية (ETA) وتُطبق بشأنها أحكام القانون رقم ٢٠٦ لسنة ٢٠٢٠. يُحظر إجراء أي تعديل على البيانات المسجلة بهذا المستند.',
         },
       },
       paymentMethods: {

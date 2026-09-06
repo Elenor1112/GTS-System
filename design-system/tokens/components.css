@@ -299,28 +299,9 @@
 }
 .gts-panel-body { padding: var(--gts-pad-card); }
 
-/* ETA PRINT — the Egyptian Tax Authority e-invoice look, Arabic/RTL only.
-   `.gts-eta-bar`/`.gts-eta-panel` reuse `.gts-panel`'s box model rather
-   than duplicating border/radius tokens. */
-.gts-eta-bar {
-  background: var(--gts-fg-primary); color: var(--gts-bg-surface);
-  font: var(--gts-role-section); letter-spacing: var(--gts-role-section-tracking);
-  margin: 0; padding: var(--gts-space-2) var(--gts-pad-card);
-  border-start-start-radius: var(--gts-radius-md); border-start-end-radius: var(--gts-radius-md);
-}
-.gts-eta-panel {
-  background: var(--gts-bg-surface);
-  border: 1px solid var(--gts-border-hairline); border-block-start: none;
-  border-end-start-radius: var(--gts-radius-md); border-end-end-radius: var(--gts-radius-md);
-  padding: var(--gts-pad-card);
-  display: flex; flex-direction: column; gap: var(--gts-space-1);
-}
-.gts-eta-qr-box {
-  display: flex; flex-direction: column; align-items: center; gap: var(--gts-space-2);
-  inline-size: 10rem; margin-inline-start: auto; margin-block-end: var(--gts-space-5);
-  text-align: center;
-}
-.gts-table--eta th, .gts-table--eta td { text-align: start; }
+/* The ETA e-invoice document has its own stylesheet, eta-print.css: its
+   appearance is specified by the tax authority rather than by this design
+   system, so it deliberately does not build on these tokens. */
 
 /* CARD — raised, floating. Used ONLY for discrete objects that
    can be acted on or reordered (a project tile, a saved view). */

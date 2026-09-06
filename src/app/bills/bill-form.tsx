@@ -351,6 +351,22 @@ export function BillForm({
               ))}
             </select>
           </div>
+
+          {/* Order references. Free text, and optional: they are printed on
+              the ETA document, not used in any calculation. */}
+          <div className="gts-field">
+            <label className="gts-label" htmlFor="purchaseOrderRef">
+              {dict.purchaseOrderRefLabel}
+            </label>
+            <input id="purchaseOrderRef" name="purchaseOrderRef" className="gts-input" />
+          </div>
+
+          <div className="gts-field">
+            <label className="gts-label" htmlFor="salesOrderRef">
+              {dict.salesOrderRefLabel}
+            </label>
+            <input id="salesOrderRef" name="salesOrderRef" className="gts-input" />
+          </div>
         </div>
       </fieldset>
       )}

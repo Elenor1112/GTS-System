@@ -659,6 +659,12 @@ model ElectronicBill {
 
   notes String?
 
+  /// Buyer's own purchase-order reference, printed on the ETA document.
+  /// Free text: it is the counterparty's numbering, not ours to validate.
+  purchaseOrderRef String?
+  /// Our own sales-order reference, printed beside the purchase order.
+  salesOrderRef    String?
+
   /// ETA-assigned. Null until a real submission happens — inventing a
   /// UUID here would fabricate a compliance record.
   etaUuid        String?

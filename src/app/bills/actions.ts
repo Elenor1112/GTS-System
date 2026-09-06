@@ -35,6 +35,8 @@ const createBillAction = action({
       currency: input.currency,
       exchangeRate: input.exchangeRate,
       whtRate: input.whtRate,
+      purchaseOrderRef: input.purchaseOrderRef ?? null,
+      salesOrderRef: input.salesOrderRef ?? null,
       notes: input.notes ?? null,
       lines: input.lines,
     });

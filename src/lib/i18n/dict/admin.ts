@@ -19,6 +19,10 @@ export interface AdminDict {
         trnHint: string;
         commercialRegLabel: string;
         commercialRegHint: string;
+        activityCodeLabel: string;
+        activityCodeHint: string;
+        branchIdLabel: string;
+        branchIdHint: string;
         governorateLabel: string;
         addressLabel: string;
       };
@@ -222,6 +226,10 @@ export const en: AdminDict = {
         trnHint: '9 digits, issued by the Egyptian Tax Authority',
         commercialRegLabel: 'Commercial register',
         commercialRegHint: 'Issued by GAFI',
+        activityCodeLabel: 'Activity code',
+        activityCodeHint: '4 digits, the registered line of business printed on the e-invoice',
+        branchIdLabel: 'Branch ID',
+        branchIdHint: '0 for the head office',
         governorateLabel: 'Governorate',
         addressLabel: 'Address',
       },
@@ -425,6 +433,10 @@ export const ar: AdminDict = {
         trnHint: '9 أرقام، صادر عن مصلحة الضرائب المصرية',
         commercialRegLabel: 'السجل التجاري',
         commercialRegHint: 'صادر عن الهيئة العامة للاستثمار (GAFI)',
+        activityCodeLabel: 'كود النشاط',
+        activityCodeHint: '4 أرقام، النشاط المسجَّل الذي يُطبع على الفاتورة الإلكترونية',
+        branchIdLabel: 'كود الفرع',
+        branchIdHint: '0 للمركز الرئيسي',
         governorateLabel: 'المحافظة',
         addressLabel: 'العنوان',
       },

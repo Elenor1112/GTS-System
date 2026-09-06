@@ -66,7 +66,7 @@ export default async function ReportsPage({
           overline={dict.overview.reports.system}
           title={dict.overview.reports.title}
           lede={dict.overview.reports.lede}
-          actions={<PrintPageButton />}
+          actions={<PrintPageButton label={dict.overview.reports.print} />}
         />
 
         <nav className="flex gap-1 border-b border-line" aria-label="Report">

@@ -66,6 +66,8 @@ export default async function AdminPage() {
             'org.nameAr': String(settings['org.nameAr'] ?? ''),
             'org.trn': orgTrn,
             'org.commercialRegNo': String(settings['org.commercialRegNo'] ?? ''),
+            'org.activityCode': String(settings['org.activityCode'] ?? ''),
+            'org.branchId': String(settings['org.branchId'] ?? '0'),
             'org.addressLine': String(settings['org.addressLine'] ?? ''),
             'org.governorateCode': Number(settings['org.governorateCode'] ?? 21),
             'attendance.workStart': String(settings['attendance.workStart'] ?? '08:00'),

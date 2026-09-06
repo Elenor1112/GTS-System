@@ -26,6 +26,12 @@ export const SETTING_DEFAULTS = {
   'org.commercialRegNo': '',
   'org.addressLine': '',
   'org.governorateCode': 21,
+  /// ETA activity code — the taxpayer's registered line of business, printed
+  /// on the e-invoice. Assigned by the ETA, so it is stored, never derived.
+  'org.activityCode': '',
+  /// ETA branch identifier. '0' is the head office, which is what a taxpayer
+  /// with a single registered address files under.
+  'org.branchId': '0',
   'attendance.workStart': '08:00',
   'attendance.workEnd': '17:00',
   'attendance.lateThresholdMinutes': 15,
@@ -110,5 +116,7 @@ export async function organisation() {
     commercialRegNo: String(s['org.commercialRegNo'] ?? ''),
     addressLine: String(s['org.addressLine'] ?? ''),
     governorateCode: Number(s['org.governorateCode'] ?? 21),
+    activityCode: String(s['org.activityCode'] ?? ''),
+    branchId: String(s['org.branchId'] ?? '0'),
   };
 }

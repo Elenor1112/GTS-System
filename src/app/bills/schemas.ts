@@ -61,6 +61,10 @@ export const createBillSchema = z
       z.union([z.coerce.number().positive(), z.null()]),
     ),
     whtRate: numberWithDefault(0, z.coerce.number().min(0).max(100)),
+    /* Counterparty and own order references, printed on the ETA document.
+       Free text: a purchase order number is the buyer's own numbering. */
+    purchaseOrderRef: optionalText.optional(),
+    salesOrderRef: optionalText.optional(),
     notes: optionalText.optional(),
     lines: z.array(lineSchema).min(1, 'A bill needs at least one line'),
   })
