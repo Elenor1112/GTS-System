@@ -2,6 +2,7 @@ import QRCode from 'qrcode';
 import { Prisma } from '@prisma/client';
 
 import { splitAmount } from '@/lib/format';
+import { etaShareUrl } from '@/lib/services/eta-client';
 import { COUNTRY, CURRENCY, TRN } from '@/lib/egypt';
 import { SUBMISSION_LABELS, type EtaSubmissionStatus } from '@/lib/eta';
 import type { Dictionary } from '@/lib/i18n';
@@ -60,8 +61,8 @@ type Party = {
  * drift out of sync with this one.
  *
  * It shows the electronic number and QR only when `bill.etaUuid` is a
- * real, ETA-assigned value. This system has no submission integration,
- * so inventing either would fabricate a compliance record — but the rows
+ * real, ETA-assigned value — inventing either would fabricate a
+ * compliance record — but the rows
  * and the QR's box are still rendered, empty, so that an unsubmitted
  * invoice keeps exactly the layout a submitted one has.
  */
@@ -121,11 +122,11 @@ export async function BillPrintEta({
     SUBMISSION_LABELS[bill.etaStatus as EtaSubmissionStatus]?.[locale] ??
     SUBMISSION_LABELS.NOT_SUBMITTED[locale];
 
-  // Encodes the ETA UUID as plain text, not the real ETA QR TLV binary
-  // payload — this system has no ETA transmission integration to produce
-  // that from. Absent entirely unless the UUID is genuinely assigned.
+  // Encodes the document's public page on the ETA portal, which is what
+  // a buyer or inspector scans to verify it. Absent entirely until the
+  // ETA has assigned a UUID.
   const qrDataUri = bill.etaUuid
-    ? await QRCode.toDataURL(bill.etaUuid, { margin: 0, width: 320 })
+    ? await QRCode.toDataURL(etaShareUrl(bill.etaUuid, bill.etaLongId), { margin: 0, width: 320 })
     : null;
 
   const description = (item: Bill['items'][number]) =>

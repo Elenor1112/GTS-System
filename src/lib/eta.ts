@@ -5,12 +5,10 @@
  * designs; it is a document the ETA specifies. This module holds that
  * shape — the required fields, the lifecycle, and the arithmetic.
  *
- * SCOPE: this builds the DOCUMENT, not the transmission. Submitting to
- * the ETA additionally requires taxpayer credentials, a client id/secret
- * and an e-seal certificate (USB token or HSM) to sign the canonical
- * serialization. Those cannot live in this repository, and no code here
- * pretends to have them — `submission` below is the record of a
- * submission, deliberately nullable until a real integration fills it.
+ * SCOPE: this holds the document's shape and lifecycle. Transmission
+ * lives in services/eta-client.ts (the API), eta-document.ts (the JSON)
+ * and eta-submission.ts (the workflow). `submission` below is the record
+ * of a submission: every identifier in it is assigned by the ETA.
  *
  * ARITHMETIC: every total here is computed from line items. In the
  * eventual server implementation these same functions run server-side on
@@ -50,7 +48,13 @@ export type BillStatus =
   | 'CANCELLED';
 
 /** What the ETA said about the document, once it has been submitted. */
-export type EtaSubmissionStatus = 'NOT_SUBMITTED' | 'SUBMITTED' | 'VALID' | 'INVALID' | 'REJECTED';
+export type EtaSubmissionStatus =
+  | 'NOT_SUBMITTED'
+  | 'SUBMITTED'
+  | 'VALID'
+  | 'INVALID'
+  | 'REJECTED'
+  | 'CANCELLED';
 
 export const SUBMISSION_LABELS: Record<EtaSubmissionStatus, { en: string; ar: string }> = {
   NOT_SUBMITTED: { en: 'Not submitted', ar: 'لم تُرسل' },
@@ -58,6 +62,7 @@ export const SUBMISSION_LABELS: Record<EtaSubmissionStatus, { en: string; ar: st
   VALID: { en: 'Accepted by the ETA', ar: 'مقبولة من مصلحة الضرائب' },
   INVALID: { en: 'Rejected — validation errors', ar: 'مرفوضة — أخطاء في التحقق' },
   REJECTED: { en: 'Rejected by the buyer', ar: 'مرفوضة من المشتري' },
+  CANCELLED: { en: 'Cancelled on the ETA', ar: 'ملغاة لدى مصلحة الضرائب' },
 };
 
 /* ============================================================

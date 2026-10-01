@@ -8,7 +8,9 @@ import { allSettings } from '@/lib/services/settings';
 import { CURRENCY, VAT_STANDARD, WHT_THRESHOLD, GOVERNORATES } from '@/lib/egypt';
 import { MAX_ACCURACY_M } from '@/lib/geofence';
 import { t } from '@/lib/i18n';
+import { etaConfigured, etaEnvironment } from '@/lib/services/eta-client';
 
+import { EtaTest } from './eta-test';
 import { SettingsForm } from './settings-form';
 
 export const metadata: Metadata = { title: 'Administration — GTS' };
@@ -22,8 +24,8 @@ export const dynamic = 'force-dynamic';
  * threshold and the company's own tax identity all feed code paths that
  * run server-side, so a change here alters what the system accepts.
  *
- * The ETA panel reports the truth: the document format is implemented,
- * the transmission is not, and no credential exists to make it so.
+ * The ETA panel reports whether the server holds ETA credentials, for
+ * which environment, and can prove they work by fetching a token.
  */
 export default async function AdminPage() {
   const actor = await requirePermission('settings.manage');
@@ -43,6 +45,8 @@ export default async function AdminPage() {
 
   const [users, employees, projects, bills, movements, auditEntries] = counts;
   const orgTrn = String(settings['org.trn'] ?? '');
+  const etaReady = etaConfigured();
+  const etaEnv = etaEnvironment();
 
   return (
     <Shell active="/admin" domain="admin">
@@ -122,10 +126,24 @@ export default async function AdminPage() {
             <div>
               <p className="text-xs text-fg-muted uppercase tracking-wide">{dict.admin.settings.eta.transmission}</p>
               <p className="mt-2">
-                <Status tone="neutral">{dict.admin.settings.eta.notConfigured}</Status>
+                {etaReady ? (
+                  <Status tone="success">{dict.admin.settings.eta.configured}</Status>
+                ) : (
+                  <Status tone="neutral">{dict.admin.settings.eta.notConfigured}</Status>
+                )}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-fg-muted uppercase tracking-wide">{dict.admin.settings.eta.environment}</p>
+              <p className="mt-2">
+                <Status tone={etaEnv === 'production' ? 'warning' : 'info'}>
+                  {etaEnv === 'production' ? dict.admin.settings.eta.production : dict.admin.settings.eta.preprod}
+                </Status>
               </p>
             </div>
           </div>
+
+          {etaReady && <EtaTest dict={dict.admin.settings.eta} />}
 
           <p className="text-xs text-fg-secondary mt-4 max-w-prose">
             {dict.admin.settings.eta.body}

@@ -487,7 +487,6 @@ async function main() {
     { key: 'attendance.maxAccuracyMetres', value: 200 },
     { key: 'bills.defaultPaymentTermsDays', value: 30 },
     { key: 'bills.defaultVatRate', value: 14 },
-    { key: 'eta.configured', value: false },
     { key: 'locale.default', value: 'en' },
   ];
 

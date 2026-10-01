@@ -7,6 +7,7 @@ import {
   createBill, updateBillLines, submitForApproval, approveBill,
   rejectBill, sendBill, cancelBill, recordPayment,
 } from '@/lib/services/billing';
+import { submitBillToEta, refreshEtaStatus, cancelEtaDocument } from '@/lib/services/eta-submission';
 
 import {
   createBillSchema, updateLinesSchema, withNoteSchema, withReasonSchema, paymentSchema,
@@ -131,6 +132,40 @@ const recordPaymentAction = action({
   },
 });
 
+/* The ETA. Submitting reports an issued sale, which is the same
+   authority as sending the bill; cancelling there needs the same
+   authority as cancelling here. */
+
+const etaSubmitAction = action({
+  permission: 'bills.send',
+  input: withNoteSchema,
+  handler: async ({ billId }, { actor }) => {
+    const result = await submitBillToEta({ actor, billId });
+    revalidatePath(`/bills/${billId}`);
+    return { etaStatus: result.status };
+  },
+});
+
+const etaRefreshAction = action({
+  permission: 'bills.send',
+  input: withNoteSchema,
+  handler: async ({ billId }, { actor }) => {
+    const result = await refreshEtaStatus({ actor, billId });
+    revalidatePath(`/bills/${billId}`);
+    return { etaStatus: result.status };
+  },
+});
+
+const etaCancelAction = action({
+  permission: 'bills.cancel',
+  input: withReasonSchema,
+  handler: async ({ billId, note }, { actor }) => {
+    const result = await cancelEtaDocument({ actor, billId, reason: note });
+    revalidatePath(`/bills/${billId}`);
+    return { etaStatus: result.status };
+  },
+});
+
 /* ============================================================
    THE EXPORTED ACTIONS
 
@@ -177,6 +212,12 @@ export async function submitBillWorkflow(_previous: unknown, formData: FormData)
       return sendBillAction(data);
     case 'cancel':
       return cancelBillAction(data);
+    case 'eta-submit':
+      return etaSubmitAction(data);
+    case 'eta-refresh':
+      return etaRefreshAction(data);
+    case 'eta-cancel':
+      return etaCancelAction(data);
     default:
       return {
         ok: false as const,

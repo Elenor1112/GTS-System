@@ -671,6 +671,12 @@ model ElectronicBill {
   etaLongId      String?
   etaStatus      String    @default("NOT_SUBMITTED")
   etaSubmittedAt DateTime? @db.Timestamptz(3)
+  /// ETA submission batch id, returned with the UUID on acceptance.
+  etaSubmissionId String?
+  /// The ETA's own validation or rejection errors, stored verbatim.
+  etaErrors       Json?
+  /// When the status was last fetched from the ETA.
+  etaCheckedAt    DateTime? @db.Timestamptz(3)
 
   items     BillItem[]
   payments  Payment[]

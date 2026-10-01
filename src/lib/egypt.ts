@@ -76,16 +76,17 @@ export const VAT_STANDARD = 14;
 /**
  * The VAT rates an Egyptian invoice line can carry.
  *
- * `eta` is the Egyptian Tax Authority tax-subtype code that must appear
- * on the submitted document; it is not cosmetic. T1 is VAT, and the
- * sub-codes distinguish standard, zero-rated and exempt supplies.
+ * `eta` and `subType` are the Egyptian Tax Authority codes that must
+ * appear on the submitted document; they are not cosmetic. Every VAT line
+ * is tax type T1 — T2 and T3 are the table taxes, not VAT — and the
+ * subtype distinguishes standard, zero-rated export and exempt supplies.
  */
 export const VAT_RATES = [
-  { rate: 14, eta: 'T1', labelEn: 'Standard 14%', labelAr: 'قياسي ١٤٪' },
-  { rate: 10, eta: 'T1', labelEn: 'Reduced 10%', labelAr: 'مخفض ١٠٪' },
-  { rate: 5, eta: 'T1', labelEn: 'Reduced 5%', labelAr: 'مخفض ٥٪' },
-  { rate: 0, eta: 'T2', labelEn: 'Zero-rated export', labelAr: 'صادرات بنسبة صفر' },
-  { rate: 0, eta: 'T3', labelEn: 'Exempt', labelAr: 'معفى' },
+  { rate: 14, eta: 'T1', subType: 'V009', labelEn: 'Standard 14%', labelAr: 'قياسي ١٤٪' },
+  { rate: 10, eta: 'T1', subType: 'V009', labelEn: 'Reduced 10%', labelAr: 'مخفض ١٠٪' },
+  { rate: 5, eta: 'T1', subType: 'V009', labelEn: 'Reduced 5%', labelAr: 'مخفض ٥٪' },
+  { rate: 0, eta: 'T1', subType: 'V001', labelEn: 'Zero-rated export', labelAr: 'صادرات بنسبة صفر' },
+  { rate: 0, eta: 'T1', subType: 'V003', labelEn: 'Exempt', labelAr: 'معفى' },
 ] as const;
 
 export type VatRate = (typeof VAT_RATES)[number];

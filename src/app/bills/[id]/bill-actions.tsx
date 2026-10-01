@@ -12,6 +12,7 @@ type WorkflowDict = Dictionary['finance']['bills']['workflow'];
 type PaymentsDict = Omit<Dictionary['finance']['bills']['detail']['payments'], 'title'>;
 type PaymentMethodsDict = Dictionary['finance']['bills']['paymentMethods'];
 type StatusDict = Dictionary['finance']['bills']['status'];
+type EtaDict = Dictionary['finance']['bills']['detail']['eta'];
 
 /**
  * The bill workflow controls.
@@ -120,6 +121,87 @@ export function BillWorkflow({
               className="gts-btn gts-btn-danger"
               onClick={() => setReasonFor('cancel')}
             >
+              {dict.cancel}
+            </button>
+          )}
+        </form>
+      )}
+    </section>
+  );
+}
+
+/**
+ * The ETA controls: submit, refresh the verdict, cancel there.
+ *
+ * As with the workflow, the page decides which of these the actor may
+ * take; this only renders them. Cancelling asks for a reason because the
+ * ETA requires one and keeps it.
+ */
+export function EtaActions({
+  billId,
+  canSubmit,
+  canRefresh,
+  canCancel,
+  dict,
+}: {
+  billId: string;
+  canSubmit: boolean;
+  canRefresh: boolean;
+  canCancel: boolean;
+  dict: EtaDict;
+}) {
+  const [state, formAction] = useActionState(submitBillWorkflow, null);
+  const [cancelling, setCancelling] = useState(false);
+
+  if (!canSubmit && !canRefresh && !canCancel) return null;
+
+  return (
+    <section className="gts-workflow">
+      <FormError state={state} />
+
+      {cancelling ? (
+        <form action={formAction} className="gts-workflow-reason">
+          <input type="hidden" name="billId" value={billId} />
+          <input type="hidden" name="intent" value="eta-cancel" />
+          <div className="gts-field" style={{ flex: '1 1 20rem' }}>
+            <label className="gts-label" htmlFor="eta-note">
+              {dict.cancelReason}
+            </label>
+            <input
+              id="eta-note"
+              name="note"
+              required
+              autoFocus
+              className="gts-input"
+              placeholder={dict.cancelPlaceholder}
+              aria-invalid={errorFor(state, 'note') ? true : undefined}
+            />
+            {errorFor(state, 'note') && (
+              <p className="gts-help gts-help-error">{errorFor(state, 'note')}</p>
+            )}
+          </div>
+          <Submit variant="danger" pendingLabel={dict.working}>
+            {dict.cancel}
+          </Submit>
+          <button type="button" className="gts-btn gts-btn-ghost" onClick={() => setCancelling(false)}>
+            {dict.neverMind}
+          </button>
+        </form>
+      ) : (
+        <form action={formAction} className="gts-workflow-actions">
+          <input type="hidden" name="billId" value={billId} />
+          {canSubmit && (
+            <button type="submit" name="intent" value="eta-submit" className="gts-btn gts-btn-accent">
+              {dict.submit}
+            </button>
+          )}
+          {canRefresh && (
+            <button type="submit" name="intent" value="eta-refresh" className="gts-btn gts-btn-secondary">
+              {dict.refresh}
+            </button>
+          )}
+          {canCancel && (
+            <button type="button" className="gts-btn gts-btn-danger" onClick={() => setCancelling(true)}>
               {dict.cancel}
             </button>
           )}

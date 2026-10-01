@@ -7,6 +7,8 @@ import { requirePermission } from '@/lib/auth';
 import { can } from '@/lib/permissions';
 import { db } from '@/lib/db';
 import { outstandingOf, canTransition } from '@/lib/services/billing';
+import { canSubmitToEta } from '@/lib/services/eta-submission';
+import { etaConfigured, etaShareUrl } from '@/lib/services/eta-client';
 import { organisation } from '@/lib/services/settings';
 import { daysOverdue } from '@/lib/services/accounts';
 import { formatDate } from '@/lib/format';
@@ -15,7 +17,7 @@ import { SUBMISSION_LABELS, type EtaSubmissionStatus } from '@/lib/eta';
 import { t, type Dictionary } from '@/lib/i18n';
 import { getLocale, type Locale } from '@/lib/preferences';
 
-import { BillWorkflow, PaymentForm } from './bill-actions';
+import { BillWorkflow, EtaActions, PaymentForm } from './bill-actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,9 +40,8 @@ export async function generateMetadata({
  * BELOW the total because it reduces the cash collected rather than the
  * amount invoiced.
  *
- * The ETA panel reports what is true. There is no transmission
- * integration — that needs taxpayer credentials and an e-seal
- * certificate — so it says "not submitted" rather than inventing a UUID.
+ * The ETA panel reports what the ETA said: every identifier on it came
+ * back from a submission, and the controls submit, refresh or cancel.
  */
 export default async function BillPage({ params }: { params: Promise<{ id: string }> }) {
   const actor = await requirePermission('bills.view');
@@ -107,6 +108,13 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
     can(actor, 'payments.record') &&
     outstanding.greaterThan(0) &&
     !['DRAFT', 'PENDING_APPROVAL', 'CANCELLED'].includes(bill.status);
+
+  /* The ETA controls. Hidden entirely when the server holds no credentials. */
+  const etaReady = etaConfigured();
+  const canEtaSubmit = etaReady && can(actor, 'bills.send') && canSubmitToEta(bill);
+  const canEtaRefresh = etaReady && can(actor, 'bills.send') && Boolean(bill.etaUuid) && bill.etaStatus === 'SUBMITTED';
+  const canEtaCancel = etaReady && can(actor, 'bills.cancel') && Boolean(bill.etaUuid) && bill.etaStatus === 'VALID';
+  const etaErrors = Array.isArray(bill.etaErrors) ? bill.etaErrors.map(String) : [];
 
   return (
     <Shell active="/bills" domain="finance">
@@ -445,7 +453,13 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
             <div className="gts-stat">
               <p className="gts-overline">{d.eta.submission}</p>
               <p className="gts-stat-value">
-                <Status tone={bill.etaStatus === 'VALID' ? 'success' : 'neutral'}>
+                <Status
+                  tone={
+                    bill.etaStatus === 'VALID' ? 'success'
+                    : ['INVALID', 'REJECTED'].includes(bill.etaStatus) ? 'danger'
+                    : 'neutral'
+                  }
+                >
                   {SUBMISSION_LABELS[bill.etaStatus as EtaSubmissionStatus]?.[locale] ?? bill.etaStatus}
                 </Status>
               </p>
@@ -460,9 +474,64 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
                 )}
               </p>
             </div>
+            {bill.etaLongId && (
+              <div className="gts-stat">
+                <p className="gts-overline">{d.eta.longId}</p>
+                <p className="gts-stat-value">
+                  <bdi className="gts-num gts-num-sm">{bill.etaLongId}</bdi>
+                </p>
+              </div>
+            )}
+            {bill.etaSubmittedAt && (
+              <div className="gts-stat">
+                <p className="gts-overline">{d.eta.submittedAt}</p>
+                <p className="gts-stat-value gts-meta">{formatDate(bill.etaSubmittedAt.toISOString(), locale)}</p>
+              </div>
+            )}
+            {bill.etaCheckedAt && (
+              <div className="gts-stat">
+                <p className="gts-overline">{d.eta.checkedAt}</p>
+                <p className="gts-stat-value gts-meta">{formatDate(bill.etaCheckedAt.toISOString(), locale)}</p>
+              </div>
+            )}
           </div>
+
+          {etaErrors.length > 0 && (
+            <div className="gts-form-error" role="alert" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
+              <p>{d.eta.errorsTitle}</p>
+              <ul>
+                {etaErrors.map((error, i) => (
+                  <li key={i}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {bill.etaUuid && (
+            <p style={{ marginBlockStart: 'var(--gts-space-4)' }}>
+              <a
+                href={etaShareUrl(bill.etaUuid, bill.etaLongId)}
+                target="_blank"
+                rel="noreferrer"
+                className="gts-btn gts-btn-ghost"
+              >
+                {d.eta.viewOnPortal}
+              </a>
+            </p>
+          )}
+
+          <div style={{ marginBlockStart: 'var(--gts-space-4)' }}>
+            <EtaActions
+              billId={bill.id}
+              canSubmit={canEtaSubmit}
+              canRefresh={canEtaRefresh}
+              canCancel={canEtaCancel}
+              dict={d.eta}
+            />
+          </div>
+
           <p className="gts-meta" style={{ marginBlockStart: 'var(--gts-space-4)' }}>
-            {d.eta.disclaimer}
+            {etaReady || bill.direction !== 'RECEIVABLE' ? d.eta.disclaimer : d.eta.notConfigured}
           </p>
         </Region>
       </main>

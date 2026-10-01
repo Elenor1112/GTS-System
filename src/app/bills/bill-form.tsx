@@ -541,7 +541,7 @@ export function BillForm({
                   onChange={(event) => setLine(line.key, { vatRate: event.target.value })}
                 >
                   {VAT_RATES.map((v) => (
-                    <option key={`${v.rate}-${v.eta}`} value={v.rate}>
+                    <option key={`${v.rate}-${v.subType}`} value={v.rate}>
                       {v.labelEn}
                     </option>
                   ))}

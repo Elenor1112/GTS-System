@@ -39,7 +39,6 @@ export const SETTING_DEFAULTS = {
   'attendance.maxAccuracyMetres': 200,
   'bills.defaultPaymentTermsDays': 30,
   'bills.defaultVatRate': 14,
-  'eta.configured': false,
   'locale.default': 'en',
 } as const;
 

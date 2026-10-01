@@ -225,6 +225,19 @@ export interface FinanceDict {
           title: string;
           submission: string;
           documentUuid: string;
+          longId: string;
+          submittedAt: string;
+          checkedAt: string;
+          errorsTitle: string;
+          viewOnPortal: string;
+          submit: string;
+          refresh: string;
+          cancel: string;
+          working: string;
+          cancelReason: string;
+          cancelPlaceholder: string;
+          neverMind: string;
+          notConfigured: string;
           disclaimer: string;
         };
       };
@@ -595,7 +608,20 @@ export const en: FinanceDict = {
           title: 'Egyptian Tax Authority',
           submission: 'Submission',
           documentUuid: 'Document UUID',
-          disclaimer: 'This document is produced in the ETA’s shape — both parties’ registration numbers, GPC item codes and per-line VAT — but it is not transmitted. Submission requires taxpayer credentials and an e-seal certificate, which are not configured. No identifier is shown above because none has been issued.',
+          longId: 'Long ID',
+          submittedAt: 'Submitted',
+          checkedAt: 'Last checked',
+          errorsTitle: 'What the ETA reported',
+          viewOnPortal: 'View on the ETA portal',
+          submit: 'Submit to ETA',
+          refresh: 'Refresh status',
+          cancel: 'Cancel on ETA',
+          working: 'Contacting the ETA…',
+          cancelReason: 'Why is this document being cancelled on the ETA?',
+          cancelPlaceholder: 'Issued to the wrong client',
+          neverMind: 'Never mind',
+          notConfigured: 'The ETA connection is not configured on this server.',
+          disclaimer: 'Every identifier shown here was assigned by the Egyptian Tax Authority. A sales invoice can be submitted once it is approved; the ETA then validates it, usually within seconds — refresh to see its verdict.',
         },
       },
       workflow: {
@@ -964,7 +990,20 @@ export const ar: FinanceDict = {
           title: 'مصلحة الضرائب المصرية',
           submission: 'حالة الإرسال',
           documentUuid: 'المعرف الفريد للمستند',
-          disclaimer: 'يُنتَج هذا المستند بصيغة مصلحة الضرائب المصرية — أرقام تسجيل الطرفين، أكواد GPC للأصناف، وضريبة القيمة المضافة لكل بند — إلا أنه لم يُرسَل. يتطلب الإرسال بيانات اعتماد الممول وشهادة ختم إلكتروني، وهما غير مُهيَّأين. لا يظهر أي معرف أعلاه لأنه لم يصدر أي معرف بعد.',
+          longId: 'المعرف الطويل',
+          submittedAt: 'تاريخ الإرسال',
+          checkedAt: 'آخر تحديث',
+          errorsTitle: 'ما أفادت به مصلحة الضرائب',
+          viewOnPortal: 'عرض على بوابة مصلحة الضرائب',
+          submit: 'إرسال إلى مصلحة الضرائب',
+          refresh: 'تحديث الحالة',
+          cancel: 'إلغاء لدى مصلحة الضرائب',
+          working: 'جارٍ الاتصال بمصلحة الضرائب…',
+          cancelReason: 'لماذا يُلغى هذا المستند لدى مصلحة الضرائب؟',
+          cancelPlaceholder: 'صدر لعميل خاطئ',
+          neverMind: 'تراجع',
+          notConfigured: 'الاتصال بمصلحة الضرائب غير مُهيَّأ على هذا الخادم.',
+          disclaimer: 'كل معرف يظهر هنا صادر عن مصلحة الضرائب المصرية. تُرسل فاتورة البيع بعد اعتمادها، ثم تتحقق منها المصلحة عادةً خلال ثوانٍ — حدّث الحالة لرؤية النتيجة.',
         },
       },
       workflow: {

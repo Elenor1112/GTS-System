@@ -63,6 +63,13 @@ export interface AdminDict {
         implemented: string;
         transmission: string;
         notConfigured: string;
+        configured: string;
+        environment: string;
+        preprod: string;
+        production: string;
+        testButton: string;
+        testing: string;
+        testOk: string;
         body: string;
       };
       system: {
@@ -270,7 +277,14 @@ export const en: AdminDict = {
         implemented: 'Implemented',
         transmission: 'Transmission',
         notConfigured: 'Not configured',
-        body: 'Bills are produced in the ETA’s shape: both parties’ registration numbers, GPC item codes, per-line VAT and the required document fields. They are not transmitted. Submission needs taxpayer credentials, a client id and secret, and an e-seal certificate to sign the canonical serialisation — none of which can live in this repository. No document shows a UUID, because none has been issued; inventing one would fabricate a compliance record.',
+        configured: 'Configured',
+        environment: 'Environment',
+        preprod: 'Pre-production (test)',
+        production: 'Production (live)',
+        testButton: 'Test connection',
+        testing: 'Connecting…',
+        testOk: 'Connected: the ETA accepted the client credentials.',
+        body: 'Approved sales invoices are submitted to the ETA from the bill page. The client id and secrets are read from the server environment (ETA_ENV, ETA_CLIENT_ID, ETA_CLIENT_SECRET, ETA_CLIENT_SECRET_2), never stored in the database. The company TRN and activity code above must belong to the same taxpayer as those credentials.',
       },
       system: {
         title: 'System',
@@ -477,7 +491,14 @@ export const ar: AdminDict = {
         implemented: 'مُنفَّذ',
         transmission: 'الإرسال',
         notConfigured: 'غير مُهيَّأ',
-        body: 'تُنتَج الفواتير بصيغة مصلحة الضرائب: أرقام تسجيل الطرفين، رموز أصناف GPC، ضريبة القيمة المضافة لكل بند، وحقول المستند المطلوبة. لا تُرسَل هذه الفواتير. الإرسال يتطلب بيانات اعتماد المكلف، ومعرّف وسر العميل، وشهادة الختم الإلكتروني لتوقيع التسلسل القياسي — لا شيء من هذا يمكن أن يوجد في هذا المستودع. لا يظهر أي مستند برقم UUID لأنه لم يُصدر أي منها؛ واختلاق واحد سيكون تزويرًا لسجل امتثال.',
+        configured: 'مُهيَّأ',
+        environment: 'البيئة',
+        preprod: 'ما قبل الإنتاج (تجريبية)',
+        production: 'الإنتاج (فعلية)',
+        testButton: 'اختبار الاتصال',
+        testing: 'جارٍ الاتصال…',
+        testOk: 'تم الاتصال: قبلت مصلحة الضرائب بيانات الاعتماد.',
+        body: 'تُرسل فواتير البيع المعتمدة إلى مصلحة الضرائب من صفحة الفاتورة. يُقرأ معرّف العميل والأسرار من متغيرات بيئة الخادم (ETA_ENV و ETA_CLIENT_ID و ETA_CLIENT_SECRET و ETA_CLIENT_SECRET_2) ولا تُخزن في قاعدة البيانات. يجب أن يخص رقم التسجيل الضريبي ورمز النشاط أعلاه نفس الممول صاحب بيانات الاعتماد.',
       },
       system: {
         title: 'النظام',

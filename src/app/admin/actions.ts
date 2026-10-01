@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { action, formToObject } from '@/lib/action';
 import { setSetting } from '@/lib/services/settings';
+import { getToken, resetEtaToken } from '@/lib/services/eta-client';
 
 import { settingsSchema } from './schemas';
 
@@ -39,4 +40,18 @@ const saveSettingsAction = action({
 
 export async function submitSettings(_previous: unknown, formData: FormData) {
   return saveSettingsAction(formToObject(formData));
+}
+
+/** Fetch a fresh ETA token — proves the credentials without submitting anything. */
+const testEtaAction = action({
+  permission: 'settings.manage',
+  handler: async () => {
+    resetEtaToken();
+    await getToken();
+    return { connected: true as const };
+  },
+});
+
+export async function submitEtaTest(_previous: unknown, _formData: FormData) {
+  return testEtaAction({});
 }
