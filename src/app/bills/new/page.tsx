@@ -4,6 +4,10 @@ import { Shell, PageHead } from '@/components/shell';
 import { requirePermission } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { t } from '@/lib/i18n';
+import { etaPortalUrl } from '@/lib/services/eta-client';
+import { loadEtaCodes } from '@/lib/services/eta-codes';
+import { receiverFacts } from '@/lib/services/eta-facts';
+import { organisation } from '@/lib/services/settings';
 import { BillForm } from '../bill-form';
 
 export const metadata: Metadata = { title: 'New bill — GTS' };
@@ -21,15 +25,19 @@ export const dynamic = 'force-dynamic';
 export default async function NewBillPage({
   searchParams,
 }: {
-  searchParams: Promise<{ clientId?: string; vendorId?: string }>;
+  searchParams: Promise<{ clientId?: string; vendorId?: string; refreshCodes?: string }>;
 }) {
   await requirePermission('bills.create');
   const params = await searchParams;
 
-  const [clients, vendors, projects, products, dict] = await Promise.all([
+  const [clients, vendors, projects, products, org, etaCodes, dict] = await Promise.all([
     db.client.findMany({
       where: { deletedAt: null, isActive: true },
-      select: { id: true, code: true, nameEn: true },
+      select: {
+        id: true, code: true, nameEn: true, nameAr: true, trn: true,
+        receiverType: true, nationalId: true, foreignId: true, countryCode: true,
+        governorateCode: true, regionCity: true, addressLine: true, buildingNumber: true,
+      },
       orderBy: { nameEn: 'asc' },
     }),
     db.vendor.findMany({
@@ -50,6 +58,10 @@ export default async function NewBillPage({
       },
       orderBy: { nameEn: 'asc' },
     }),
+    organisation(),
+    // The taxpayer's approved ETA item codes: the only codes a sales line
+    // may carry. `?refreshCodes=1` skips the cache after registering one.
+    loadEtaCodes({ refresh: params.refreshCodes === '1' }),
     t(),
   ]);
 
@@ -63,7 +75,14 @@ export default async function NewBillPage({
         />
 
         <BillForm
-          clients={clients.map((c) => ({ id: c.id, label: `${c.nameEn} — ${c.code}` }))}
+          clients={clients.map((c) => ({
+            id: c.id,
+            label: `${c.nameEn} — ${c.code}`,
+            receiver: receiverFacts(c)!,
+          }))}
+          issuer={org}
+          etaCodes={etaCodes}
+          etaPortal={etaPortalUrl()}
           vendors={vendors.map((v) => ({ id: v.id, label: `${v.nameEn} — ${v.code}` }))}
           projects={projects.map((p) => ({
             id: p.id,

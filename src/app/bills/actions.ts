@@ -8,6 +8,8 @@ import {
   rejectBill, sendBill, cancelBill, recordPayment,
 } from '@/lib/services/billing';
 import { submitBillToEta, refreshEtaStatus, cancelEtaDocument } from '@/lib/services/eta-submission';
+import { assertEtaReady } from '@/lib/services/eta-guard';
+import { db } from '@/lib/db';
 
 import {
   createBillSchema, updateLinesSchema, withNoteSchema, withReasonSchema, paymentSchema,
@@ -25,6 +27,19 @@ const createBillAction = action({
   permission: 'bills.create',
   input: createBillSchema,
   handler: async (input, { actor }) => {
+    // A sales invoice is reported to the ETA, so it must be one the ETA
+    // will accept. A purchase bill is the vendor's document.
+    if (input.direction === 'RECEIVABLE' && input.clientId) {
+      await assertEtaReady({
+        clientId: input.clientId,
+        issuedOn: input.issuedOn,
+        activityCode: input.activityCode ?? null,
+        currency: input.currency,
+        exchangeRate: input.exchangeRate,
+        lines: input.lines,
+      });
+    }
+
     const bill = await createBill({
       actor,
       direction: input.direction,
@@ -38,6 +53,7 @@ const createBillAction = action({
       whtRate: input.whtRate,
       purchaseOrderRef: input.purchaseOrderRef ?? null,
       salesOrderRef: input.salesOrderRef ?? null,
+      activityCode: input.activityCode ?? null,
       notes: input.notes ?? null,
       lines: input.lines,
     });
@@ -52,6 +68,22 @@ const updateBillLinesAction = action({
   permission: 'bills.edit',
   input: updateLinesSchema,
   handler: async ({ billId, lines, whtRate }, { actor }) => {
+    const draft = await db.electronicBill.findFirst({
+      where: { id: billId, deletedAt: null },
+      select: { direction: true, clientId: true, activityCode: true, currency: true, exchangeRate: true },
+    });
+    if (draft?.direction === 'RECEIVABLE' && draft.clientId) {
+      await assertEtaReady({
+        clientId: draft.clientId,
+        // The date is fixed once drafted; submission re-checks it.
+        issuedOn: null,
+        activityCode: draft.activityCode,
+        currency: draft.currency,
+        exchangeRate: draft.exchangeRate?.toString() ?? null,
+        lines,
+      });
+    }
+
     const bill = await updateBillLines({ actor, billId, lines, whtRate });
     revalidatePath(`/bills/${billId}`);
     return { id: bill.id, total: bill.total.toString() };

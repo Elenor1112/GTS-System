@@ -66,6 +66,11 @@ export function etaConfig(): EtaConfig {
   return { environment, clientId, secrets, ...ENDPOINTS[environment] };
 }
 
+/** The ETA portal for the configured environment — where codes are registered. */
+export function etaPortalUrl(): string {
+  return ENDPOINTS[etaEnvironment()].portal;
+}
+
 /** The public ETA page for a document — what the printed QR code opens. */
 export function etaShareUrl(uuid: string, longId: string | null): string {
   const { portal } = ENDPOINTS[etaEnvironment()];
@@ -252,4 +257,38 @@ export async function cancelDocument(uuid: string, reason: string): Promise<void
     method: 'PUT',
     body: JSON.stringify({ status: 'cancelled', reason }),
   });
+}
+
+/** One row of the taxpayer's code-usage requests, as the ETA returns it. */
+export interface CodeUsageRow {
+  codeTypeName?: string;
+  itemCode?: string;
+  codeNamePrimaryLang?: string;
+  codeNameSecondaryLang?: string;
+  parentItemCode?: string;
+  status?: string;
+  active?: boolean;
+}
+
+/**
+ * The item codes this taxpayer may put on a document: its approved,
+ * active EGS and GS1 code-usage requests. Paged by the ETA; all pages
+ * are read.
+ */
+export async function listMyApprovedCodes(): Promise<CodeUsageRow[]> {
+  const rows: CodeUsageRow[] = [];
+  const pageSize = 100;
+
+  for (let page = 1; page <= 50; page++) {
+    const body = await etaFetch<{ result?: CodeUsageRow[]; metadata?: { totalPages?: number } }>(
+      `/codetypes/requests/my?Active=true&Status=Approved&PageSize=${pageSize}&PageNumber=${page}`,
+    );
+    rows.push(...(body?.result ?? []));
+    if (page >= (body?.metadata?.totalPages ?? 0)) break;
+  }
+
+  // The query filters already; this holds if the ETA ever ignores them.
+  return rows.filter(
+    (r) => r.itemCode && r.active !== false && (!r.status || r.status.toLowerCase() === 'approved'),
+  );
 }

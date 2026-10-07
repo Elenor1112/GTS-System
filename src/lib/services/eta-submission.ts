@@ -6,6 +6,9 @@ import { db, transaction } from '../db';
 import { writeAudit } from './audit';
 import { validateBillForIssue, type ActorRef } from './billing';
 import { organisation } from './settings';
+import { approvedEtaCodes } from './eta-codes';
+import { etaFactsForBill } from './eta-facts';
+import { checkEtaDocument } from '../eta-rules';
 import { buildEtaDocument, signEtaDocument } from './eta-document';
 import {
   EtaError, cancelDocument, flattenEtaErrors, getDocumentDetails, submitDocuments,
@@ -57,11 +60,13 @@ export async function submitBillToEta(params: { actor: ActorRef; billId: string 
 
   const problems = await transaction((tx) => validateBillForIssue(tx, bill.id));
   const org = await organisation();
-  if (!/^\d{9}$/.test(org.trn.replace(/\D/g, ''))) {
-    problems.push('The company tax registration number is not set in Administration.');
-  }
-  if (!org.activityCode) {
-    problems.push('The company ETA activity code is not set in Administration.');
+  // The same rules the bill form ran, re-run now: the date window has
+  // moved since the draft was saved, and codes can be withdrawn.
+  const etaProblems = checkEtaDocument(etaFactsForBill(bill, org), {
+    approvedCodes: await approvedEtaCodes(),
+  });
+  for (const p of etaProblems) {
+    if (!problems.includes(p.message)) problems.push(p.message);
   }
   if (problems.length) {
     throw new EtaError('NOT_READY', problems.join(' '), { problems });
@@ -71,13 +76,7 @@ export async function submitBillToEta(params: { actor: ActorRef; billId: string 
     buildEtaDocument({
       bill,
       issuer: { ...org, governorateCode: org.governorateCode },
-      receiver: {
-        nameEn: bill.client!.nameEn,
-        nameAr: bill.client!.nameAr,
-        trn: bill.client!.trn!,
-        addressLine: bill.client!.addressLine,
-        governorateCode: bill.client!.governorateCode,
-      },
+      receiver: bill.client!,
     }),
   );
 

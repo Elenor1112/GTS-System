@@ -253,6 +253,18 @@ export interface OperationsDict {
       governorateLabel: string;
       governoratePlaceholder: string;
       addressLabel: string;
+      receiverTypeLabel: string;
+      receiverTypeHint: string;
+      receiverTypeB: string;
+      receiverTypeP: string;
+      receiverTypeF: string;
+      nationalIdLabel: string;
+      nationalIdHint: string;
+      foreignIdLabel: string;
+      countryCodeLabel: string;
+      countryCodeHint: string;
+      regionCityLabel: string;
+      buildingNumberLabel: string;
       contactNameLabel: string;
       contactPhoneLabel: string;
       contactEmailLabel: string;
@@ -599,7 +611,19 @@ export const en: OperationsDict = {
       commercialRegHint: 'Issued by GAFI',
       governorateLabel: 'Governorate',
       governoratePlaceholder: 'Select a governorate',
-      addressLabel: 'Address',
+      addressLabel: 'Street address',
+      receiverTypeLabel: 'ETA receiver type',
+      receiverTypeHint: 'How the ETA identifies this client on an e-invoice',
+      receiverTypeB: 'Business (B) — Egyptian tax number',
+      receiverTypeP: 'Person (P) — individual',
+      receiverTypeF: 'Foreign (F) — outside Egypt',
+      nationalIdLabel: 'National ID',
+      nationalIdHint: '14 digits. Required on invoices of EGP 50,000 or more',
+      foreignIdLabel: 'Foreign ID',
+      countryCodeLabel: 'Country code',
+      countryCodeHint: '2 letters, e.g. SA, AE, US',
+      regionCityLabel: 'City / region',
+      buildingNumberLabel: 'Building number',
       contactNameLabel: 'Contact name',
       contactPhoneLabel: 'Contact phone',
       contactEmailLabel: 'Contact email',
@@ -946,7 +970,19 @@ export const ar: OperationsDict = {
       commercialRegHint: 'صادر عن الهيئة العامة للاستثمار (GAFI)',
       governorateLabel: 'المحافظة',
       governoratePlaceholder: 'اختر محافظة',
-      addressLabel: 'العنوان',
+      addressLabel: 'الشارع',
+      receiverTypeLabel: 'نوع المستلم لدى مصلحة الضرائب',
+      receiverTypeHint: 'كيف تعرّف مصلحة الضرائب هذا العميل على الفاتورة الإلكترونية',
+      receiverTypeB: 'شركة (B) — رقم ضريبي مصري',
+      receiverTypeP: 'شخص (P) — فرد',
+      receiverTypeF: 'أجنبي (F) — خارج مصر',
+      nationalIdLabel: 'الرقم القومي',
+      nationalIdHint: '14 رقمًا. مطلوب في الفواتير بقيمة 50,000 جنيه أو أكثر',
+      foreignIdLabel: 'رقم التعريف الأجنبي',
+      countryCodeLabel: 'رمز الدولة',
+      countryCodeHint: 'حرفان، مثل SA أو AE أو US',
+      regionCityLabel: 'المدينة / المنطقة',
+      buildingNumberLabel: 'رقم المبنى',
       contactNameLabel: 'اسم جهة الاتصال',
       contactPhoneLabel: 'هاتف جهة الاتصال',
       contactEmailLabel: 'البريد الإلكتروني لجهة الاتصال',

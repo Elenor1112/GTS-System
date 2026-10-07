@@ -210,6 +210,12 @@ export interface ClientInput {
   commercialRegNo?: string | null;
   governorateCode?: number | null;
   addressLine?: string | null;
+  receiverType?: 'B' | 'P' | 'F';
+  nationalId?: string | null;
+  foreignId?: string | null;
+  countryCode?: string;
+  regionCity?: string | null;
+  buildingNumber?: string | null;
   contactName?: string | null;
   contactPhone?: string | null;
   contactEmail?: string | null;
@@ -244,6 +250,12 @@ export async function createClient(params: { actor: ActorRef; input: ClientInput
         commercialRegNo: input.commercialRegNo ?? null,
         governorateCode: input.governorateCode ?? null,
         addressLine: input.addressLine ?? null,
+        receiverType: input.receiverType ?? 'B',
+        nationalId: input.nationalId ?? null,
+        foreignId: input.foreignId ?? null,
+        countryCode: input.countryCode ?? 'EG',
+        regionCity: input.regionCity ?? null,
+        buildingNumber: input.buildingNumber ?? null,
         contactName: input.contactName ?? null,
         contactPhone: input.contactPhone ?? null,
         contactEmail: input.contactEmail ?? null,
@@ -295,6 +307,12 @@ export async function updateClient(params: {
       ...(params.input.commercialRegNo !== undefined ? { commercialRegNo: params.input.commercialRegNo } : {}),
       ...(params.input.governorateCode !== undefined ? { governorateCode: params.input.governorateCode } : {}),
       ...(params.input.addressLine !== undefined ? { addressLine: params.input.addressLine } : {}),
+      ...(params.input.receiverType !== undefined ? { receiverType: params.input.receiverType } : {}),
+      ...(params.input.nationalId !== undefined ? { nationalId: params.input.nationalId } : {}),
+      ...(params.input.foreignId !== undefined ? { foreignId: params.input.foreignId } : {}),
+      ...(params.input.countryCode !== undefined ? { countryCode: params.input.countryCode } : {}),
+      ...(params.input.regionCity !== undefined ? { regionCity: params.input.regionCity } : {}),
+      ...(params.input.buildingNumber !== undefined ? { buildingNumber: params.input.buildingNumber } : {}),
       ...(params.input.contactName !== undefined ? { contactName: params.input.contactName } : {}),
       ...(params.input.contactPhone !== undefined ? { contactPhone: params.input.contactPhone } : {}),
       ...(params.input.contactEmail !== undefined ? { contactEmail: params.input.contactEmail } : {}),

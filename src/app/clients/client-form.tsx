@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 
 import {
   FormError, FormActions, FieldGrid, TextField, SelectField, TextArea, Submit, errorFor,
@@ -30,6 +30,12 @@ export interface ClientFormValues {
   commercialRegNo: string | null;
   governorateCode: number | null;
   addressLine: string | null;
+  receiverType: 'B' | 'P' | 'F';
+  nationalId: string | null;
+  foreignId: string | null;
+  countryCode: string;
+  regionCity: string | null;
+  buildingNumber: string | null;
   contactName: string | null;
   contactPhone: string | null;
   contactEmail: string | null;
@@ -49,6 +55,8 @@ export function ClientForm({
 }) {
   const submit = mode === 'create' ? submitCreateClient : submitUpdateClient;
   const [state, formAction] = useActionState(submit, null);
+  // Which identifier the ETA expects depends on the receiver type.
+  const [receiverType, setReceiverType] = useState(values?.receiverType ?? 'B');
 
   useEffect(() => {
     if (!state?.ok) return;
@@ -103,15 +111,61 @@ export function ClientForm({
           error={e('nameAr')}
           maxLength={200}
         />
-        <TextField
-          name="trn"
-          label={dict.trnLabel}
-          hint={dict.trnHint}
-          defaultValue={values?.trn}
-          error={e('trn')}
-          inputMode="numeric"
-          maxLength={11}
+        <SelectField
+          name="receiverType"
+          label={dict.receiverTypeLabel}
+          hint={dict.receiverTypeHint}
+          defaultValue={receiverType}
+          onChange={(v) => setReceiverType(v as 'B' | 'P' | 'F')}
+          error={e('receiverType')}
+          options={[
+            { value: 'B', label: dict.receiverTypeB },
+            { value: 'P', label: dict.receiverTypeP },
+            { value: 'F', label: dict.receiverTypeF },
+          ]}
         />
+        {receiverType === 'B' && (
+          <TextField
+            name="trn"
+            label={dict.trnLabel}
+            hint={dict.trnHint}
+            required
+            defaultValue={values?.trn}
+            error={e('trn')}
+            inputMode="numeric"
+            maxLength={11}
+          />
+        )}
+        {receiverType === 'P' && (
+          <TextField
+            name="nationalId"
+            label={dict.nationalIdLabel}
+            hint={dict.nationalIdHint}
+            defaultValue={values?.nationalId}
+            error={e('nationalId')}
+            inputMode="numeric"
+            maxLength={14}
+          />
+        )}
+        {receiverType === 'F' && (
+          <>
+            <TextField
+              name="countryCode"
+              label={dict.countryCodeLabel}
+              hint={dict.countryCodeHint}
+              required
+              defaultValue={values?.countryCode === 'EG' ? '' : values?.countryCode}
+              error={e('countryCode')}
+              maxLength={2}
+            />
+            <TextField
+              name="foreignId"
+              label={dict.foreignIdLabel}
+              defaultValue={values?.foreignId}
+              error={e('foreignId')}
+            />
+          </>
+        )}
         <TextField
           name="commercialRegNo"
           label={dict.commercialRegLabel}
@@ -130,15 +184,29 @@ export function ClientForm({
       </FieldGrid>
 
       <FieldGrid>
-        <div className="gts-field-wide">
-          <TextField
-            name="addressLine"
-            label={dict.addressLabel}
-            defaultValue={values?.addressLine}
-            error={e('addressLine')}
-            autoComplete="street-address"
-          />
-        </div>
+        <TextField
+          name="regionCity"
+          label={dict.regionCityLabel}
+          required={receiverType === 'B'}
+          defaultValue={values?.regionCity}
+          error={e('regionCity')}
+          autoComplete="address-level2"
+        />
+        <TextField
+          name="addressLine"
+          label={dict.addressLabel}
+          required={receiverType === 'B'}
+          defaultValue={values?.addressLine}
+          error={e('addressLine')}
+          autoComplete="street-address"
+        />
+        <TextField
+          name="buildingNumber"
+          label={dict.buildingNumberLabel}
+          required={receiverType === 'B'}
+          defaultValue={values?.buildingNumber}
+          error={e('buildingNumber')}
+        />
         <TextField
           name="contactName"
           label={dict.contactNameLabel}

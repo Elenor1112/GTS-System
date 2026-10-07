@@ -223,15 +223,7 @@ export async function Shell({
       <div className="flex-1 flex flex-col ms-0 md:ms-rail min-w-0" data-domain={domain}>
         {/* Top bar — fixed, matches Stitch's TopNavBar */}
         <header className="fixed top-0 inset-x-0 md:start-rail z-30 flex justify-between items-center gap-4 px-6 h-topbar bg-raised border-b border-line">
-          <div className="flex items-center gap-4 min-w-0">
-            <Image
-              src="/logo-mark.png"
-              alt="GTS"
-              width={1734}
-              height={592}
-              className="h-6 w-auto shrink-0 py-1 hidden md:block"
-            />
-          </div>
+          <div className="flex items-center gap-4 min-w-0" />
           <div className="flex items-center gap-3">
             <a href="/help" className="p-2 text-fg-secondary hover:text-brand-fg transition-colors" aria-label={dict.nav.help}>
               <Icon name="help" />

@@ -188,7 +188,18 @@ model Client {
   trn              String? @unique
   commercialRegNo  String?
   governorateCode  Int?
+  /// Street address. Printed as the ETA receiver's `street`.
   addressLine      String?
+  /// ETA receiver type: B business (TRN), P person, F foreign.
+  receiverType     EtaReceiverType @default(B)
+  /// 14-digit national ID; a P receiver needs it at EGP 50,000 or more.
+  nationalId       String?
+  /// A foreign receiver's own registration or passport number.
+  foreignId        String?
+  /// ISO 3166-1 alpha-2. EG unless the receiver is foreign.
+  countryCode      String  @default("EG")
+  regionCity       String?
+  buildingNumber   String?
   contactName      String?
   contactPhone     String?
   contactEmail     String?
@@ -665,6 +676,10 @@ model ElectronicBill {
   /// Our own sales-order reference, printed beside the purchase order.
   salesOrderRef    String?
 
+  /// The registered ETA activity this document is reported under.
+  /// Null: the company default from Administration.
+  activityCode String?
+
   /// ETA-assigned. Null until a real submission happens — inventing a
   /// UUID here would fabricate a compliance record.
   etaUuid        String?
@@ -710,7 +725,10 @@ model BillItem {
   descriptionEn String
   descriptionAr String?
   itemCode      String?
+  /// The ETA item code (EGS or GS1) the line is reported under.
   gpcCode       String?
+  /// EGS or GS1, as the ETA's code list classifies `gpcCode`.
+  itemType      String?
 
   quantity  Decimal @db.Decimal(14, 3)
   unit      String  @default("EA")
@@ -728,6 +746,12 @@ model BillItem {
   @@index([billId])
   @@index([productId])
   @@map("bill_items")
+}
+
+enum EtaReceiverType {
+  B
+  P
+  F
 }
 
 enum PaymentMethod {

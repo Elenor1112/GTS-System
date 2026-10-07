@@ -83,6 +83,40 @@ export interface FinanceDict {
         editTitle: string;
         editLede: string;
         documentLegend: string;
+        etaSalesNote: string;
+        documentTypeLabel: string;
+        documentTypeInvoice: string;
+        documentTypeHint: string;
+        internalIdLabel: string;
+        internalIdValue: string;
+        activityCodeLabel: string;
+        activityCodeHint: string;
+        issueDateWindow: string;
+        issuerLegend: string;
+        nameLabel: string;
+        trnLabel: string;
+        branchLabel: string;
+        addressLabel: string;
+        fixInAdmin: string;
+        receiverLegend: string;
+        receiverTypeLabel: string;
+        receiverIdLabel: string;
+        receiverTypeB: string;
+        receiverTypeP: string;
+        receiverTypeF: string;
+        editClient: string;
+        paymentLegend: string;
+        itemCodeLabel: string;
+        selectItemCode: string;
+        internalCodeLabel: string;
+        codesUnavailable: string;
+        retry: string;
+        noApprovedCodes: string;
+        openPortal: string;
+        refreshCodes: string;
+        unitTypeLabel: string;
+        problemsTitle: string;
+        notSet: string;
         directionLabel: string;
         receivableOption: string;
         payableOption: string;
@@ -466,6 +500,40 @@ export const en: FinanceDict = {
         editTitle: 'Edit lines',
         editLede: 'Saving replaces every line on this bill and recomputes the totals on the server. Who it is for and when it was issued cannot be changed here.',
         documentLegend: 'Document',
+        etaSalesNote: 'A sales invoice is reported to the Egyptian Tax Authority. This form follows the ETA document and accepts only values the ETA will accept.',
+        documentTypeLabel: 'Document type',
+        documentTypeInvoice: 'Invoice (I)',
+        documentTypeHint: 'Credit and debit notes are not issued from GTS yet.',
+        internalIdLabel: 'Internal ID',
+        internalIdValue: 'Assigned when saved',
+        activityCodeLabel: 'Activity code',
+        activityCodeHint: '4 digits. Empty uses the company activity ({code}).',
+        issueDateWindow: 'The ETA accepts {min} to {max}.',
+        issuerLegend: 'Issuer',
+        nameLabel: 'Name',
+        trnLabel: 'Tax registration number',
+        branchLabel: 'Branch',
+        addressLabel: 'Address',
+        fixInAdmin: 'Fix in Administration',
+        receiverLegend: 'Receiver',
+        receiverTypeLabel: 'Type',
+        receiverIdLabel: 'ID',
+        receiverTypeB: 'Business (B)',
+        receiverTypeP: 'Person (P)',
+        receiverTypeF: 'Foreign (F)',
+        editClient: 'Edit client details',
+        paymentLegend: 'Payment and internal details',
+        itemCodeLabel: 'ETA item code',
+        selectItemCode: 'Choose an approved code',
+        internalCodeLabel: 'Internal code',
+        codesUnavailable: 'Your approved ETA item codes could not be loaded: {message}',
+        retry: 'Try again',
+        noApprovedCodes: 'Your ETA account has no approved item codes yet. Register an EGS code on the ETA portal; once the ETA approves it, it appears here.',
+        openPortal: 'Open the ETA portal',
+        refreshCodes: 'Refresh codes',
+        unitTypeLabel: 'Unit type',
+        problemsTitle: 'The ETA would refuse this invoice. Fix these to save it:',
+        notSet: 'Not set',
         directionLabel: 'Direction',
         receivableOption: 'Receivable — we issue it to a client',
         payableOption: 'Payable — a vendor issued it to us',
@@ -848,6 +916,40 @@ export const ar: FinanceDict = {
         editTitle: 'تعديل البنود',
         editLede: 'يستبدل الحفظ جميع بنود هذه الفاتورة ويعيد احتساب الإجماليات على الخادم. لا يمكن تغيير الجهة المصدرة لها أو تاريخ إصدارها من هنا.',
         documentLegend: 'المستند',
+        etaSalesNote: 'تُرسل فاتورة البيع إلى مصلحة الضرائب المصرية. يتبع هذا النموذج مستند المصلحة ولا يقبل إلا القيم التي تقبلها.',
+        documentTypeLabel: 'نوع المستند',
+        documentTypeInvoice: 'فاتورة (I)',
+        documentTypeHint: 'لا تصدر إشعارات الخصم والإضافة من GTS بعد.',
+        internalIdLabel: 'الرقم الداخلي',
+        internalIdValue: 'يُخصَّص عند الحفظ',
+        activityCodeLabel: 'كود النشاط',
+        activityCodeHint: '4 أرقام. إذا تُرك فارغًا يُستخدم نشاط الشركة ({code}).',
+        issueDateWindow: 'تقبل المصلحة التواريخ من {min} إلى {max}.',
+        issuerLegend: 'المُصدِر',
+        nameLabel: 'الاسم',
+        trnLabel: 'الرقم الضريبي',
+        branchLabel: 'الفرع',
+        addressLabel: 'العنوان',
+        fixInAdmin: 'إصلاح في الإدارة',
+        receiverLegend: 'المستلم',
+        receiverTypeLabel: 'النوع',
+        receiverIdLabel: 'رقم التعريف',
+        receiverTypeB: 'شركة (B)',
+        receiverTypeP: 'شخص (P)',
+        receiverTypeF: 'أجنبي (F)',
+        editClient: 'تعديل بيانات العميل',
+        paymentLegend: 'السداد والبيانات الداخلية',
+        itemCodeLabel: 'كود الصنف لدى المصلحة',
+        selectItemCode: 'اختر كودًا معتمدًا',
+        internalCodeLabel: 'الكود الداخلي',
+        codesUnavailable: 'تعذّر تحميل أكواد الأصناف المعتمدة لدى المصلحة: {message}',
+        retry: 'إعادة المحاولة',
+        noApprovedCodes: 'لا توجد أكواد أصناف معتمدة في حسابك لدى المصلحة بعد. سجّل كود EGS على بوابة المصلحة، وسيظهر هنا بعد اعتماده.',
+        openPortal: 'فتح بوابة المصلحة',
+        refreshCodes: 'تحديث الأكواد',
+        unitTypeLabel: 'وحدة القياس',
+        problemsTitle: 'سترفض المصلحة هذه الفاتورة. أصلح ما يلي لحفظها:',
+        notSet: 'غير محدد',
         directionLabel: 'الاتجاه',
         receivableOption: 'مستحقة — نصدرها لعميل',
         payableOption: 'مطلوبة — أصدرها لنا مورّد',

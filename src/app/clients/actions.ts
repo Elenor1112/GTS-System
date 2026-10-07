@@ -43,6 +43,23 @@ const clientSchema = z.object({
       'Choose one of the 27 governorates',
     ),
   addressLine: optionalText,
+  receiverType: z.enum(['B', 'P', 'F']).default('B'),
+  nationalId: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/\D/g, ''))
+    .refine((v) => v === '' || v.length === 14, 'A national ID is 14 digits')
+    .transform((v) => (v === '' ? null : v))
+    .nullable()
+    .optional(),
+  foreignId: optionalText,
+  // Only a foreign receiver posts a country; everyone else is in Egypt.
+  countryCode: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() !== '' ? v.trim().toUpperCase() : 'EG'),
+    z.string().regex(/^[A-Z]{2}$/, 'A country code is 2 letters'),
+  ),
+  regionCity: optionalText,
+  buildingNumber: optionalText,
   contactName: optionalText,
   contactPhone: optionalText,
   contactEmail: z

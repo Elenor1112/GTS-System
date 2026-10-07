@@ -37,6 +37,10 @@ export const lineSchema = z.object({
   descriptionAr: optionalText.optional(),
   itemCode: optionalText.optional(),
   gpcCode: optionalText.optional(),
+  itemType: z.preprocess(
+    (v) => (v === '' || v === undefined ? null : v),
+    z.enum(['EGS', 'GS1']).nullable(),
+  ),
   quantity: z.coerce.number().positive('Quantity must be greater than zero'),
   unit: z.string().trim().min(1).max(8).default('EA'),
   unitPrice: z.coerce.number().nonnegative('A unit price cannot be negative'),
@@ -65,6 +69,11 @@ export const createBillSchema = z
        Free text: a purchase order number is the buyer's own numbering. */
     purchaseOrderRef: optionalText.optional(),
     salesOrderRef: optionalText.optional(),
+    /* The ETA activity this invoice is reported under. Empty: the
+       company default from Administration. */
+    activityCode: optionalText
+      .optional()
+      .refine((v) => v == null || /^\d{4}$/.test(v), 'An activity code is 4 digits'),
     notes: optionalText.optional(),
     lines: z.array(lineSchema).min(1, 'A bill needs at least one line'),
   })

@@ -41,6 +41,7 @@ export interface LineInput {
   descriptionAr?: string | null;
   itemCode?: string | null;
   gpcCode?: string | null;
+  itemType?: string | null;
   quantity: Numeric;
   unit?: string;
   unitPrice: Numeric;
@@ -54,6 +55,7 @@ export interface ComputedLine {
   descriptionAr: string | null;
   itemCode: string | null;
   gpcCode: string | null;
+  itemType: string | null;
   productId: string | null;
   quantity: Prisma.Decimal;
   unit: string;
@@ -142,6 +144,7 @@ export function computeBillTotals(lines: LineInput[], whtRate: Numeric = 0): Com
       descriptionAr: line.descriptionAr ?? null,
       itemCode: line.itemCode ?? null,
       gpcCode: line.gpcCode ?? null,
+      itemType: line.itemType ?? null,
       quantity,
       unit: line.unit ?? 'EA',
       unitPrice,
@@ -238,6 +241,8 @@ export interface CreateBillInput {
   purchaseOrderRef?: string | null;
   /** Our own sales-order reference. */
   salesOrderRef?: string | null;
+  /** The ETA activity this document is reported under; null = company default. */
+  activityCode?: string | null;
   notes?: string | null;
   lines: LineInput[];
 }
@@ -318,6 +323,7 @@ export async function createBill(input: CreateBillInput) {
         whtAmount: totals.whtAmount,
         purchaseOrderRef: input.purchaseOrderRef ?? null,
         salesOrderRef: input.salesOrderRef ?? null,
+        activityCode: input.activityCode ?? null,
         notes: input.notes ?? null,
         items: { create: totals.lines },
       },
@@ -734,7 +740,7 @@ export async function validateBillForIssue(tx: Tx, billId: string): Promise<stri
     where: { id: billId },
     include: {
       items: true,
-      client: { select: { nameEn: true, trn: true } },
+      client: { select: { nameEn: true, trn: true, receiverType: true } },
       vendor: { select: { nameEn: true, trn: true } },
     },
   });
@@ -744,9 +750,12 @@ export async function validateBillForIssue(tx: Tx, billId: string): Promise<stri
   const trn = /^\d{9}$/;
 
   const counterparty = bill.client ?? bill.vendor;
+  // A person or foreign receiver has no Egyptian TRN; the ETA rules in
+  // lib/eta-rules.ts check what those need instead.
+  const needsTrn = !bill.client || bill.client.receiverType === 'B';
   if (!counterparty) {
     problems.push('The bill names no client or vendor.');
-  } else if (!counterparty.trn || !trn.test(counterparty.trn.replace(/\D/g, ''))) {
+  } else if (needsTrn && (!counterparty.trn || !trn.test(counterparty.trn.replace(/\D/g, '')))) {
     problems.push(`${counterparty.nameEn} has no valid 9-digit tax registration number.`);
   }
 

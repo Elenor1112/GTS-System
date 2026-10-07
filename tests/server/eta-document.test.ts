@@ -101,6 +101,51 @@ describe('ETA document', () => {
   });
 });
 
+describe('ETA receivers', () => {
+  const full = { ...receiver, regionCity: 'Dokki', addressLine: '5 Tahrir St', buildingNumber: '12' };
+
+  it('sends a business with its TRN and real address', () => {
+    const doc = buildEtaDocument({ bill: bill(), issuer, receiver: full, now });
+    expect(doc.receiver).toEqual({
+      type: 'B', id: '987654321', name: 'Client Co',
+      address: { country: 'EG', governate: 'Giza', regionCity: 'Dokki', street: '5 Tahrir St', buildingNumber: '12' },
+    });
+  });
+
+  it('sends a person with a national ID, or without one below the threshold', () => {
+    const withId = buildEtaDocument({
+      bill: bill(), issuer, now,
+      receiver: { ...full, receiverType: 'P', trn: null, nationalId: '29001011234567' },
+    });
+    expect(withId.receiver).toMatchObject({ type: 'P', id: '29001011234567' });
+
+    const without = buildEtaDocument({
+      bill: bill(), issuer, now, receiver: { ...full, receiverType: 'P', trn: null, nationalId: null },
+    });
+    expect(without.receiver.type).toBe('P');
+    expect(without.receiver).not.toHaveProperty('id');
+  });
+
+  it('sends a foreign party with its own country', () => {
+    const doc = buildEtaDocument({
+      bill: bill(), issuer, now,
+      receiver: { ...full, receiverType: 'F', trn: null, foreignId: 'X-77', countryCode: 'SA', regionCity: 'Riyadh' },
+    });
+    expect(doc.receiver).toMatchObject({ type: 'F', id: 'X-77' });
+    expect(doc.receiver.address).toMatchObject({ country: 'SA', governate: 'Riyadh', regionCity: 'Riyadh' });
+  });
+
+  it('uses the stored item type and the bill activity code', () => {
+    const base = bill();
+    const doc = buildEtaDocument({
+      bill: { ...base, activityCode: '4510', items: [{ ...base.items[0]!, gpcCode: '6221234567890', itemType: 'GS1' }] },
+      issuer, receiver, now,
+    });
+    expect(doc.taxpayerActivityCode).toBe('4510');
+    expect(doc.invoiceLines[0]!.itemType).toBe('GS1');
+  });
+});
+
 describe('ETA helpers', () => {
   it('never stamps a document in the future', () => {
     expect(etaIssueTimestamp(new Date('2026-09-30T00:00:00Z'), now)).toBe('2026-09-30T08:00:00Z');

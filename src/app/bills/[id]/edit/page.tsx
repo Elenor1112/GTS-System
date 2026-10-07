@@ -6,6 +6,10 @@ import { requirePermission } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { isEditable } from '@/lib/services/billing';
 import { t } from '@/lib/i18n';
+import { etaPortalUrl } from '@/lib/services/eta-client';
+import { loadEtaCodes } from '@/lib/services/eta-codes';
+import { receiverFacts } from '@/lib/services/eta-facts';
+import { organisation } from '@/lib/services/settings';
 import { BillForm } from '../../bill-form';
 
 export const dynamic = 'force-dynamic';
@@ -32,19 +36,27 @@ export async function generateMetadata({
  * link to a bill that has since been approved is sent back to it rather
  * than shown a form whose submission is guaranteed to fail.
  */
-export default async function EditBillPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditBillPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ refreshCodes?: string }>;
+}) {
   await requirePermission('bills.edit');
   const { id } = await params;
+  const { refreshCodes } = await searchParams;
 
   const bill = await db.electronicBill.findFirst({
     where: { id, deletedAt: null },
-    include: { items: { orderBy: { sortOrder: 'asc' } } },
+    include: { items: { orderBy: { sortOrder: 'asc' } }, client: true },
   });
   if (!bill) notFound();
 
   if (!isEditable(bill.status)) redirect(`/bills/${bill.id}`);
 
-  const [products, dict] = await Promise.all([
+  const sales = bill.direction === 'RECEIVABLE';
+  const [products, org, etaCodes, dict] = await Promise.all([
     db.product.findMany({
       where: { deletedAt: null, isActive: true },
       select: {
@@ -53,6 +65,11 @@ export default async function EditBillPage({ params }: { params: Promise<{ id: s
       },
       orderBy: { nameEn: 'asc' },
     }),
+    organisation(),
+    // Only a sales bill needs the ETA's code list.
+    sales
+      ? loadEtaCodes({ refresh: refreshCodes === '1' })
+      : Promise.resolve({ ok: true as const, codes: [] }),
     t(),
   ]);
   const f = dict.finance.bills.form;
@@ -69,9 +86,23 @@ export default async function EditBillPage({ params }: { params: Promise<{ id: s
         <BillForm
           mode="edit"
           billId={bill.id}
-          // The counterparty lists are not offered in edit mode, but the
-          // component still types them as required.
-          clients={[]}
+          // The counterparty is not changed in edit mode; a sales bill's
+          // own client is passed so its receiver can still be checked.
+          clients={
+            bill.client
+              ? [{ id: bill.client.id, label: bill.client.nameEn, receiver: receiverFacts(bill.client)! }]
+              : []
+          }
+          defaultClientId={bill.clientId ?? undefined}
+          issuer={org}
+          etaCodes={etaCodes}
+          etaPortal={etaPortalUrl()}
+          editContext={{
+            direction: bill.direction,
+            activityCode: bill.activityCode,
+            currency: bill.currency,
+            exchangeRate: bill.exchangeRate?.toString() ?? null,
+          }}
           vendors={[]}
           projects={[]}
           products={products.map((p) => ({
@@ -93,6 +124,7 @@ export default async function EditBillPage({ params }: { params: Promise<{ id: s
             descriptionEn: item.descriptionEn,
             itemCode: item.itemCode ?? '',
             gpcCode: item.gpcCode ?? '',
+            itemType: item.itemType ?? '',
             quantity: item.quantity.toString(),
             unit: item.unit,
             unitPrice: item.unitPrice.toString(),

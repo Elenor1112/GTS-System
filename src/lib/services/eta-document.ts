@@ -3,6 +3,9 @@ import 'server-only';
 import { Prisma } from '@prisma/client';
 
 import { governorate } from '../egypt';
+import { itemType, vatSubType, type ReceiverType } from '../eta-rules';
+
+export { itemType, vatSubType };
 
 /**
  * GTS — the ETA document.
@@ -37,11 +40,14 @@ export interface EtaBillInput {
   exchangeRate: Numeric | null;
   purchaseOrderRef: string | null;
   salesOrderRef: string | null;
+  /** Per-document activity code; null falls back to the issuer's. */
+  activityCode?: string | null;
   items: {
     descriptionEn: string;
     descriptionAr: string | null;
     itemCode: string | null;
     gpcCode: string | null;
+    itemType?: string | null;
     quantity: Numeric;
     unit: string;
     unitPrice: Numeric;
@@ -55,9 +61,18 @@ export interface EtaBillInput {
 export interface EtaPartyInput {
   nameEn: string;
   nameAr?: string | null;
-  trn: string;
+  trn: string | null;
   addressLine: string | null;
   governorateCode: number | null;
+  countryCode?: string | null;
+  regionCity?: string | null;
+  buildingNumber?: string | null;
+}
+
+export interface EtaReceiverInput extends EtaPartyInput {
+  receiverType?: ReceiverType;
+  nationalId?: string | null;
+  foreignId?: string | null;
 }
 
 export interface EtaIssuerInput extends EtaPartyInput {
@@ -65,26 +80,36 @@ export interface EtaIssuerInput extends EtaPartyInput {
   branchId: string;
 }
 
-/** The VAT subtype for a line. Zero-rated is an export abroad, exempt at home. */
-export function vatSubType(rate: number, currency: string): string {
-  if (rate > 0) return 'V009';
-  return currency === 'EGP' ? 'V003' : 'V001';
-}
-
-/** GS1 codes are numeric; codes on the taxpayer's own scheme start EG-. */
-export function itemType(code: string): 'EGS' | 'GS1' {
-  return code.toUpperCase().startsWith('EG-') ? 'EGS' : 'GS1';
-}
-
 function address(party: EtaPartyInput, branchId?: string) {
-  const gov = party.governorateCode ? governorate(party.governorateCode)?.en : undefined;
+  const country = party.countryCode?.trim().toUpperCase() || 'EG';
+  const gov = country === 'EG' && party.governorateCode
+    ? governorate(party.governorateCode)?.en
+    : undefined;
+  const city = party.regionCity?.trim();
   return {
     ...(branchId !== undefined ? { branchID: branchId } : {}),
-    country: 'EG',
-    governate: gov ?? 'Cairo',
-    regionCity: gov ?? 'Cairo',
+    country,
+    governate: gov ?? city ?? 'Cairo',
+    regionCity: city || gov || 'Cairo',
     street: party.addressLine?.trim() || party.nameEn,
-    buildingNumber: '0',
+    buildingNumber: party.buildingNumber?.trim() || '0',
+  };
+}
+
+/** The receiver block: its type decides which identifier it carries. */
+function receiverBlock(receiver: EtaReceiverInput) {
+  const type = receiver.receiverType ?? 'B';
+  const id =
+    type === 'B' ? (receiver.trn ?? '').replace(/\D/g, '')
+    : type === 'P' ? (receiver.nationalId ?? '').replace(/\D/g, '')
+    : (receiver.foreignId ?? '').trim();
+  return {
+    type,
+    // A person below the ID threshold, or a foreign party without a
+    // number, is sent without one: an empty id fails validation.
+    ...(id ? { id } : {}),
+    name: receiver.nameAr || receiver.nameEn,
+    address: address(receiver),
   };
 }
 
@@ -106,7 +131,7 @@ export function etaIssueTimestamp(issuedOn: Date, now: Date = new Date()): strin
 export function buildEtaDocument(params: {
   bill: EtaBillInput;
   issuer: EtaIssuerInput;
-  receiver: EtaPartyInput;
+  receiver: EtaReceiverInput;
   now?: Date;
 }) {
   const { bill, issuer, receiver } = params;
@@ -137,7 +162,7 @@ export function buildEtaDocument(params: {
     const code = item.gpcCode ?? '';
     return {
       description: item.descriptionEn,
-      itemType: itemType(code),
+      itemType: item.itemType === 'EGS' || item.itemType === 'GS1' ? item.itemType : itemType(code),
       itemCode: code,
       unitType: item.unit,
       quantity: Number(item.quantity),
@@ -170,20 +195,15 @@ export function buildEtaDocument(params: {
   return {
     issuer: {
       type: 'B',
-      id: issuer.trn.replace(/\D/g, ''),
+      id: (issuer.trn ?? '').replace(/\D/g, ''),
       name: issuer.nameAr || issuer.nameEn,
       address: address(issuer, issuer.branchId),
     },
-    receiver: {
-      type: 'B',
-      id: receiver.trn.replace(/\D/g, ''),
-      name: receiver.nameAr || receiver.nameEn,
-      address: address(receiver),
-    },
+    receiver: receiverBlock(receiver),
     documentType: bill.documentType,
     documentTypeVersion: ETA_DOCUMENT_VERSION,
     dateTimeIssued: etaIssueTimestamp(bill.issuedOn, params.now),
-    taxpayerActivityCode: issuer.activityCode,
+    taxpayerActivityCode: bill.activityCode?.trim() || issuer.activityCode,
     internalID: bill.number,
     ...(bill.purchaseOrderRef ? { purchaseOrderReference: bill.purchaseOrderRef } : {}),
     ...(bill.salesOrderRef ? { salesOrderReference: bill.salesOrderRef } : {}),
